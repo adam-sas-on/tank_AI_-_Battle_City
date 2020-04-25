@@ -42,8 +42,11 @@ public class Cell {
 		return leftCell;
 	}
 
-	public void linkLeftCell(Cell cell){
-		leftCell = cell;
+	public int getRow(){
+		return row;
+	}
+	public int getCol(){
+		return col;
 	}
 
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){

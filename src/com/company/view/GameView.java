@@ -32,6 +32,13 @@ public class GameView {
 		exampleCells();
 	}
 
+	public int getRowColCells(){
+		return rowColCells;
+	}
+	public int getSizePixels(){
+		return sizePixels;
+	}
+
 	public Cell changeCellPositionToClosest(Cell cell){
 		return null;
 	}
