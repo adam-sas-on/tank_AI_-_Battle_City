@@ -88,6 +88,10 @@ public class GameView {
 
 	private void exampleCells(){
 		cells[0].setMapCell(MapCell.EAGLE);
+
+		Cell cell = cells[0].getDownCell();
+		cell = cell.getDownCell();
+		cell.setMapCell(MapCell.TANK_2_LVL_3_STATE_1_RIGHT);
 	}
 
 	public Scene drawStart(){
@@ -104,11 +108,13 @@ public class GameView {
 	}
 
 	public void drawMap(Tank tank){
+		Cell cell = tank.getCell();
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
 		for(int i = rowColCells*rowColCells-1; i >= 0; i--)
 			cells[i].drawCell(gContext, tiles);
 
+		cell.drawCell(gContext, tiles);
 	}
 }
