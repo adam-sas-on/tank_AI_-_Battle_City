@@ -32,6 +32,10 @@ public class GameView {
 		exampleCells();
 	}
 
+	public Cell changeCellPositionToClosest(Cell cell){
+		return null;
+	}
+
 	private void setUpperRowCells(){
 		cells[0].linkNeighborCells(null, cells[1], cells[rowColCells], null);
 		cells[0].setPos(0, 0);
