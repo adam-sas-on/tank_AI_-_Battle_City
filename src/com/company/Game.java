@@ -74,7 +74,7 @@ public class Game {
 	public static void run(){
 		if(!eventCodes.isEmpty() ) {
 			KeyCode eventCode = eventCodes.poll();
-			player1.move(eventCode);
+			player1.move(eventCode, view);
 
 			switch(eventCode){
 				case N:// shot;

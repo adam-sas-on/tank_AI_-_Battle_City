@@ -1,6 +1,7 @@
 package com.company.model;
 
 import com.company.view.Cell;
+import com.company.view.GameView;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 
@@ -59,28 +60,34 @@ public abstract class Tank {
 		icons.put(code, cells);
 	}
 
-	public void move(KeyCode direction){
-		switch(direction){
-			case UP:
-				y_pos -= pixelSpeed;
-				if(y_pos < 0)
-					y_pos = 0.0;
-				break;
-			case RIGHT:
-				x_pos += pixelSpeed;
-				if(x_pos > x_limit)
-					x_pos = x_limit;
-				break;
-			case DOWN:
-				y_pos += pixelSpeed;
-				if(y_pos > y_limit)
-					y_pos = y_limit;
-				break;
-			case LEFT:
-				x_pos -= pixelSpeed;
-				if(x_pos < 0.0)
-					x_pos = 0.0;
-				break;
+	public void move(KeyCode direction, GameView view){
+		if(direction != previousDirection){
+			view.changeCellPositionToClosest(cell);
+			y_pos = cell.getRow();
+			x_pos = cell.getCol();
+		} else {
+			switch (direction) {
+				case UP:
+					y_pos -= pixelSpeed;
+					if (y_pos < 0)
+						y_pos = 0.0;
+					break;
+				case RIGHT:
+					x_pos += pixelSpeed;
+					if (x_pos > x_limit)
+						x_pos = x_limit;
+					break;
+				case DOWN:
+					y_pos += pixelSpeed;
+					if (y_pos > y_limit)
+						y_pos = y_limit;
+					break;
+				case LEFT:
+					x_pos -= pixelSpeed;
+					if (x_pos < 0.0)
+						x_pos = 0.0;
+					break;
+			}
 		}
 		MapCell[] cells = icons.get(direction);
 		if(cells != null){
