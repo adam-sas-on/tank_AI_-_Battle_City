@@ -16,6 +16,7 @@ public class GameView {
 	private GraphicsContext gContext;
 	private static Image tiles;
 	private Cell[] cells;
+	private int[] positions;
 	private final int rowColCells = 26;
 	private final int sizePixels = 16;
 
@@ -27,6 +28,7 @@ public class GameView {
 		tiles = new Image(is);
 
 		cells = new Cell[rowColCells*rowColCells];
+		positions = new int[rowColCells];
 		setCellsStructure();
 
 		exampleCells();
@@ -39,8 +41,34 @@ public class GameView {
 		return sizePixels;
 	}
 
-	public Cell changeCellPositionToClosest(Cell cell){
-		return null;
+	private int binarySearchPos(int pos){
+		int j = positions.length - 1;
+
+		if(pos > positions[j] )
+			return positions[j];
+
+		int i = 0, mid;
+		while(i <= j){
+			mid = (i + j)/2;
+
+			if(pos < positions[mid])
+				j = mid - 1;
+			else if(pos > positions[mid])
+				i = mid + 1;
+			else
+				return positions[mid];
+		}
+
+		return ( (positions[i] - pos) <= (pos - positions[j]) )? positions[i] : positions[j];
+	}
+
+	public void changeCellPositionToClosest(Cell cell){
+		int row, col;
+
+		col = binarySearchPos(cell.getCol());
+		row = binarySearchPos(cell.getRow());
+
+		cell.setPos(col, row);
 	}
 
 	private void setUpperRowCells(){
@@ -51,10 +79,12 @@ public class GameView {
 		for(i = 1; i < rowLimit; i++){
 			cells[i].linkNeighborCells(null, cells[i+1], cells[i+rowColCells], cells[i-1]);
 			cells[i].setPos(i*sizePixels, 0);
+			positions[i] = i*sizePixels;
 		}
 
 		cells[i].linkNeighborCells(null, null, cells[i+rowColCells], cells[i-1]);
 		cells[i].setPos(i*sizePixels, 0);
+		positions[i] = i*sizePixels;
 	}
 
 	private void setCellsStructure(){
@@ -62,6 +92,7 @@ public class GameView {
 		for(i = cells.length - 1; i >= 0; i--)
 			cells[i] = new Cell();
 
+		positions[0] = 0;
 		setUpperRowCells();
 
 		int rowIndex, colIndex,
@@ -71,6 +102,7 @@ public class GameView {
 		for(rowIndex = 1; rowIndex < rowColLimit; rowIndex++, i++){// loop through rows;
 			cells[i].linkNeighborCells(cells[i-rowColCells], cells[i+1], cells[i+rowColCells], null);// left side;
 			cells[i].setPos(0, rowIndex*sizePixels);
+			positions[rowIndex] = rowIndex*sizePixels;
 
 			for(colIndex = 1, i++; colIndex < rowColLimit; colIndex++, i++){
 				cells[i].linkNeighborCells(cells[i-rowColCells], cells[i+1], cells[i+rowColCells], cells[i-1]);
@@ -83,6 +115,7 @@ public class GameView {
 
 		cells[i].linkNeighborCells(cells[i-rowColCells], cells[i+1], null, null);
 		cells[i].setPos(0, rowIndex*sizePixels);
+		positions[rowIndex] = rowIndex*sizePixels;
 
 		for(colIndex = 1, i++; colIndex < rowColLimit; colIndex++, i++) {// connect lower row;
 			cells[i].linkNeighborCells(cells[i - rowColCells], cells[i + 1], null, cells[i - 1]);
