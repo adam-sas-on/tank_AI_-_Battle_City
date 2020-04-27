@@ -1,5 +1,7 @@
 package com.company.view;
 
+import com.company.model.Tank;
+
 import java.io.InputStream;
 import java.util.Scanner;
 
@@ -23,7 +25,7 @@ public class MapLoader {
 			booleans[indexBg + 1] = false;
 	}
 
-	public void loadMap(Cell rootCell, String fileName){
+	public void loadMap(Cell rootCell, String fileName, Tank player1, Tank player2){
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
 		int cols = 0, rows = 0;
@@ -39,7 +41,7 @@ public class MapLoader {
 		scan.nextLine();
 
 		Cell stepCell, rowCellBegin = rootCell;
-		int col, row;
+		int col, row, playerCol, playerRow;
 		String line;
 		for(row = 0; row < rows && rowCellBegin != null; row++){
 			line = scan.nextLine();
@@ -123,12 +125,16 @@ public class MapLoader {
 						//falseArrayIndexes(freeLowerCells, col);
 						break;
 					case '1':
-						stepCell.setMapCell(MapCell.TANK_1_LVL_1_STATE_1_UP);
+						playerCol = stepCell.getCol();
+						playerRow = stepCell.getRow();
+						player1.getCell().setPos(playerCol, playerRow);
 						freeNextCell = false;
 						//falseArrayIndexes(freeLowerCells, col);
 						break;
 					case '2':
-						stepCell.setMapCell(MapCell.TANK_2_LVL_1_STATE_1_UP);
+						playerCol = stepCell.getCol();
+						playerRow = stepCell.getRow();
+						player2.getCell().setPos(playerCol, playerRow);
 						freeNextCell = false;
 						//falseArrayIndexes(freeLowerCells, col);
 						break;

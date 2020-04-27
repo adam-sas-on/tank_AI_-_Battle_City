@@ -39,6 +39,8 @@ public class Game {
 		setPlayerIcons();
 		player2 = new PlayerAITank(20, tankCellSize);
 		player2.setPosOnPlayer2(tankCellSize);
+
+		view.loadMapSetPlayers("map_1.txt", player1, player2);
 	}
 
 	private void setPlayerIcons(){
