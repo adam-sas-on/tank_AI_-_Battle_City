@@ -9,6 +9,7 @@ public class Cell {
 	MapCell mapCell;
 	private int col;
 	private int row;
+	private int size;
 	private Cell upCell, rightCell, downCell, leftCell;
 
 	public Cell(){
@@ -24,6 +25,10 @@ public class Cell {
 
 	public void setMapCell(MapCell newCell){
 		mapCell = newCell;
+		if(mapCell == null)
+			size = 0;
+		else
+			size = mapCell.getSize();
 	}
 
 	public Cell getUpCell(){
@@ -47,6 +52,17 @@ public class Cell {
 	}
 	public int getCol(){
 		return col;
+	}
+
+	public int getCellSize(){
+		return size;
+	}
+
+	public boolean isAccessible(){
+		if(mapCell != null)
+			return mapCell.isAccessible();
+
+		return true;
 	}
 
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){

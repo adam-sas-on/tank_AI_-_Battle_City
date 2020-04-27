@@ -84,18 +84,18 @@ public enum MapCell {
 	BRICK_UP_RIGHT(187, 442, 16),
 	BRICK_DOWN_RIGHT(204, 442, 16),
 	BRICK_DOWN_LEFT(221, 442, 16),
-	ICE(544, 68, 32),
-	FOREST(544, 102, 32),
+	ICE(544, 68, 32, true),
+	FOREST(544, 102, 32, true),
 	WATER(544, 136, 32),
 
-	TIMER(68, 136, 32),
-	BOMB(102, 136, 32),
-	STAR(136, 136, 32),
-	TANK_LIVE(170, 136, 32),
-	HELMET(204, 136, 32),
-	SPADE(238, 136, 32),
-	IMMORTALITY_1(476, 136, 32),
-	IMMORTALITY_2(510, 136, 32),
+	TIMER(68, 136, 32, true),
+	BOMB(102, 136, 32, true),
+	STAR(136, 136, 32, true),
+	TANK_LIVE(170, 136, 32, true),
+	HELMET(204, 136, 32, true),
+	SPADE(238, 136, 32, true),
+	IMMORTALITY_1(476, 136, 32, true),
+	IMMORTALITY_2(510, 136, 32, true),
 
 	CREATE_1(272, 136, 32),
 	CREATE_2(306, 136, 32),
@@ -106,11 +106,19 @@ public enum MapCell {
 
 	private int imageCol, imageRow;
 	private int width;
+	private boolean accessible;
 
 	MapCell(int col, int row, int size){
 		imageCol = col;
 		imageRow = row;
 		width = size;
+		accessible = false;
+	}
+	MapCell(int col, int row, int size, boolean accessibility){
+		imageCol = col;
+		imageRow = row;
+		width = size;
+		accessible = accessibility;
 	}
 
 	public int getRow(){
@@ -122,5 +130,8 @@ public enum MapCell {
 
 	public int getSize(){
 		return width;
+	}
+	public boolean isAccessible(){
+		return accessible;
 	}
 }
