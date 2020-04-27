@@ -61,31 +61,32 @@ public abstract class Tank {
 	}
 
 	public void move(KeyCode direction, GameView view){
+		double xPosNew = x_pos, yPosNew = y_pos;
 		if(direction != previousDirection){
 			view.changeCellPositionToClosest(cell);
-			y_pos = cell.getRow();
-			x_pos = cell.getCol();
+			yPosNew = cell.getRow();
+			xPosNew = cell.getCol();
 		} else {
 			switch (direction) {
 				case UP:
-					y_pos -= pixelSpeed;
-					if (y_pos < 0)
-						y_pos = 0.0;
+					yPosNew -= pixelSpeed;
+					if (yPosNew < 0)
+						yPosNew = 0.0;
 					break;
 				case RIGHT:
-					x_pos += pixelSpeed;
-					if (x_pos > x_limit)
-						x_pos = x_limit;
+					xPosNew += pixelSpeed;
+					if (xPosNew > x_limit)
+						xPosNew = x_limit;
 					break;
 				case DOWN:
-					y_pos += pixelSpeed;
-					if (y_pos > y_limit)
-						y_pos = y_limit;
+					yPosNew += pixelSpeed;
+					if (yPosNew > y_limit)
+						yPosNew = y_limit;
 					break;
 				case LEFT:
-					x_pos -= pixelSpeed;
-					if (x_pos < 0.0)
-						x_pos = 0.0;
+					xPosNew -= pixelSpeed;
+					if (xPosNew < 0.0)
+						xPosNew = 0.0;
 					break;
 			}
 		}
@@ -94,8 +95,15 @@ public abstract class Tank {
 			currentIcon++;
 			currentIcon = currentIcon%cells.length;
 			cell.setMapCell(cells[currentIcon]);
-			cell.setPos((int)Math.round(x_pos), (int)Math.round(y_pos));
 		}
+
+		int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
+		boolean accessible = view.setPosIfAccessible(cell, col, row, direction);
+		if(accessible){
+			x_pos = xPosNew;
+			y_pos = yPosNew;
+		}
+
 		previousDirection = direction;
 	}
 

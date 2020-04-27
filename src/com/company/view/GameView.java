@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -35,7 +36,6 @@ public class GameView {
 		setCellsStructure();
 
 		exampleCells();
-		mapLoader.loadMap(cells[0], "map_1.txt");
 	}
 
 	public int getRowColCells(){
@@ -136,6 +136,63 @@ public class GameView {
 		Cell cell = cells[0].getDownCell();
 		cell = cell.getDownCell();
 		cell.setMapCell(MapCell.TANK_2_LVL_3_STATE_1_RIGHT);
+	}
+
+	public boolean setPosIfAccessible(Cell cell, int col, int row, KeyCode direction){
+		int size = cell.getCellSize(),
+			colCell = col/sizePixels, rowCell = row/sizePixels,
+			cellIndex = rowCell*rowColCells + colCell;
+		if(cellIndex >= cells.length)
+			return false;
+
+		boolean accessible = cells[cellIndex].isAccessible();
+		if(size < sizePixels || !accessible)
+			return accessible;
+
+		// - - - case when cell covers also neighbour cells:
+		Cell cellLeft = null, cellRight = null;
+		switch (direction) {
+			case UP:
+				cellLeft = cells[cellIndex];
+				cellRight = cellLeft.getRightCell();
+				break;
+			case RIGHT:
+				cellLeft = cells[cellIndex].getRightCell();
+				if(cellLeft != null) {
+					cellRight = cellLeft.getDownCell();
+					cellLeft = cellLeft.getRightCell();
+				}
+				if(cellRight != null)
+					cellRight = cellRight.getRightCell();
+				break;
+			case DOWN:
+				cellRight = cells[cellIndex].getDownCell();
+				if(cellRight != null){
+					cellLeft = cellRight.getRightCell();
+					cellRight = cellRight.getDownCell();
+				}
+				if(cellLeft != null)
+					cellLeft = cellLeft.getDownCell();
+				break;
+			case LEFT:
+				cellRight = cells[cellIndex];
+				cellLeft = cellRight.getDownCell();
+				break;
+		}
+
+		if(cellLeft == null || cellRight == null)
+			return false;
+
+		accessible = cellLeft.isAccessible() && cellRight.isAccessible();
+
+		if(accessible)
+			cell.setPos(col, row);
+
+		return accessible;
+	}
+
+	public void loadMapSetPlayers(String fileName, Tank player1, Tank player2){
+		mapLoader.loadMap(cells[0], "map_1.txt", player1, player2);
 	}
 
 	public Scene drawStart(){
