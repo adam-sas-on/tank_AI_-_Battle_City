@@ -15,6 +15,7 @@ public class GameView {
 	private Canvas canvas;
 	private GraphicsContext gContext;
 	private static Image tiles;
+	private MapLoader mapLoader;
 	private Cell[] cells;
 	private int[] positions;
 	private final int rowColCells = 26;
@@ -27,11 +28,14 @@ public class GameView {
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
 
+		mapLoader = MapLoader.getInstance();
+
 		cells = new Cell[rowColCells*rowColCells];
 		positions = new int[rowColCells];
 		setCellsStructure();
 
 		exampleCells();
+		mapLoader.loadMap(cells[0], "map_1.txt");
 	}
 
 	public int getRowColCells(){
