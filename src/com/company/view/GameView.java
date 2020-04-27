@@ -15,6 +15,7 @@ public class GameView {
 	private Canvas canvas;
 	private GraphicsContext gContext;
 	private static Image tiles;
+	private MapLoader mapLoader;
 	private Cell[] cells;
 	private final int rowColCells = 26;
 	private final int sizePixels = 16;
@@ -26,10 +27,13 @@ public class GameView {
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
 
+		mapLoader = MapLoader.getInstance();
+
 		cells = new Cell[rowColCells*rowColCells];
 		setCellsStructure();
 
 		exampleCells();
+		mapLoader.loadMap(cells[0], "map_1.txt");
 	}
 
 	public Cell changeCellPositionToClosest(Cell cell){
