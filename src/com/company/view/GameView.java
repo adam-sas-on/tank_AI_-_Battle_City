@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+//import java.util.Iterator;
 import java.util.List;
 
 public class GameView {
@@ -24,6 +25,7 @@ public class GameView {
 	private final int rowColCells = 26;
 	private final int sizePixels = 16;
 	List<Integer> trees;
+	List<Cell> tanks;
 
 	public GameView(){
 		canvas = new Canvas(rowColCells*sizePixels, rowColCells*sizePixels);
@@ -40,6 +42,7 @@ public class GameView {
 
 		exampleCells();
 		trees = new ArrayList<>();
+		tanks = new ArrayList<>();
 	}
 
 	public int getRowColCells(){
@@ -144,6 +147,33 @@ public class GameView {
 		cell.setMapCell(MapCell.TANK_2_LVL_3_STATE_1_RIGHT);
 	}
 
+	public void addCell(Cell cell){
+		tanks.add(cell);
+	}
+
+	private boolean cellNotCollideWithOthers(Cell cell){
+		for(Cell sprite : tanks){
+			if(sprite.equals(cell) )
+				continue;
+
+			if(cell.collide(sprite) )
+				return false;
+		}
+
+		/*Iterator<Cell> iter = tanks.iterator();
+		Cell sprite;
+
+		while(iter.hasNext() ){
+			sprite = iter.next();
+			if(sprite.equals(cell) )
+				continue;
+
+			if(cell.collide(sprite) )
+				return false;
+		}*/
+		return true;
+	}
+
 	public boolean setPosIfAccessible(Cell cell, int col, int row, KeyCode direction){
 		int size = cell.getCellSize(),
 			colCell = col/sizePixels, rowCell = row/sizePixels,
@@ -190,6 +220,8 @@ public class GameView {
 			return false;
 
 		accessible = cellLeft.isAccessible() && cellRight.isAccessible();
+		if(accessible)
+			accessible = cellNotCollideWithOthers(cell);
 
 		if(accessible)
 			cell.setPos(col, row);
@@ -214,7 +246,7 @@ public class GameView {
 		return scene;
 	}
 
-	public void drawMap(Tank tank){
+	public void drawMap(){
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
@@ -223,8 +255,9 @@ public class GameView {
 			cells[i].drawCell(gContext, tiles);
 		}
 
-		Cell cell = tank.getCell();
-		cell.drawCell(gContext, tiles);
+		for (Cell tank : tanks){
+			tank.drawCell(gContext, tiles);
+		}
 
 		int ind;
 		i = trees.size() - 1;

@@ -42,6 +42,8 @@ public class Game {
 		setPlayerIcons();
 
 		view.loadMapSetPlayers("map_2.txt", player1, player2);
+		view.addCell(player1.getCell());
+		view.addCell(player2.getCell());
 	}
 
 	private void setPlayerIcons(){
@@ -73,7 +75,7 @@ public class Game {
 
 	public Scene start(){
 		Scene scene = view.drawStart();
-		view.drawMap(player1, player2);
+		view.drawMap();
 
 		runGame.scheduleAtFixedRate(Game::run, 0, msInterval, TimeUnit.MILLISECONDS);
 
@@ -102,7 +104,7 @@ public class Game {
 			}
 
 			eventsSize--;
-			view.drawMap(player1, player2);
+			view.drawMap();
 		}
 
 		if(pause)
