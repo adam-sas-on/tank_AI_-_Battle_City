@@ -11,6 +11,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameView {
 	private Canvas canvas;
@@ -21,6 +23,7 @@ public class GameView {
 	private int[] positions;
 	private final int rowColCells = 26;
 	private final int sizePixels = 16;
+	List<Integer> trees;
 
 	public GameView(){
 		canvas = new Canvas(rowColCells*sizePixels, rowColCells*sizePixels);
@@ -36,6 +39,7 @@ public class GameView {
 		setCellsStructure();
 
 		exampleCells();
+		trees = new ArrayList<>();
 	}
 
 	public int getRowColCells(){
@@ -91,10 +95,12 @@ public class GameView {
 		positions[i] = i*sizePixels;
 	}
 
-	private void setCellsStructure(){
+	private void setCellsStructure() {
 		int i;
-		for(i = cells.length - 1; i >= 0; i--)
+		for (i = cells.length - 1; i >= 0; i--){
 			cells[i] = new Cell();
+			cells[i].setIndexId(i);
+		}
 
 		positions[0] = 0;
 		setUpperRowCells();
@@ -192,7 +198,7 @@ public class GameView {
 	}
 
 	public void loadMapSetPlayers(String fileName, Tank player1, Tank player2){
-		mapLoader.loadMap(cells[0], "map_1.txt", player1, player2);
+		mapLoader.loadMap(cells[0], fileName, player1, player2, trees);
 	}
 
 	public Scene drawStart(){
@@ -209,13 +215,23 @@ public class GameView {
 	}
 
 	public void drawMap(Tank tank){
-		Cell cell = tank.getCell();
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-		for(int i = rowColCells*rowColCells-1; i >= 0; i--)
+		int i;
+		for(i = rowColCells*rowColCells-1; i >= 0; i--) {
 			cells[i].drawCell(gContext, tiles);
+		}
 
+		Cell cell = tank.getCell();
 		cell.drawCell(gContext, tiles);
+
+		int ind;
+		i = trees.size() - 1;
+		for(; i >= 0; i--){
+			ind = trees.get(i);
+			cells[ind].drawCell(gContext, tiles);
+		}
+
 	}
 }

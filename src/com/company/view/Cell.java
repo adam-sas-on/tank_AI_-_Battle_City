@@ -11,11 +11,17 @@ public class Cell {
 	private int row;
 	private int size;
 	private Cell upCell, rightCell, downCell, leftCell;
+	private int id;
 
 	public Cell(){
 		row = col = 0;
 		mapCell = null;
 		upCell = rightCell = downCell = leftCell = null;
+		id = -1;
+	}
+
+	public int getId(){
+		return id;
 	}
 
 	public void setPos(int col, int row){
@@ -29,6 +35,11 @@ public class Cell {
 			size = 0;
 		else
 			size = mapCell.getSize();
+	}
+
+	public void setIndexId(int index){
+		if(index >= 0)
+			id = index;
 	}
 
 	public Cell getUpCell(){

@@ -102,7 +102,17 @@ public enum MapCell {
 	CREATE_3(340, 136, 32),
 	CREATE_4(374, 136, 32),
 	CREATE_5(408, 136, 32),
-	CREATE_6(442, 136, 32);
+	CREATE_6(442, 136, 32),
+
+	BULLET_UP(306, 442, 8),
+	BULLET_RIGHT(314, 442, 8),
+	BULLET_LEFT(306, 450, 8),
+	BULLET_DOWN(314, 450, 8),
+	EXPLODE_1(408, 306, 32),
+	EXPLODE_2(442, 306, 32),
+	EXPLODE_3(476, 306, 32),
+	EXPLODE_4(510, 306, 32),
+	EXPLODE_5(544, 306, 32);
 
 	private int imageCol, imageRow;
 	private int width;

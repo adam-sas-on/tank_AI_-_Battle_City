@@ -3,6 +3,7 @@ package com.company.view;
 import com.company.model.Tank;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Scanner;
 
 public class MapLoader {
@@ -25,7 +26,7 @@ public class MapLoader {
 			booleans[indexBg + 1] = false;
 	}
 
-	public void loadMap(Cell rootCell, String fileName, Tank player1, Tank player2){
+	public void loadMap(Cell rootCell, String fileName, Tank player1, Tank player2, List<Integer> trees){
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
 		int cols = 0, rows = 0;
@@ -40,6 +41,7 @@ public class MapLoader {
 
 		scan.nextLine();
 
+		trees.clear();
 		Cell stepCell, rowCellBegin = rootCell;
 		int col, row, playerCol, playerRow;
 		String line;
@@ -113,6 +115,7 @@ public class MapLoader {
 						stepCell.setMapCell(MapCell.FOREST);
 						freeNextCell = false;
 						//falseArrayIndexes(freeLowerCells, col);
+						trees.add(stepCell.getId());
 						break;
 					case 'W':
 						stepCell.setMapCell(MapCell.WATER);
