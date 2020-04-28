@@ -99,9 +99,9 @@ public abstract class Tank {
 
 		int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
 		boolean accessible = view.setPosIfAccessible(cell, col, row, direction);
-		if(accessible){
-			x_pos = xPosNew;
-			y_pos = yPosNew;
+		if(accessible || direction != previousDirection){
+			x_pos = col;
+			y_pos = row;
 		}
 
 		previousDirection = direction;
