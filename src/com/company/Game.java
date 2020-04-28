@@ -36,11 +36,12 @@ public class Game {
 
 		player1 = new PlayerAITank(20, tankCellSize);
 		player1.setPosOnPlayer1(tankCellSize);
-		setPlayerIcons();
+
 		player2 = new PlayerAITank(20, tankCellSize);
 		player2.setPosOnPlayer2(tankCellSize);
+		setPlayerIcons();
 
-		view.loadMapSetPlayers("map_1.txt", player1, player2);
+		view.loadMapSetPlayers("map_2.txt", player1, player2);
 	}
 
 	private void setPlayerIcons(){
@@ -55,11 +56,24 @@ public class Game {
 
 		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_LEFT, MapCell.TANK_1_LVL_1_STATE_2_LEFT};
 		player1.addIcons(KeyCode.LEFT, cells);
+
+		// - - - player 2nd;
+		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_UP, MapCell.TANK_2_LVL_1_STATE_2_UP};
+		player2.addIcons(KeyCode.UP, cells);
+
+		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_RIGHT, MapCell.TANK_2_LVL_1_STATE_2_RIGHT};
+		player2.addIcons(KeyCode.RIGHT, cells);
+
+		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_DOWN, MapCell.TANK_2_LVL_1_STATE_2_DOWN};
+		player2.addIcons(KeyCode.DOWN, cells);
+
+		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_LEFT, MapCell.TANK_2_LVL_1_STATE_2_LEFT};
+		player2.addIcons(KeyCode.LEFT, cells);
 	}
 
 	public Scene start(){
 		Scene scene = view.drawStart();
-		view.drawMap(player1);
+		view.drawMap(player1, player2);
 
 		runGame.scheduleAtFixedRate(Game::run, 0, msInterval, TimeUnit.MILLISECONDS);
 
@@ -88,7 +102,7 @@ public class Game {
 			}
 
 			eventsSize--;
-			view.drawMap(player1);
+			view.drawMap(player1, player2);
 		}
 
 		if(pause)
