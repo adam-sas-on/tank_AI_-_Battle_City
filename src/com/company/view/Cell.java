@@ -3,7 +3,6 @@ package com.company.view;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
-import java.io.InputStream;
 
 public class Cell {
 	MapCell mapCell;
@@ -82,10 +81,12 @@ public class Cell {
 		downCell = down;
 		leftCell = left;
 	}
-	/*public boolean collide(Cell cell){
+	public boolean collide(Cell cell){
+		int row2nd = cell.getRow(), col2nd = cell.getCol(),
+			size2nd = cell.getCellSize();
 
-		return false;
-	}*/
+		return row2nd + size2nd > row && col2nd + size2nd > col && row + size > row2nd && col + size > col2nd;
+	}
 
 	public void drawCell(GraphicsContext context, Image tile){
 		if(mapCell == null)
