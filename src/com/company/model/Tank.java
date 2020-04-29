@@ -11,11 +11,11 @@ import java.util.Map;
 public abstract class Tank {
 	private double pixelSpeed;
 	private double bulletSpeed;
-	private double x_pos, y_pos;
+	protected double x_pos, y_pos;
 	private double x_limit, y_limit;
-	private Cell cell;
-	private int level;
-	private KeyCode previousDirection;
+	protected Cell cell;
+	protected int level;
+	protected KeyCode previousDirection;
 	Map<KeyCode, MapCell[]> icons;
 	private int currentIcon;
 
@@ -106,5 +106,7 @@ public abstract class Tank {
 
 		previousDirection = direction;
 	}
+
+	public abstract Bullet fireBullet(int msInterval, int cellSize);
 
 }
