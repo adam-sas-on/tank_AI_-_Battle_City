@@ -1,6 +1,7 @@
 package com.company.view;
 
 import com.company.model.Tank;
+import com.company.model.Bullet;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -12,7 +13,8 @@ import javafx.scene.paint.Color;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-//import java.util.Iterator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class GameView {
@@ -26,6 +28,7 @@ public class GameView {
 	private final int sizePixels = 16;
 	List<Integer> trees;
 	List<Cell> tanks;
+	List<Bullet> bullets;
 
 	public GameView(){
 		canvas = new Canvas(rowColCells*sizePixels, rowColCells*sizePixels);
@@ -43,6 +46,7 @@ public class GameView {
 		exampleCells();
 		trees = new ArrayList<>();
 		tanks = new ArrayList<>();
+		bullets = new LinkedList<>();
 	}
 
 	public int getRowColCells(){
@@ -147,6 +151,10 @@ public class GameView {
 		cell.setMapCell(MapCell.TANK_2_LVL_3_STATE_1_RIGHT);
 	}
 
+	public void addBullet(Bullet bullet){
+		bullets.add(bullet);
+	}
+
 	public void addCell(Cell cell){
 		tanks.add(cell);
 	}
@@ -229,6 +237,34 @@ public class GameView {
 		return accessible;
 	}
 
+	private void moveBullets(){
+		Cell cell;
+		int row, col, rowEnd, colEnd;
+
+		col = cells.length - 1;
+		cell = cells[col];
+		rowEnd = cell.getRow() + cell.getCellSize();
+		colEnd = cell.getCol() + cell.getCellSize();
+
+		Iterator<Bullet> iter = bullets.iterator();
+		Bullet bullet;
+		boolean keepActive;
+		while(iter.hasNext() ){
+			bullet = iter.next();
+			keepActive = bullet.move();
+			cell = bullet.getCell();
+
+			cell.drawCell(gContext, tiles);
+			if(!keepActive)
+				iter.remove();
+
+			row = cell.getRow();
+			col = cell.getCol();
+			if(row < 0 || col < 0 || row >= rowEnd || col >= colEnd)
+				bullet.setSmallExplode();
+		}
+	}
+
 	public void loadMapSetPlayers(String fileName, Tank player1, Tank player2){
 		mapLoader.loadMap(cells[0], fileName, player1, player2, trees);
 	}
@@ -255,9 +291,11 @@ public class GameView {
 			cells[i].drawCell(gContext, tiles);
 		}
 
-		for (Cell tank : tanks){
+		for(Cell tank : tanks){
 			tank.drawCell(gContext, tiles);
 		}
+
+		moveBullets();
 
 		int ind;
 		i = trees.size() - 1;
