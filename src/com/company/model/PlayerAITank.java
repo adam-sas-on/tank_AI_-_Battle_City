@@ -23,6 +23,7 @@ public class PlayerAITank extends Tank {
 		bullet.assignToPlayer();
 		if(level > 1)
 			bullet.setDoubleSpeed();
+		bullet.setDestructivePower(level);
 
 		return bullet;
 	}
