@@ -30,6 +30,7 @@ public abstract class Tank {
 
 		x_limit = 12.0*cellSize;
 		y_limit = x_limit;
+		previousDirection = KeyCode.UP;
 
 		level = 1;
 		icons = new HashMap<>();

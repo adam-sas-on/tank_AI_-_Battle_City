@@ -13,6 +13,7 @@ public class Bullet {
 	private int rightColDiff, rightRowDiff;
 
 	private boolean isPlayers;
+	private boolean canDestroySteel;
 	private Cell cell;
 	private int explodeIndex;
 	private MapCell[] explodes;
@@ -21,7 +22,7 @@ public class Bullet {
 		pixelSpeed = (6*cellSize*msInterval*2)/1000.0;// speed: 6 cells / 1000 ms;
 		if(pixelSpeed < 1.5)
 			pixelSpeed = 1.5;
-		isPlayers = false;// most bullets;
+		isPlayers = canDestroySteel = false;// most bullets;
 		xDirection = (float) 0.0;
 		yDirection = (float) 0.0;
 
@@ -127,12 +128,21 @@ public class Bullet {
 		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
+	public boolean canDestroySteel(){
+		return canDestroySteel;
+	}
+
 	public void assignToPlayer(){
 		isPlayers = true;
 	}
 
 	public void setDoubleSpeed(){
 		pixelSpeed *= 2.0;
+	}
+
+	public void setDestructivePower(int tankLevel){
+		if(tankLevel > 3)
+			canDestroySteel = true;
 	}
 
 	public boolean move(){
@@ -151,17 +161,21 @@ public class Bullet {
 	}
 
 	public void setExplode(){
-		explodeIndex = 0;
-		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
-				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
-		int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize() )/2, col = cell.getCol();
-		cell.setPos(col - posDiff, cell.getRow() - posDiff);
+		if(explodeIndex < 0) {
+			explodeIndex = 0;
+			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
+					MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
+			int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize()) / 2, col = cell.getCol();
+			cell.setPos(col - posDiff, cell.getRow() - posDiff);
+		}
 	}
 
 	public void setSmallExplode(){
-		explodeIndex = 0;
-		explodes = new MapCell[]{MapCell.EXPLODE_1};
-		int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize() )/2, col = cell.getCol();
-		cell.setPos(col - posDiff, cell.getRow() - posDiff);
+		if(explodeIndex < 0) {
+			explodeIndex = 0;
+			explodes = new MapCell[]{MapCell.EXPLODE_1};
+			int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize()) / 2, col = cell.getCol();
+			cell.setPos(col - posDiff, cell.getRow() - posDiff);
+		}
 	}
 }
