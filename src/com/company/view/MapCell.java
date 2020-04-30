@@ -68,9 +68,9 @@ public enum MapCell {
 	TANK_2_LVL_4_STATE_2_LEFT(510, 102, 32),
 
 	EAGLE(0, 136, 32),
-	EAGLE_DESTROYED(34, 136, 32),
+	EAGLE_DESTROYED(34, 136, 32, false),
 
-	STEEL(0, 442, 16),
+	STEEL(0, 442, 16, false),
 	BRICK(17, 442, 16),
 	BRICK_L_UP_LEFT(34, 442, 16),
 	BRICK_L_UP_RIGHT(51, 442, 16),
@@ -84,50 +84,59 @@ public enum MapCell {
 	BRICK_UP_RIGHT(187, 442, 16),
 	BRICK_DOWN_RIGHT(204, 442, 16),
 	BRICK_DOWN_LEFT(221, 442, 16),
-	ICE(544, 68, 32, true),
-	FOREST(544, 102, 32, true),
-	WATER(544, 136, 32),
+	ICE(544, 68, 32, false, true),
+	FOREST(544, 102, 32, false, true),
+	WATER(544, 136, 32, false, false),
 
-	TIMER(68, 136, 32, true),
-	BOMB(102, 136, 32, true),
+	TIMER(68, 136, 32, false, true),
+	BOMB(102, 136, 32, false, true),
 	STAR(136, 136, 32, true),
-	TANK_LIVE(170, 136, 32, true),
-	HELMET(204, 136, 32, true),
-	SPADE(238, 136, 32, true),
-	IMMORTALITY_1(476, 136, 32, true),
-	IMMORTALITY_2(510, 136, 32, true),
+	TANK_LIVE(170, 136, 32, false, true),
+	HELMET(204, 136, 32, false, true),
+	SPADE(238, 136, 32, false, true),
+	IMMORTALITY_1(476, 136, 32, false, true),
+	IMMORTALITY_2(510, 136, 32, false, true),
 
-	CREATE_1(272, 136, 32),
-	CREATE_2(306, 136, 32),
-	CREATE_3(340, 136, 32),
-	CREATE_4(374, 136, 32),
-	CREATE_5(408, 136, 32),
-	CREATE_6(442, 136, 32),
+	CREATE_1(272, 136, 32, false),
+	CREATE_2(306, 136, 32, false),
+	CREATE_3(340, 136, 32, false),
+	CREATE_4(374, 136, 32, false),
+	CREATE_5(408, 136, 32, false),
+	CREATE_6(442, 136, 32, false),
 
 	BULLET_UP(306, 442, 8),
 	BULLET_RIGHT(314, 442, 8),
 	BULLET_LEFT(306, 450, 8),
 	BULLET_DOWN(314, 450, 8),
-	EXPLODE_1(408, 306, 32),
-	EXPLODE_2(442, 306, 32),
-	EXPLODE_3(476, 306, 32),
-	EXPLODE_4(510, 306, 32),
-	EXPLODE_5(544, 306, 32);
+	EXPLODE_1(408, 306, 32, false),
+	EXPLODE_2(442, 306, 32, false),
+	EXPLODE_3(476, 306, 32, false),
+	EXPLODE_4(510, 306, 32, false),
+	EXPLODE_5(544, 306, 32, false);
 
 	private int imageCol, imageRow;
 	private int width;
-	private boolean accessible;
+	private boolean accessible, destructible;
 
 	MapCell(int col, int row, int size){
 		imageCol = col;
 		imageRow = row;
 		width = size;
+		destructible = true;
 		accessible = false;
 	}
-	MapCell(int col, int row, int size, boolean accessibility){
+	MapCell(int col, int row, int size, boolean isDestructible){
 		imageCol = col;
 		imageRow = row;
 		width = size;
+		destructible = isDestructible;
+		accessible = false;
+	}
+	MapCell(int col, int row, int size, boolean isDestructible, boolean accessibility){
+		imageCol = col;
+		imageRow = row;
+		width = size;
+		destructible = isDestructible;
 		accessible = accessibility;
 	}
 
@@ -143,5 +152,8 @@ public enum MapCell {
 	}
 	public boolean isAccessible(){
 		return accessible;
+	}
+	public boolean isDestructible(){
+		return destructible;
 	}
 }

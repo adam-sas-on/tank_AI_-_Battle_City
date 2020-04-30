@@ -9,12 +9,14 @@ public class Cell {
 	private int col;
 	private int row;
 	private int size;
+	private boolean destructible;
 	private Cell upCell, rightCell, downCell, leftCell;
 	private int id;
 
 	public Cell(){
 		row = col = 0;
 		mapCell = null;
+		destructible = false;
 		upCell = rightCell = downCell = leftCell = null;
 		id = -1;
 	}
@@ -28,12 +30,15 @@ public class Cell {
 		this.row = row;
 	}
 
-	public void setMapCell(MapCell newCell){
+	public void setMapCell(MapCell newCell) {
 		mapCell = newCell;
-		if(mapCell == null)
+		if (mapCell == null){
 			size = 0;
-		else
+			destructible = false;
+		} else {
 			size = mapCell.getSize();
+			destructible = mapCell.isDestructible();
+		}
 	}
 
 	public void setIndexId(int index){
@@ -73,6 +78,12 @@ public class Cell {
 			return mapCell.isAccessible();
 
 		return true;
+	}
+
+	public boolean isDestructible(boolean canDestroySteel){
+		if(mapCell == MapCell.STEEL && canDestroySteel)
+			return true;
+		return destructible;
 	}
 
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){
