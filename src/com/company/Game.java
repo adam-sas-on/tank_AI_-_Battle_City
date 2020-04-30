@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.model.Bullet;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
 import com.company.view.MapCell;
@@ -18,7 +19,8 @@ public class Game {
 	private final ScheduledExecutorService runGame;
 	private static Queue<KeyCode> eventCodes;
 	private static int eventsSize;
-	private final int msInterval = 20;
+	private static final int msInterval = 20;
+	private static final int tankCellSize = MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 	private static boolean pause;
 
 	private static PlayerAITank player1;
@@ -27,8 +29,6 @@ public class Game {
 	public Game(GameView view){
 		Game.view = view;
 		runGame = Executors.newSingleThreadScheduledExecutor();
-
-		int tankCellSize = MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 
 		eventCodes = new LinkedList<>();
 		eventsSize = 0;
@@ -92,12 +92,22 @@ public class Game {
 	public static void run(){
 		if(!eventCodes.isEmpty() ) {
 			KeyCode eventCode = eventCodes.poll();
-			player1.move(eventCode, view);
+			Bullet bullet;
 
 			switch(eventCode){
-				case N:// shot;
-					System.out.println("N");
+				case UP:
+				case RIGHT:
+				case DOWN:
+				case LEFT:
+					player1.move(eventCode, view);
 					break;
+				case N:// shot;
+					bullet = player1.fireBullet(msInterval, tankCellSize);
+					view.addBullet(bullet);
+					break;
+				case Q:
+					bullet = player2.fireBullet(msInterval, tankCellSize);
+					view.addBullet(bullet);
 				case C:
 					pause = !pause;
 					break;
