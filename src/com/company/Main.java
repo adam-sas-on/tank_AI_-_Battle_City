@@ -24,6 +24,7 @@ public class Main extends Application {
 
 		primaryStage.setScene(scene);
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
+		scene.addEventFilter(KeyEvent.KEY_RELEASED, this::onKeyReleased);
 		//scene.addEventHandler();
 
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -47,5 +48,9 @@ public class Main extends Application {
 	private void onKeyPressed(KeyEvent event){
 		game.driveTank(event);
 		event.consume();
+	}
+
+	private void onKeyReleased(KeyEvent event){
+		game.stopTanks(event);
 	}
 }

@@ -88,15 +88,32 @@ public class Game {
 	}
 
 	public void driveTank(KeyEvent keyEvent){
-		if(eventsSize1 >= 5 && eventsSize2 >= 5)
-			return;
-
 		KeyCode keyCode = keyEvent.getCode();
 		switch(keyCode){
 			case UP:
 			case RIGHT:
 			case DOWN:
 			case LEFT:
+				player1.turn(keyCode, view);
+				break;
+			case W:
+				player2.turn(KeyCode.UP, view);
+				break;
+			case A:
+				player2.turn(KeyCode.LEFT, view);
+				break;
+			case S:
+				player2.turn(KeyCode.DOWN, view);
+				break;
+			case D:
+				player2.turn(KeyCode.RIGHT, view);
+				break;
+		}
+
+		if(eventsSize1 >= 5 && eventsSize2 >= 5)
+			return;
+
+		switch(keyCode){
 			case N:
 			case COMMA:
 			case C:
@@ -107,23 +124,30 @@ public class Game {
 
 		if(eventsSize2 < 5){
 			switch(keyCode){
-				case W:
-					eventCodes2.add(KeyCode.UP);
-					break;
-				case A:
-					eventCodes2.add(KeyCode.LEFT);
-					break;
-				case S:
-					eventCodes2.add(KeyCode.DOWN);
-					break;
-				case D:
-					eventCodes2.add(KeyCode.RIGHT);
-					break;
 				case Q:
 				case R:
 					eventCodes2.add(keyCode);
 					break;
 			}
+		}
+	}
+
+	public void stopTanks(KeyEvent keyEvent){
+		KeyCode keyCode = keyEvent.getCode();
+
+		switch(keyCode){
+			case UP:
+			case RIGHT:
+			case DOWN:
+			case LEFT:
+				player1.stop();
+				break;
+			case W:
+			case A:
+			case S:
+			case D:
+				player2.stop();
+				break;
 		}
 	}
 
@@ -136,12 +160,6 @@ public class Game {
 			eventsSize1--;
 
 			switch(eventCode){
-				case UP:
-				case RIGHT:
-				case DOWN:
-				case LEFT:
-					player1.move(eventCode, view);
-					break;
 				case N:// shot;
 					bullet = player1.fireBullet(msInterval, tankCellSize, damages);
 					view.addBullet(bullet);
@@ -165,12 +183,6 @@ public class Game {
 			eventsSize2--;
 
 			switch(eventCode){
-				case UP:
-				case RIGHT:
-				case DOWN:
-				case LEFT:
-					player2.move(eventCode, view);
-					break;
 				case R:// shot;
 					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
 					view.addBullet(bullet);
@@ -186,7 +198,10 @@ public class Game {
 
 		if(pause)
 			return;
-		if(watch)
+
+		player1.move(view);
+		player2.move(view);
+		//if(watch)
 			view.drawMap();
 		// run sprites and AI;
 	}

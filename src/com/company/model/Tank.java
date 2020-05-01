@@ -15,9 +15,11 @@ public abstract class Tank {
 	private double x_limit, y_limit;
 	protected Cell cell;
 	protected int level;
-	protected KeyCode previousDirection;
-	Map<KeyCode, MapCell[]> icons;
-	private int currentIcon;
+	protected KeyCode currentDirection;
+	private Map<KeyCode, MapCell[]> icons;
+	private MapCell[] currentIcons;
+	private boolean ride;
+	private int currentIconInd;
 
 	public Tank(int msInterval, int cellSize){
 		pixelSpeed = (12*cellSize*msInterval*2)/5000.0;// speed: 12 cells / 5000 ms;
@@ -30,11 +32,12 @@ public abstract class Tank {
 
 		x_limit = 12.0*cellSize;
 		y_limit = x_limit;
-		previousDirection = KeyCode.UP;
+		currentDirection = KeyCode.UP;
+		ride = false;
 
 		level = 1;
 		icons = new HashMap<>();
-		currentIcon = 0;
+		currentIconInd = 0;
 		cell = new Cell();
 	}
 
@@ -61,51 +64,76 @@ public abstract class Tank {
 		icons.put(code, cells);
 	}
 
-	public void move(KeyCode direction, GameView view){
+	public void move(GameView view){
+		if(!ride)
+			return;
+
 		double xPosNew = x_pos, yPosNew = y_pos;
-		if(direction != previousDirection){
-			view.changeCellPositionToClosest(cell);
-			yPosNew = cell.getRow();
-			xPosNew = cell.getCol();
-		} else {
-			switch (direction) {
-				case UP:
-					yPosNew -= pixelSpeed;
-					if (yPosNew < 0)
-						yPosNew = 0.0;
-					break;
-				case RIGHT:
-					xPosNew += pixelSpeed;
-					if (xPosNew > x_limit)
-						xPosNew = x_limit;
-					break;
-				case DOWN:
-					yPosNew += pixelSpeed;
-					if (yPosNew > y_limit)
-						yPosNew = y_limit;
-					break;
-				case LEFT:
-					xPosNew -= pixelSpeed;
-					if (xPosNew < 0.0)
-						xPosNew = 0.0;
-					break;
-			}
+		switch(currentDirection){
+			case UP:
+				yPosNew -= pixelSpeed;
+				if (yPosNew < 0)
+					yPosNew = 0.0;
+				break;
+			case RIGHT:
+				xPosNew += pixelSpeed;
+				if (xPosNew > x_limit)
+					xPosNew = x_limit;
+				break;
+			case DOWN:
+				yPosNew += pixelSpeed;
+				if (yPosNew > y_limit)
+					yPosNew = y_limit;
+				break;
+			case LEFT:
+				xPosNew -= pixelSpeed;
+				if (xPosNew < 0.0)
+					xPosNew = 0.0;
+				break;
 		}
-		MapCell[] cells = icons.get(direction);
-		if(cells != null){
-			currentIcon++;
-			currentIcon = currentIcon%cells.length;
-			cell.setMapCell(cells[currentIcon]);
+
+		if(currentIcons != null){
+			currentIconInd++;
+			currentIconInd = currentIconInd %currentIcons.length;
+			cell.setMapCell(currentIcons[currentIconInd]);
 		}
 
 		int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
-		boolean accessible = view.setPosIfAccessible(cell, col, row, direction);
-		if(accessible || direction != previousDirection){
+		boolean accessible = view.setPosIfAccessible(cell, col, row, currentDirection);
+		if(accessible){
 			x_pos = col;
 			y_pos = row;
 		}
+	}
 
-		previousDirection = direction;
+	public void turn(KeyCode newDirection, GameView view){
+		double xPosNew = x_pos, yPosNew = y_pos;
+		if(newDirection != currentDirection){
+			view.changeCellPositionToClosest(cell);
+			yPosNew = cell.getRow();
+			xPosNew = cell.getCol();
+
+			currentIcons = icons.get(newDirection);
+			int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
+			boolean accessible = view.setPosIfAccessible(cell, col, row, newDirection);
+			if(accessible){
+				x_pos = col;
+				y_pos = row;
+			}
+		}
+
+		if(currentIcons != null){
+			currentIconInd++;
+			currentIconInd = currentIconInd %currentIcons.length;
+			cell.setMapCell(currentIcons[currentIconInd]);
+		}
+
+		ride = true;
+		currentDirection = newDirection;
+	}
+
+	public void stop(){
+		ride = false;
 	}
 
 	public abstract Bullet fireBullet(int msInterval, int cellSize, DamageClass damages);
