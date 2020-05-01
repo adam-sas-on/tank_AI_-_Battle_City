@@ -5,7 +5,7 @@ import javafx.scene.image.Image;
 
 
 public class Cell {
-	MapCell mapCell;
+	private MapCell mapCell;
 	private int col;
 	private int row;
 	private int size;
@@ -23,6 +23,10 @@ public class Cell {
 
 	public int getId(){
 		return id;
+	}
+
+	public MapCell getMapCell(){
+		return mapCell;
 	}
 
 	public void setPos(int col, int row){
@@ -80,10 +84,17 @@ public class Cell {
 		return true;
 	}
 
-	public boolean isDestructible(boolean canDestroySteel){
-		if(mapCell == MapCell.STEEL && canDestroySteel)
+	public boolean isDestructible(){
+		if(mapCell == MapCell.STEEL)
 			return true;
 		return destructible;
+	}
+
+	public boolean collide(Cell cell){
+		int row2nd = cell.getRow(), col2nd = cell.getCol(),
+				size2nd = cell.getCellSize();
+
+		return row2nd + size2nd > row && col2nd + size2nd > col && row + size > row2nd && col + size > col2nd;
 	}
 
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){
@@ -91,12 +102,6 @@ public class Cell {
 		rightCell = right;
 		downCell = down;
 		leftCell = left;
-	}
-	public boolean collide(Cell cell){
-		int row2nd = cell.getRow(), col2nd = cell.getCol(),
-			size2nd = cell.getCellSize();
-
-		return row2nd + size2nd > row && col2nd + size2nd > col && row + size > row2nd && col + size > col2nd;
 	}
 
 	public void drawCell(GraphicsContext context, Image tile){
