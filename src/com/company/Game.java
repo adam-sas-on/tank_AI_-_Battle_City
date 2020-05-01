@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 public class Game {
 	private static GameView view;
 	private final ScheduledExecutorService runGame;
-	private static Queue<KeyCode> eventCodes;
-	private static int eventsSize;
+	private static Queue<KeyCode> eventCodes1, eventCodes2;
+	private static int eventsSize1, eventsSize2;
 	private static final int msInterval = 20;
 	private static final int tankCellSize = MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 	private static boolean pause;
@@ -32,8 +32,9 @@ public class Game {
 		Game.view = view;
 		runGame = Executors.newSingleThreadScheduledExecutor();
 
-		eventCodes = new LinkedList<>();
-		eventsSize = 0;
+		eventCodes1 = new LinkedList<>();
+		eventCodes2 = new LinkedList<>();
+		eventsSize1 = eventsSize2 = 0;
 		pause = false;
 
 		player1 = new PlayerAITank(20, tankCellSize);
@@ -87,16 +88,52 @@ public class Game {
 	}
 
 	public void driveTank(KeyEvent keyEvent){
-		if(eventsSize < 5) {
-			eventCodes.add(keyEvent.getCode());
-			eventsSize++;
+		if(eventsSize1 >= 5 && eventsSize2 >= 5)
+			return;
+
+		KeyCode keyCode = keyEvent.getCode();
+		switch(keyCode){
+			case UP:
+			case RIGHT:
+			case DOWN:
+			case LEFT:
+			case N:
+			case COMMA:
+			case C:
+				if(eventsSize1 < 5)
+					eventCodes1.add(keyCode);
+				break;
+		}
+
+		if(eventsSize2 < 5){
+			switch(keyCode){
+				case W:
+					eventCodes2.add(KeyCode.UP);
+					break;
+				case A:
+					eventCodes2.add(KeyCode.LEFT);
+					break;
+				case S:
+					eventCodes2.add(KeyCode.DOWN);
+					break;
+				case D:
+					eventCodes2.add(KeyCode.RIGHT);
+					break;
+				case Q:
+				case R:
+					eventCodes2.add(keyCode);
+					break;
+			}
 		}
 	}
 
 	public static void run(){
-		if(!eventCodes.isEmpty() ) {
-			KeyCode eventCode = eventCodes.poll();
-			Bullet bullet;
+		boolean watch = false;
+		Bullet bullet;
+		KeyCode eventCode;
+		if(!eventCodes1.isEmpty() ){
+			eventCode = eventCodes1.poll();
+			eventsSize1--;
 
 			switch(eventCode){
 				case UP:
@@ -109,21 +146,48 @@ public class Game {
 					bullet = player1.fireBullet(msInterval, tankCellSize, damages);
 					view.addBullet(bullet);
 					break;
-				case Q:
-					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
+				case COMMA:// weak shot;
+					bullet = player1.fireBullet(msInterval, tankCellSize, damages);
+					bullet.makeWeak();
 					view.addBullet(bullet);
+					break;
 				case C:
 					pause = !pause;
 					break;
 			}
 
-			eventsSize--;
-			view.drawMap();
+			watch = true;
+			//view.drawMap();
+		}
+
+		if(!eventCodes2.isEmpty() ){
+			eventCode = eventCodes2.poll();
+			eventsSize2--;
+
+			switch(eventCode){
+				case UP:
+				case RIGHT:
+				case DOWN:
+				case LEFT:
+					player2.move(eventCode, view);
+					break;
+				case R:// shot;
+					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
+					view.addBullet(bullet);
+					break;
+				case Q:// weak shot;
+					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
+					bullet.makeWeak();
+					view.addBullet(bullet);
+					break;
+			}
+			watch = true;
 		}
 
 		if(pause)
 			return;
-
+		if(watch)
+			view.drawMap();
 		// run sprites and AI;
 	}
 
