@@ -57,6 +57,8 @@ public class DamageClass {
 				downRightDamagesSet(rightSideDestruction);
 				downLeftDamageSet(leftSideDestruction);
 		}
+		rightSideDestruction.put(MapCell.EAGLE, MapCell.EAGLE_DESTROYED);
+		leftSideDestruction.put(MapCell.EAGLE, MapCell.EAGLE_DESTROYED);
 	}
 
 	public void upRightDamagesSet(Map<MapCell,MapCell> rightSideDestruction){

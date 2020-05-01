@@ -36,14 +36,16 @@ public class Bullet {
 		rightSideDestruction = new HashMap<>(14);
 		leftSideDestruction = new HashMap<>(14);
 
-		setMapCellAndPosition(cellSize, direction, col, row, damages);
+		setMapCellAndPosition(cellSize, direction, col, row);
 
 		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
 				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
 		explodeIndex = -1;
+
+		damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
 	}
 
-	private void setMapCellAndPosition(int cellSize, KeyCode direction, int col, int row, DamageClass damages){
+	private void setMapCellAndPosition(int cellSize, KeyCode direction, int col, int row){
 		x_pos = col;
 		y_pos = row;
 		int colLoc = col, rowLoc = row, bulletSize = MapCell.BULLET_UP.getSize();
@@ -58,8 +60,6 @@ public class Bullet {
 				colLoc += (cellSize - bulletSize)/2;
 
 				rightColDiff = MapCell.BULLET_UP.getSize();
-				damages.upRightDamagesSet(rightSideDestruction);
-				damages.upLeftDamageSet(leftSideDestruction);
 				break;
 			case RIGHT:
 				cell.setMapCell(MapCell.BULLET_RIGHT);
@@ -71,8 +71,6 @@ public class Bullet {
 
 				leftColDiff = MapCell.BULLET_RIGHT.getSize();
 				rightColDiff = rightRowDiff = MapCell.BULLET_RIGHT.getSize();
-				damages.rightRightDamagesSet(rightSideDestruction);
-				damages.rightLeftDamageSet(leftSideDestruction);
 				break;
 			case LEFT:
 				cell.setMapCell(MapCell.BULLET_LEFT);
@@ -82,8 +80,6 @@ public class Bullet {
 				colLoc -= bulletSize;
 
 				leftRowDiff = MapCell.BULLET_LEFT.getSize();
-				damages.leftRightDamagesSet(rightSideDestruction);
-				damages.leftLeftDamageSet(leftSideDestruction);
 				break;
 			default:
 				cell.setMapCell(MapCell.BULLET_DOWN);
@@ -95,8 +91,6 @@ public class Bullet {
 
 				rightRowDiff = MapCell.BULLET_DOWN.getSize();
 				leftColDiff = leftRowDiff = MapCell.BULLET_DOWN.getSize();
-				damages.downRightDamagesSet(rightSideDestruction);
-				damages.downLeftDamageSet(leftSideDestruction);
 		}
 		cell.setPos(colLoc, rowLoc);
 	}
@@ -165,6 +159,9 @@ public class Bullet {
 	public void setDestructivePower(int tankLevel){
 		if(tankLevel > 3)
 			canDestroySteel = true;
+	}
+	public void makeWeak(){
+		canDestroySteel = false;
 	}
 
 	public boolean move(){
