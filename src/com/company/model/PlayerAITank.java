@@ -19,7 +19,7 @@ public class PlayerAITank extends Tank {
 	@Override
 	public Bullet fireBullet(int msInterval, int cellSize, DamageClass damages){
 		int col = (int)Math.round(x_pos), row = (int)Math.round(y_pos);
-		Bullet bullet = new Bullet(msInterval, cellSize, previousDirection, col, row, damages);
+		Bullet bullet = new Bullet(msInterval, cellSize, currentDirection, col, row, damages);
 		bullet.assignToPlayer();
 		if(level > 1)
 			bullet.setDoubleSpeed();
