@@ -4,6 +4,9 @@ import com.company.view.Cell;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Bullet {
 	private double pixelSpeed;
 	private float xDirection, yDirection;
@@ -18,7 +21,10 @@ public class Bullet {
 	private int explodeIndex;
 	private MapCell[] explodes;
 
-	public Bullet(int msInterval, int cellSize, KeyCode direction, int col, int row){
+	private Map<MapCell,MapCell> rightSideDestruction;
+	private Map<MapCell,MapCell> leftSideDestruction;
+
+	public Bullet(int msInterval, int cellSize, KeyCode direction, int col, int row, DamageClass damages){
 		pixelSpeed = (6*cellSize*msInterval*2)/1000.0;// speed: 6 cells / 1000 ms;
 		if(pixelSpeed < 1.5)
 			pixelSpeed = 1.5;
@@ -27,14 +33,17 @@ public class Bullet {
 		yDirection = (float) 0.0;
 
 		cell = new Cell();
-		setMapCellAndPosition(cellSize, direction, col, row);
+		rightSideDestruction = new HashMap<>(14);
+		leftSideDestruction = new HashMap<>(14);
+
+		setMapCellAndPosition(cellSize, direction, col, row, damages);
 
 		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
 				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
 		explodeIndex = -1;
 	}
 
-	private void setMapCellAndPosition(int cellSize, KeyCode direction, int col, int row){
+	private void setMapCellAndPosition(int cellSize, KeyCode direction, int col, int row, DamageClass damages){
 		x_pos = col;
 		y_pos = row;
 		int colLoc = col, rowLoc = row, bulletSize = MapCell.BULLET_UP.getSize();
@@ -49,6 +58,8 @@ public class Bullet {
 				colLoc += (cellSize - bulletSize)/2;
 
 				rightColDiff = MapCell.BULLET_UP.getSize();
+				damages.upRightDamagesSet(rightSideDestruction);
+				damages.upLeftDamageSet(leftSideDestruction);
 				break;
 			case RIGHT:
 				cell.setMapCell(MapCell.BULLET_RIGHT);
@@ -60,6 +71,8 @@ public class Bullet {
 
 				leftColDiff = MapCell.BULLET_RIGHT.getSize();
 				rightColDiff = rightRowDiff = MapCell.BULLET_RIGHT.getSize();
+				damages.rightRightDamagesSet(rightSideDestruction);
+				damages.rightLeftDamageSet(leftSideDestruction);
 				break;
 			case LEFT:
 				cell.setMapCell(MapCell.BULLET_LEFT);
@@ -69,6 +82,8 @@ public class Bullet {
 				colLoc -= bulletSize;
 
 				leftRowDiff = MapCell.BULLET_LEFT.getSize();
+				damages.leftRightDamagesSet(rightSideDestruction);
+				damages.leftLeftDamageSet(leftSideDestruction);
 				break;
 			default:
 				cell.setMapCell(MapCell.BULLET_DOWN);
@@ -80,9 +95,12 @@ public class Bullet {
 
 				rightRowDiff = MapCell.BULLET_DOWN.getSize();
 				leftColDiff = leftRowDiff = MapCell.BULLET_DOWN.getSize();
+				damages.downRightDamagesSet(rightSideDestruction);
+				damages.downLeftDamageSet(leftSideDestruction);
 		}
 		cell.setPos(colLoc, rowLoc);
 	}
+
 
 	public Cell getCell(){
 		return cell;
@@ -132,6 +150,10 @@ public class Bullet {
 		return canDestroySteel;
 	}
 
+	public boolean belongsToPlayer(){
+		return isPlayers;
+	}
+
 	public void assignToPlayer(){
 		isPlayers = true;
 	}
@@ -177,5 +199,17 @@ public class Bullet {
 			int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize()) / 2, col = cell.getCol();
 			cell.setPos(col - posDiff, cell.getRow() - posDiff);
 		}
+	}
+
+	public void setRightDamageCell(Cell cell){
+		MapCell cellType = cell.getMapCell();
+		cellType = rightSideDestruction.get(cellType);
+		cell.setMapCell(cellType);
+	}
+
+	public void setLeftDamageCell(Cell cell){
+		MapCell cellType = cell.getMapCell();
+		cellType = leftSideDestruction.get(cellType);
+		cell.setMapCell(cellType);
 	}
 }

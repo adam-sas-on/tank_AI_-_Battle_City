@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.model.Bullet;
+import com.company.model.DamageClass;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
 import com.company.view.MapCell;
@@ -22,6 +23,7 @@ public class Game {
 	private static final int msInterval = 20;
 	private static final int tankCellSize = MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 	private static boolean pause;
+	private static DamageClass damages;
 
 	private static PlayerAITank player1;
 	private static PlayerAITank player2;
@@ -44,6 +46,8 @@ public class Game {
 		view.loadMapSetPlayers("map_2.txt", player1, player2);
 		view.addCell(player1.getCell());
 		view.addCell(player2.getCell());
+
+		damages = DamageClass.getInstance();
 	}
 
 	private void setPlayerIcons(){
@@ -102,11 +106,11 @@ public class Game {
 					player1.move(eventCode, view);
 					break;
 				case N:// shot;
-					bullet = player1.fireBullet(msInterval, tankCellSize);
+					bullet = player1.fireBullet(msInterval, tankCellSize, damages);
 					view.addBullet(bullet);
 					break;
 				case Q:
-					bullet = player2.fireBullet(msInterval, tankCellSize);
+					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
 					view.addBullet(bullet);
 				case C:
 					pause = !pause;

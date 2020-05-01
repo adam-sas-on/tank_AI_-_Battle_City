@@ -108,6 +108,6 @@ public abstract class Tank {
 		previousDirection = direction;
 	}
 
-	public abstract Bullet fireBullet(int msInterval, int cellSize);
+	public abstract Bullet fireBullet(int msInterval, int cellSize, DamageClass damages);
 
 }
