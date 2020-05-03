@@ -45,6 +45,9 @@ public class MapLoader {
 		Cell stepCell, rowCellBegin = rootCell;
 		int col, row, playerCol, playerRow;
 		String line;
+		for(row = freeCells.length - 1; row >= 0; row--)
+			freeCells[row] = true;
+
 		for(row = 0; row < rows && rowCellBegin != null; row++){
 			line = scan.nextLine();
 			stepCell = rowCellBegin;
