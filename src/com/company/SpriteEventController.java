@@ -8,8 +8,10 @@ public class SpriteEventController {
 	private final KeyCode singleShot, singlePanzerShot;
 	private final KeyCode continuousShooting, continuousPanzerShooting;
 	private int currentAngle, currentShotPower;
-	private boolean keepMoving, keepShooting;
+	private int turningAngle;
+	private boolean keepShooting;
 	private boolean isPlayer;
+	private final int rightAngle = 90;
 
 	public SpriteEventController(KeyCode up, KeyCode right, KeyCode down, KeyCode left,
 								KeyCode shot, KeyCode panzerShot,
@@ -22,7 +24,7 @@ public class SpriteEventController {
 		singlePanzerShot = panzerShot;
 		continuousShooting = shooting;
 		continuousPanzerShooting = panzerShooting;
-		currentAngle = -1;
+		currentAngle = turningAngle = -1;
 		currentShotPower = 0;
 		isPlayer = true;
 		keepShooting = false;
@@ -37,7 +39,7 @@ public class SpriteEventController {
 		if(keyCode == moveRight)
 			return 0;
 		if(keyCode == moveUp)
-			return 90;
+			return rightAngle;
 		if(keyCode == moveLeft)
 			return 180;
 		if(keyCode == moveDown)
@@ -46,18 +48,37 @@ public class SpriteEventController {
 		throw new IllegalArgumentException("Key angles does not correspond to values of angle!");
 	}
 
+	public KeyCode getKeyCode(){
+		switch(turningAngle){
+			case 0:
+				return KeyCode.RIGHT;
+			case rightAngle:
+				return KeyCode.UP;
+			case 180:
+				return KeyCode.LEFT;
+			case 270:
+				return KeyCode.DOWN;
+			default:
+				return null;
+		}
+	}
+
+	public int directionForUp(){
+		return rightAngle;
+	}
+
 	public void setEvent(final KeyCode keyCode){
 		if(!isPlayer)
 			return;
 
 		if(keyCode == moveRight)
-			currentAngle = 0;
+			currentAngle = turningAngle = 0;
 		else if(keyCode == moveUp)
-			currentAngle = 90;
+			currentAngle = turningAngle = rightAngle;
 		else if(keyCode == moveLeft)
-			currentAngle = 180;
+			currentAngle = turningAngle = 180;
 		else if(keyCode == moveDown)
-			currentAngle = 270;
+			currentAngle = turningAngle = 270;
 		else if(keyCode == singleShot) {
 			currentShotPower = 1;
 			keepShooting = false;
