@@ -10,54 +10,64 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PlayerAITank implements Tank {
-	protected SpriteEventController tankDriver;
+	private SpriteEventController tankDriver;
 	private double pixelSpeed;
 	private double bulletSpeed;
-	protected double x_pos, y_pos;
+	private double x_pos, y_pos;
 	private double x_limit, y_limit;
-	protected Cell cell;
-	protected int level;
-	protected KeyCode currentDirection;
-	private Map<KeyCode, MapCell[]> icons;
+	private Cell cell;
+	private int level;
+	private int currentDirection;
+	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
-	private boolean ride;
 	private int currentIconInd;
+	private int bulletSteps;
+	private final int nextBulletSteps;
 
 	public PlayerAITank(int msInterval, int cellSize, SpriteEventController driver) {
+		tankDriver = driver;
+
 		pixelSpeed = (12*cellSize*msInterval*2)/5000.0;// speed: 12 cells / 5000 ms;
 		if(pixelSpeed < 1.0)
 			pixelSpeed = 1;
 
+		nextBulletSteps = 1000/(msInterval*2);
+		bulletSteps = 0;
 		bulletSpeed = (6*cellSize*msInterval*2)/1000.0;// bullet speed: 6 cells / second;
 		if(bulletSpeed <= pixelSpeed)
 			bulletSpeed = pixelSpeed + 1.0;
 
 		x_limit = 12.0*cellSize;
 		y_limit = x_limit;
-		currentDirection = KeyCode.UP;
-		ride = false;
+		currentDirection = driver.directionForUp();
 
 		level = 1;
 		icons = new HashMap<>();
 		currentIconInd = 0;
 		cell = new Cell();
 
-		tankDriver = driver;
-
 		setPos(12, 4);
 	}
 
 	public void setPosOnPlayer1(){
-		setPos(12, 4);
+		setPos(4, 12);
 	}
 
 	public void setPosOnPlayer2(){
-		setPos(12, 8);
+		setPos(8, 12);
 	}
 
-	public Bullet fireBullet(int msInterval, int cellSize, DamageClass damages){
-		int col = (int)Math.round(x_pos), row = (int)Math.round(y_pos);
-		Bullet bullet = new Bullet(msInterval, cellSize, currentDirection, col, row, damages);
+	public Bullet fireBullet(int cellSize, DamageClass damages){
+		int row = tankDriver.takeTheShootPower();
+		if(row < 1 || bulletSteps > 0)
+			return null;
+
+		bulletSteps = nextBulletSteps;
+		int col = (int)Math.round(x_pos);
+		row = (int)Math.round(y_pos);
+		KeyCode directionCode = tankDriver.getKeyCode();
+
+		Bullet bullet = new Bullet(bulletSpeed, cellSize, directionCode, col, row, damages);
 		bullet.assignToPlayer();
 		if(level > 1)
 			bullet.setDoubleSpeed();
@@ -71,10 +81,10 @@ public class PlayerAITank implements Tank {
 		return cell;
 	}
 
-	public void addIcons(KeyCode code, MapCell[] cells){
+	public void addIcons(int direction, MapCell[] cells){
 		if(icons.isEmpty() )
 			cell.setMapCell(cells[0]);
-		icons.put(code, cells);
+		icons.put(direction, cells);
 	}
 
 	@Override
@@ -89,61 +99,44 @@ public class PlayerAITank implements Tank {
 
 	@Override
 	public void move(GameView view){
-		if(!ride)
+		int newDirection = tankDriver.move();
+		bulletSteps--;
+
+		if(newDirection < 0)
 			return;
 
 		double xPosNew = x_pos, yPosNew = y_pos;
-		switch(currentDirection){
-			case UP:
-				yPosNew -= pixelSpeed;
-				if (yPosNew < 0)
-					yPosNew = 0.0;
-				break;
-			case RIGHT:
-				xPosNew += pixelSpeed;
-				if (xPosNew > x_limit)
-					xPosNew = x_limit;
-				break;
-			case DOWN:
-				yPosNew += pixelSpeed;
-				if (yPosNew > y_limit)
-					yPosNew = y_limit;
-				break;
-			case LEFT:
-				xPosNew -= pixelSpeed;
-				if (xPosNew < 0.0)
-					xPosNew = 0.0;
-				break;
-		}
+		KeyCode directionCode = tankDriver.getKeyCode();
 
-		if(currentIcons != null){
-			currentIconInd++;
-			currentIconInd = currentIconInd %currentIcons.length;
-			cell.setMapCell(currentIcons[currentIconInd]);
-		}
-
-		int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
-		boolean accessible = view.setPosIfAccessible(cell, col, row, currentDirection);
-		if(accessible){
-			x_pos = col;
-			y_pos = row;
-		}
-	}
-
-
-	public void turn(KeyCode newDirection, GameView view){
-		double xPosNew = x_pos, yPosNew = y_pos;
 		if(newDirection != currentDirection){
 			view.changeCellPositionToClosest(cell);
 			yPosNew = cell.getRow();
 			xPosNew = cell.getCol();
 
 			currentIcons = icons.get(newDirection);
-			int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
-			boolean accessible = view.setPosIfAccessible(cell, col, row, newDirection);
-			if(accessible){
-				x_pos = col;
-				y_pos = row;
+			currentDirection = newDirection;
+		} else {
+			switch (directionCode){
+				case UP:
+					yPosNew -= pixelSpeed;
+					if (yPosNew < 0)
+						yPosNew = 0.0;
+					break;
+				case RIGHT:
+					xPosNew += pixelSpeed;
+					if (xPosNew > x_limit)
+						xPosNew = x_limit;
+					break;
+				case DOWN:
+					yPosNew += pixelSpeed;
+					if (yPosNew > y_limit)
+						yPosNew = y_limit;
+					break;
+				case LEFT:
+					xPosNew -= pixelSpeed;
+					if (xPosNew < 0.0)
+						xPosNew = 0.0;
+					break;
 			}
 		}
 
@@ -153,11 +146,13 @@ public class PlayerAITank implements Tank {
 			cell.setMapCell(currentIcons[currentIconInd]);
 		}
 
-		ride = true;
-		currentDirection = newDirection;
+		int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
+		boolean accessible = view.setPosIfAccessible(cell, col, row, directionCode);
+		if(accessible){
+			x_pos = col;
+			y_pos = row;
+		}
 	}
 
-	public void stop(){
-		ride = false;
-	}
+
 }

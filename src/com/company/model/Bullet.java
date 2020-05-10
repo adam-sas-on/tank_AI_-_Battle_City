@@ -24,8 +24,8 @@ public class Bullet {
 	private Map<MapCell,MapCell> rightSideDestruction;
 	private Map<MapCell,MapCell> leftSideDestruction;
 
-	public Bullet(int msInterval, int cellSize, KeyCode direction, int col, int row, DamageClass damages){
-		pixelSpeed = (6*cellSize*msInterval*2)/1000.0;// speed: 6 cells / 1000 ms;
+	public Bullet(double bulletSpeed, int cellSize, KeyCode direction, int col, int row, DamageClass damages){
+		pixelSpeed = bulletSpeed;// speed: 6 cells / 1000 ms;
 		if(pixelSpeed < 1.5)
 			pixelSpeed = 1.5;
 		isPlayers = canDestroySteel = false;// most bullets;

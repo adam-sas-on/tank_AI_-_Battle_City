@@ -64,29 +64,37 @@ public class Game {
 
 	private void setPlayerIcons(){
 		MapCell[] cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_UP, MapCell.TANK_1_LVL_1_STATE_2_UP};
-		player1.addIcons(KeyCode.UP, cells);
+		int directionAngle = player1driver.moveKeyValue(KeyCode.UP);
+		player1.addIcons(directionAngle, cells);
 
 		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_RIGHT, MapCell.TANK_1_LVL_1_STATE_2_RIGHT};
-		player1.addIcons(KeyCode.RIGHT, cells);
+		directionAngle = player1driver.moveKeyValue(KeyCode.RIGHT);
+		player1.addIcons(directionAngle, cells);
 
 		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_DOWN, MapCell.TANK_1_LVL_1_STATE_2_DOWN};
-		player1.addIcons(KeyCode.DOWN, cells);
+		directionAngle = player1driver.moveKeyValue(KeyCode.DOWN);
+		player1.addIcons(directionAngle, cells);
 
 		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_LEFT, MapCell.TANK_1_LVL_1_STATE_2_LEFT};
-		player1.addIcons(KeyCode.LEFT, cells);
+		directionAngle = player1driver.moveKeyValue(KeyCode.LEFT);
+		player1.addIcons(directionAngle, cells);
 
 		// - - - player 2nd;
 		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_UP, MapCell.TANK_2_LVL_1_STATE_2_UP};
-		player2.addIcons(KeyCode.UP, cells);
+		directionAngle = player2driver.moveKeyValue(KeyCode.W);
+		player2.addIcons(directionAngle, cells);
 
 		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_RIGHT, MapCell.TANK_2_LVL_1_STATE_2_RIGHT};
-		player2.addIcons(KeyCode.RIGHT, cells);
+		directionAngle = player2driver.moveKeyValue(KeyCode.D);
+		player2.addIcons(directionAngle, cells);
 
 		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_DOWN, MapCell.TANK_2_LVL_1_STATE_2_DOWN};
-		player2.addIcons(KeyCode.DOWN, cells);
+		directionAngle = player2driver.moveKeyValue(KeyCode.S);
+		player2.addIcons(directionAngle, cells);
 
 		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_LEFT, MapCell.TANK_2_LVL_1_STATE_2_LEFT};
-		player2.addIcons(KeyCode.LEFT, cells);
+		directionAngle = player2driver.moveKeyValue(KeyCode.A);
+		player2.addIcons(directionAngle, cells);
 	}
 
 	public Scene start(){
@@ -100,73 +108,26 @@ public class Game {
 
 	public void listen(KeyEvent keyEvent){
 		KeyCode keyCode = keyEvent.getCode();
-		switch(keyCode){
-			case UP:
-			case RIGHT:
-			case DOWN:
-			case LEFT:
-				player1.turn(keyCode, view);
-				break;
-			case W:
-				player2.turn(KeyCode.UP, view);
-				break;
-			case A:
-				player2.turn(KeyCode.LEFT, view);
-				break;
-			case S:
-				player2.turn(KeyCode.DOWN, view);
-				break;
-			case D:
-				player2.turn(KeyCode.RIGHT, view);
-				break;
-		}
-
-		if(eventsSize1 >= 5 && eventsSize2 >= 5)
+		if(keyCode == KeyCode.C){
+			pause = !pause;
 			return;
-
-		switch(keyCode){
-			case N:
-			case COMMA:
-			case C:
-				if(eventsSize1 < 5)
-					eventCodes1.add(keyCode);
-				break;
 		}
 
-		if(eventsSize2 < 5){
-			switch(keyCode){
-				case Q:
-				case R:
-					eventCodes2.add(keyCode);
-					break;
-			}
-		}
+		player1driver.setEvent(keyCode);
+		player2driver.setEvent(keyCode);
 	}
 
 	public void stopTanks(KeyEvent keyEvent){
 		KeyCode keyCode = keyEvent.getCode();
-
-		switch(keyCode){
-			case UP:
-			case RIGHT:
-			case DOWN:
-			case LEFT:
-				player1.stop();
-				break;
-			case W:
-			case A:
-			case S:
-			case D:
-				player2.stop();
-				break;
-		}
+		player1driver.stopEvent(keyCode);
+		player2driver.stopEvent(keyCode);
 	}
 
 	public static void run(){
 		boolean watch = false;
 		Bullet bullet;
 		KeyCode eventCode;
-		if(!eventCodes1.isEmpty() ){
+		/*if(!eventCodes1.isEmpty() ){
 			eventCode = eventCodes1.poll();
 			eventsSize1--;
 
@@ -186,10 +147,10 @@ public class Game {
 			}
 
 			watch = true;
-			//view.drawMap();
-		}
+			/ /view.drawMap();
+		}* /
 
-		if(!eventCodes2.isEmpty() ){
+		/ *if(!eventCodes2.isEmpty() ){
 			eventCode = eventCodes2.poll();
 			eventsSize2--;
 
@@ -205,13 +166,20 @@ public class Game {
 					break;
 			}
 			watch = true;
-		}
+		}*/
 
 		if(pause)
 			return;
 
 		player1.move(view);
+		bullet = player1.fireBullet(tankCellSize, damages);
+		if(bullet != null)
+			view.addBullet(bullet);
+
 		player2.move(view);
+		bullet = player2.fireBullet(tankCellSize, damages);
+		if(bullet != null)
+			view.addBullet(bullet);
 		//if(watch)
 			view.drawMap();
 		// run sprites and AI;
