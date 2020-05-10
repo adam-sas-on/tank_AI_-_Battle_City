@@ -11,7 +11,7 @@ public class SpriteEventController {
 	private int turningAngle;
 	private boolean keepShooting;
 	private boolean isPlayer;
-	private final int rightAngle = 90;
+	private final int upAngle = 90;
 
 	public SpriteEventController(KeyCode up, KeyCode right, KeyCode down, KeyCode left,
 								KeyCode shot, KeyCode panzerShot,
@@ -24,7 +24,8 @@ public class SpriteEventController {
 		singlePanzerShot = panzerShot;
 		continuousShooting = shooting;
 		continuousPanzerShooting = panzerShooting;
-		currentAngle = turningAngle = -1;
+		currentAngle = -1;
+		turningAngle = upAngle;
 		currentShotPower = 0;
 		isPlayer = true;
 		keepShooting = false;
@@ -39,7 +40,7 @@ public class SpriteEventController {
 		if(keyCode == moveRight)
 			return 0;
 		if(keyCode == moveUp)
-			return rightAngle;
+			return upAngle;
 		if(keyCode == moveLeft)
 			return 180;
 		if(keyCode == moveDown)
@@ -52,7 +53,7 @@ public class SpriteEventController {
 		switch(turningAngle){
 			case 0:
 				return KeyCode.RIGHT;
-			case rightAngle:
+			case upAngle:
 				return KeyCode.UP;
 			case 180:
 				return KeyCode.LEFT;
@@ -64,7 +65,7 @@ public class SpriteEventController {
 	}
 
 	public int directionForUp(){
-		return rightAngle;
+		return upAngle;
 	}
 
 	public void setEvent(final KeyCode keyCode){
@@ -74,7 +75,7 @@ public class SpriteEventController {
 		if(keyCode == moveRight)
 			currentAngle = turningAngle = 0;
 		else if(keyCode == moveUp)
-			currentAngle = turningAngle = rightAngle;
+			currentAngle = turningAngle = upAngle;
 		else if(keyCode == moveLeft)
 			currentAngle = turningAngle = 180;
 		else if(keyCode == moveDown)
