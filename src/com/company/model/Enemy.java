@@ -1,6 +1,5 @@
 package com.company.model;
 
-import com.company.SpriteEventController;
 import com.company.view.Cell;
 import com.company.view.GameView;
 import com.company.view.MapCell;
@@ -9,8 +8,7 @@ import javafx.scene.input.KeyCode;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayerAITank implements Tank {
-	protected SpriteEventController tankDriver;
+public abstract class Enemy {
 	private double pixelSpeed;
 	private double bulletSpeed;
 	protected double x_pos, y_pos;
@@ -23,7 +21,7 @@ public class PlayerAITank implements Tank {
 	private boolean ride;
 	private int currentIconInd;
 
-	public PlayerAITank(int msInterval, int cellSize, SpriteEventController driver) {
+	public Enemy(int msInterval, int cellSize){
 		pixelSpeed = (12*cellSize*msInterval*2)/5000.0;// speed: 12 cells / 5000 ms;
 		if(pixelSpeed < 1.0)
 			pixelSpeed = 1;
@@ -41,34 +39,23 @@ public class PlayerAITank implements Tank {
 		icons = new HashMap<>();
 		currentIconInd = 0;
 		cell = new Cell();
-
-		tankDriver = driver;
-
-		setPos(12, 4);
 	}
 
-	public void setPosOnPlayer1(){
-		setPos(12, 4);
+	public int getXpos(){
+		return (int)Math.round(x_pos);
+	}
+	public int getYpos(){
+		return (int)Math.round(y_pos);
 	}
 
-	public void setPosOnPlayer2(){
-		setPos(12, 8);
-	}
-
-	public Bullet fireBullet(int msInterval, int cellSize, DamageClass damages){
-		int col = (int)Math.round(x_pos), row = (int)Math.round(y_pos);
-		Bullet bullet = new Bullet(msInterval, cellSize, currentDirection, col, row, damages);
-		bullet.assignToPlayer();
-		if(level > 1)
-			bullet.setDoubleSpeed();
-		bullet.setDestructivePower(level);
-
-		return bullet;
-	}
-
-	@Override
-	public Cell getCell() {
+	public Cell getCell(){
 		return cell;
+	}
+
+	public void setPos(int row, int col, int cellSize){
+		x_pos = (double)col*cellSize;
+		y_pos = (double)row*cellSize;
+		cell.setPos(col*cellSize, row*cellSize);
 	}
 
 	public void addIcons(KeyCode code, MapCell[] cells){
@@ -77,17 +64,6 @@ public class PlayerAITank implements Tank {
 		icons.put(code, cells);
 	}
 
-	@Override
-	public void setPos(double x, double y) {
-		int cellSize = MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
-		x_pos = x*cellSize;
-		y_pos = y*cellSize;
-		int col = (int) x, row = (int)y;
-		cell.setPos(col*cellSize, row*cellSize);
-	}
-
-
-	@Override
 	public void move(GameView view){
 		if(!ride)
 			return;
@@ -130,7 +106,6 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
-
 	public void turn(KeyCode newDirection, GameView view){
 		double xPosNew = x_pos, yPosNew = y_pos;
 		if(newDirection != currentDirection){
@@ -160,4 +135,7 @@ public class PlayerAITank implements Tank {
 	public void stop(){
 		ride = false;
 	}
+
+	public abstract Bullet fireBullet(int msInterval, int cellSize, DamageClass damages);
+
 }

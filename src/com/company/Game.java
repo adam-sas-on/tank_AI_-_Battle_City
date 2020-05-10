@@ -25,6 +25,7 @@ public class Game {
 	private static boolean pause;
 	private static DamageClass damages;
 
+	private static SpriteEventController player1driver, player2driver;
 	private static PlayerAITank player1;
 	private static PlayerAITank player2;
 
@@ -37,11 +38,13 @@ public class Game {
 		eventsSize1 = eventsSize2 = 0;
 		pause = false;
 
-		player1 = new PlayerAITank(20, tankCellSize);
-		player1.setPosOnPlayer1(tankCellSize);
+		setControllers();
 
-		player2 = new PlayerAITank(20, tankCellSize);
-		player2.setPosOnPlayer2(tankCellSize);
+		player1 = new PlayerAITank(20, tankCellSize, player1driver);
+		player1.setPosOnPlayer1();
+
+		player2 = new PlayerAITank(20, tankCellSize, player2driver);
+		player2.setPosOnPlayer2();
 		setPlayerIcons();
 
 		view.loadMapSetPlayers("map_2.txt", player1, player2);
@@ -49,6 +52,14 @@ public class Game {
 		view.addCell(player2.getCell());
 
 		damages = DamageClass.getInstance();
+	}
+
+	private void setControllers(){
+		player1driver = new SpriteEventController(KeyCode.UP, KeyCode.RIGHT, KeyCode.DOWN, KeyCode.LEFT,
+				KeyCode.N, KeyCode.COMMA, KeyCode.M, KeyCode.PERIOD);
+
+		player2driver = new SpriteEventController(KeyCode.W, KeyCode.D, KeyCode.S, KeyCode.A,
+				KeyCode.T, KeyCode.G, KeyCode.R, KeyCode.F);
 	}
 
 	private void setPlayerIcons(){
@@ -87,7 +98,7 @@ public class Game {
 		return scene;
 	}
 
-	public void driveTank(KeyEvent keyEvent){
+	public void listen(KeyEvent keyEvent){
 		KeyCode keyCode = keyEvent.getCode();
 		switch(keyCode){
 			case UP:

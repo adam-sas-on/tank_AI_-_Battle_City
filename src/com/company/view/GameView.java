@@ -1,6 +1,6 @@
 package com.company.view;
 
-import com.company.model.Tank;
+import com.company.model.PlayerAITank;
 import com.company.model.Bullet;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -265,7 +265,7 @@ public class GameView {
 		}
 	}
 
-	public void loadMapSetPlayers(String fileName, Tank player1, Tank player2){
+	public void loadMapSetPlayers(String fileName, PlayerAITank player1, PlayerAITank player2){
 		mapLoader.loadMap(cells[0], fileName, player1, player2, trees);
 	}
 

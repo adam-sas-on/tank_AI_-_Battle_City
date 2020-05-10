@@ -46,7 +46,7 @@ public class Main extends Application {
 	}
 
 	private void onKeyPressed(KeyEvent event){
-		game.driveTank(event);
+		game.listen(event);
 		event.consume();
 	}
 

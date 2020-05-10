@@ -1,6 +1,6 @@
 package com.company.view;
 
-import com.company.model.Tank;
+import com.company.model.PlayerAITank;
 
 import java.io.InputStream;
 import java.util.List;
@@ -26,7 +26,7 @@ public class MapLoader {
 			booleans[indexBg + 1] = false;
 	}
 
-	public void loadMap(Cell rootCell, String fileName, Tank player1, Tank player2, List<Integer> trees){
+	public void loadMap(Cell rootCell, String fileName, PlayerAITank player1, PlayerAITank player2, List<Integer> trees){
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
 		int cols = 0, rows = 0;
