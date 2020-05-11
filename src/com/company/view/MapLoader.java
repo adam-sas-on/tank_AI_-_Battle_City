@@ -2,7 +2,11 @@ package com.company.view;
 
 import com.company.model.PlayerAITank;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -11,7 +15,7 @@ public class MapLoader {
 	private int maxRows, maxCols;
 
 	private MapLoader(){
-		InputStream is = Cell.class.getResourceAsStream("/resources");
+		maxRows = maxCols = 0;
 	}
 
 	public static MapLoader getInstance(){
@@ -20,10 +24,38 @@ public class MapLoader {
 		return instance;
 	}
 
-	private void falseArrayIndexes(boolean[] booleans, int indexBg){
-		booleans[indexBg] = false;
-		if(indexBg < booleans.length - 1)
-			booleans[indexBg + 1] = false;
+	public void getFileList(List<String> mapFiles){
+		try {
+			InputStream is = MapLoader.class.getResourceAsStream("/resources/");
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			Scanner scan;
+			String resource;
+			boolean check;
+			int cols, rows;
+
+			while( (resource = br.readLine()) != null){
+				check = resource.regionMatches(true, 0, "map", 0, 3);
+				if(!check)
+					continue;
+
+				mapFiles.add(resource);
+				is = MapLoader.class.getResourceAsStream("/resources/" + resource);
+				scan = new Scanner(is);
+				cols = rows = 0;
+				if(scan.hasNextInt() )
+					cols = scan.nextInt();
+				if(scan.hasNextInt() )
+					rows = scan.nextInt();
+
+				if(cols > maxCols)
+					maxCols = cols;
+				if(rows > maxRows)
+					maxRows = rows;
+			}
+		} catch(IOException e){
+			System.out.println("MapLoader can not load files:  " + e);
+		}
+		Collections.sort(mapFiles);
 	}
 
 	public void loadMap(Cell rootCell, String fileName, PlayerAITank player1, PlayerAITank player2, List<Integer> trees){
@@ -43,7 +75,7 @@ public class MapLoader {
 
 		trees.clear();
 		Cell stepCell, rowCellBegin = rootCell;
-		int col, row, playerCol, playerRow;
+		int col, row;
 		String line;
 		for(row = freeCells.length - 1; row >= 0; row--)
 			freeCells[row] = true;
@@ -133,16 +165,12 @@ public class MapLoader {
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '1':
-						playerCol = stepCell.getCol();
-						playerRow = stepCell.getRow();
-						player1.getCell().setPos(playerCol, playerRow);
+						player1.setPos(col, row);
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '2':
-						playerCol = stepCell.getCol();
-						playerRow = stepCell.getRow();
-						player2.getCell().setPos(playerCol, playerRow);
+						player2.setPos(col, row);
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
