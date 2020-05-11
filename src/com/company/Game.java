@@ -1,16 +1,15 @@
 package com.company;
 
-import com.company.model.Bullet;
-import com.company.model.DamageClass;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
 import com.company.view.MapCell;
+import com.company.view.MapLoader;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -18,12 +17,12 @@ import java.util.concurrent.TimeUnit;
 public class Game {
 	private static GameView view;
 	private final ScheduledExecutorService runGame;
-	private static Queue<KeyCode> eventCodes1, eventCodes2;
-	private static int eventsSize1, eventsSize2;
 	private static final int msInterval = 20;
-	private static final int tankCellSize = MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
+	private static GameDynamics dynamics;
 	private static boolean pause;
-	private static DamageClass damages;
+
+	private static MapLoader mapLoader;
+	private List<String> maps;
 
 	private static SpriteEventController player1driver, player2driver;
 	private static PlayerAITank player1;
@@ -32,26 +31,29 @@ public class Game {
 	public Game(GameView view){
 		Game.view = view;
 		runGame = Executors.newSingleThreadScheduledExecutor();
-
-		eventCodes1 = new LinkedList<>();
-		eventCodes2 = new LinkedList<>();
-		eventsSize1 = eventsSize2 = 0;
+		dynamics = new GameDynamics(26, 26);
 		pause = false;
+
+		mapLoader = MapLoader.getInstance();
+		maps = new ArrayList<>();
+		mapLoader.getFileList(maps);
 
 		setControllers();
 
-		player1 = new PlayerAITank(20, tankCellSize, player1driver);
+		player1 = new PlayerAITank(20, player1driver);
 		player1.setPosOnPlayer1();
 
-		player2 = new PlayerAITank(20, tankCellSize, player2driver);
+		player2 = new PlayerAITank(20, player2driver);
 		player2.setPosOnPlayer2();
 		setPlayerIcons();
+		dynamics.setFirstPlayer(player1);
+		dynamics.setSecondPlayer(player2);
+
+		dynamics.loadMap(maps.get(2), mapLoader);
 
 		view.loadMapSetPlayers("map_2.txt", player1, player2);
 		view.addCell(player1.getCell());
 		view.addCell(player2.getCell());
-
-		damages = DamageClass.getInstance();
 	}
 
 	private void setControllers(){
@@ -99,7 +101,7 @@ public class Game {
 
 	public Scene start(){
 		Scene scene = view.drawStart();
-		view.drawMap();
+		//view.drawMap();
 
 		runGame.scheduleAtFixedRate(Game::run, 0, msInterval, TimeUnit.MILLISECONDS);
 
@@ -125,64 +127,14 @@ public class Game {
 
 	public static void run(){
 		boolean watch = false;
-		Bullet bullet;
-		KeyCode eventCode;
-		/*if(!eventCodes1.isEmpty() ){
-			eventCode = eventCodes1.poll();
-			eventsSize1--;
-
-			switch(eventCode){
-				case N:// shot;
-					bullet = player1.fireBullet(msInterval, tankCellSize, damages);
-					view.addBullet(bullet);
-					break;
-				case COMMA:// weak shot;
-					bullet = player1.fireBullet(msInterval, tankCellSize, damages);
-					bullet.makeWeak();
-					view.addBullet(bullet);
-					break;
-				case C:
-					pause = !pause;
-					break;
-			}
-
-			watch = true;
-			/ /view.drawMap();
-		}* /
-
-		/ *if(!eventCodes2.isEmpty() ){
-			eventCode = eventCodes2.poll();
-			eventsSize2--;
-
-			switch(eventCode){
-				case R:// shot;
-					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
-					view.addBullet(bullet);
-					break;
-				case Q:// weak shot;
-					bullet = player2.fireBullet(msInterval, tankCellSize, damages);
-					bullet.makeWeak();
-					view.addBullet(bullet);
-					break;
-			}
-			watch = true;
-		}*/
 
 		if(pause)
 			return;
 
-		player1.move(view);
-		bullet = player1.fireBullet(tankCellSize, damages);
-		if(bullet != null)
-			view.addBullet(bullet);
+		dynamics.nextStep(view);
 
-		player2.move(view);
-		bullet = player2.fireBullet(tankCellSize, damages);
-		if(bullet != null)
-			view.addBullet(bullet);
 		//if(watch)
-			view.drawMap();
-		// run sprites and AI;
+			view.drawMap(dynamics);
 	}
 
 	public void stop(){

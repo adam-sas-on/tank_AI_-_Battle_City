@@ -1,5 +1,6 @@
 package com.company.view;
 
+import com.company.GameDynamics;
 import com.company.model.PlayerAITank;
 import com.company.model.Bullet;
 import javafx.scene.Scene;
@@ -252,9 +253,10 @@ public class GameView {
 		while(iter.hasNext() ){
 			bullet = iter.next();
 			keepActive = bullet.move();
-			cell = bullet.getCell();
+			bullet.setUpCell(cell, sizePixels);
+			//cell = bullet.getCell();
 
-			cell.drawCell(gContext, tiles);
+			//cell.drawCell(gContext, tiles);
 			if(!keepActive)
 				iter.remove();
 
@@ -266,7 +268,7 @@ public class GameView {
 	}
 
 	public void loadMapSetPlayers(String fileName, PlayerAITank player1, PlayerAITank player2){
-		mapLoader.loadMap(cells[0], fileName, player1, player2, trees);
+		//mapLoader.loadMap(cells[0], fileName, player1, player2, trees);
 	}
 
 	public Scene drawStart(){
@@ -282,26 +284,20 @@ public class GameView {
 		return scene;
 	}
 
-	public void drawMap(){
+	public void drawMap(GameDynamics dynamics){
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-		int i;
-		for(i = rowColCells*rowColCells-1; i >= 0; i--) {
-			cells[i].drawCell(gContext, tiles);
-		}
+		dynamics.setCellSize(sizePixels);
 
-		for(Cell tank : tanks){
-			tank.drawCell(gContext, tiles);
-		}
+		Cell cell;
 
 		moveBullets();
 
-		int ind;
-		i = trees.size() - 1;
-		for(; i >= 0; i--){
-			ind = trees.get(i);
-			cells[ind].drawCell(gContext, tiles);
+		Iterator<Cell> iter = dynamics.iterator();
+		while(iter.hasNext() ){
+			cell = iter.next();
+			cell.drawCell(gContext, tiles);
 		}
 
 	}

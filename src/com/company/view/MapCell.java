@@ -150,6 +150,10 @@ public enum MapCell {
 	public int getSize(){
 		return width;
 	}
+	public int getUnitSize(){
+		return 16;
+	}
+
 	public boolean isAccessible(){
 		return accessible;
 	}
