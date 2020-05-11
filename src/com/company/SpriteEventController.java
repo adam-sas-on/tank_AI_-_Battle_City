@@ -9,7 +9,7 @@ public class SpriteEventController {
 	private final KeyCode continuousShooting, continuousPanzerShooting;
 	private int currentAngle, currentShotPower;
 	private int turningAngle;
-	private boolean keepShooting;
+	private boolean keepShooting, singleShoot;
 	private boolean isPlayer;
 	private final int upAngle = 90;
 
@@ -80,12 +80,14 @@ public class SpriteEventController {
 			currentAngle = turningAngle = 180;
 		else if(keyCode == moveDown)
 			currentAngle = turningAngle = 270;
-		else if(keyCode == singleShot) {
+		else if(keyCode == singleShot && !singleShoot){
 			currentShotPower = 1;
 			keepShooting = false;
-		} else if(keyCode == singlePanzerShot) {
+			singleShoot = true;
+		} else if(keyCode == singlePanzerShot && !singleShoot){
 			currentShotPower = 2;
 			keepShooting = false;
+			singleShoot = true;
 		} else if(keyCode == continuousShooting) {
 			currentShotPower = 1;
 			keepShooting = true;
@@ -104,7 +106,8 @@ public class SpriteEventController {
 		else if(keyCode == continuousShooting || keyCode == continuousPanzerShooting){
 			currentShotPower = 0;
 			keepShooting = false;
-		}
+		} else if(keyCode == singleShot || keyCode == singlePanzerShot)
+			singleShoot = false;
 	}
 
 	public void usePlayer(){
