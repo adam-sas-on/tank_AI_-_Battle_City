@@ -87,6 +87,8 @@ public class MapLoader {
 
 			for(col = 0; col < cols && stepCell != null; col++){
 				stepCell.setMapCell(null);
+				stepCell.resetMovement(col, row, cols, rows);
+
 				if(col >= line.length())
 					break;
 

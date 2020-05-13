@@ -2,6 +2,7 @@ package com.company.view;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 
 
 public class Cell {
@@ -9,8 +10,9 @@ public class Cell {
 	private int col;
 	private int row;
 	private int size;
-	private boolean destructible;
+	private boolean destructible, accessible;
 	private Cell upCell, rightCell, downCell, leftCell;
+	private boolean canMoveUp, canMoveRight, canMoveDown, canMoveLeft;
 	private int id;
 
 	public Cell(){
@@ -18,6 +20,7 @@ public class Cell {
 		mapCell = null;
 		destructible = false;
 		upCell = rightCell = downCell = leftCell = null;
+		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = false;
 		id = -1;
 	}
 
@@ -27,27 +30,6 @@ public class Cell {
 
 	public MapCell getMapCell(){
 		return mapCell;
-	}
-
-	public void setPos(int col, int row){
-		this.col = col;
-		this.row = row;
-	}
-
-	public void setMapCell(MapCell newCell) {
-		mapCell = newCell;
-		if (mapCell == null){
-			size = 0;
-			destructible = false;
-		} else {
-			size = mapCell.getSize();
-			destructible = mapCell.isDestructible();
-		}
-	}
-
-	public void setIndexId(int index){
-		if(index >= 0)
-			id = index;
 	}
 
 	public Cell getUpCell(){
@@ -78,10 +60,7 @@ public class Cell {
 	}
 
 	public boolean isAccessible(){
-		if(mapCell != null)
-			return mapCell.isAccessible();
-
-		return true;
+		return accessible;
 	}
 
 	public boolean isDestructible(){
@@ -89,6 +68,69 @@ public class Cell {
 			return true;
 		return destructible;
 	}
+
+	public boolean canMove(KeyCode direction){
+		switch(direction){
+			case UP:
+				return canMoveUp;
+			case RIGHT:
+				return canMoveRight;
+			case DOWN:
+				return canMoveDown;
+			case LEFT:
+				return canMoveLeft;
+			default:
+				return false;
+		}
+	}
+
+	public void resetMovement(final int col, final int row, final int maxCols, final int maxRows){
+		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = true;
+		Cell stepper = leftCell;
+		//* rounding down position case makes it is not necessary to set movement to upCell and leftCell;
+
+		stepper = rightCell;
+		if(stepper == null || col >= maxCols - 2)
+			canMoveRight = false;
+		else {
+			stepper = stepper.getRightCell();
+			if(stepper == null)
+				canMoveRight = false;
+		}
+
+		stepper = downCell;
+		if(stepper == null || row >= maxRows - 2)
+			canMoveDown = false;
+		else {
+			stepper = stepper.getRightCell();
+			if(stepper == null)
+				canMoveDown = false;
+		}
+	}
+
+	public void setPos(int col, int row){
+		this.col = col;
+		this.row = row;
+	}
+
+	public void setMapCell(MapCell newCell) {
+		mapCell = newCell;
+		if (mapCell == null){
+			size = 0;
+			destructible = false;
+			accessible = true;
+		} else {
+			size = mapCell.getSize();
+			destructible = mapCell.isDestructible();
+			accessible = mapCell.isAccessible();
+		}
+	}
+
+	public void setIndexId(int index){
+		if(index >= 0)
+			id = index;
+	}
+
 
 	public boolean collide(Cell cell){
 		int row2nd = cell.getRow(), col2nd = cell.getCol(),
