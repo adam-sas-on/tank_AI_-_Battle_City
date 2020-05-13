@@ -7,6 +7,7 @@ import javafx.scene.input.KeyCode;
 
 public class Cell {
 	private MapCell mapCell;
+	// unit coordinates on map for cell or local cell for movable cell; coordinates on screen when drawing;
 	private int col;
 	private int row;
 	private int size;
@@ -146,10 +147,11 @@ public class Cell {
 		leftCell = left;
 	}
 
-	public void drawCell(GraphicsContext context, Image tile){
+	public void drawCell(GraphicsContext context, Image tile, double zoomMultiplier){
 		if(mapCell == null)
 			return;
-		int size = mapCell.getSize();
-		context.drawImage(tile, mapCell.getRow(), mapCell.getCol(), size, size, col, row, size, size);
+		int mapCellSize = mapCell.getSize();
+		double zoomedSize = zoomMultiplier*mapCellSize;
+		context.drawImage(tile, mapCell.getRow(), mapCell.getCol(), mapCellSize, mapCellSize, col, row, zoomedSize, zoomedSize);
 	}
 }

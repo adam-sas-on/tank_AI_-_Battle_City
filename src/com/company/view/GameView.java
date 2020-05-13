@@ -24,6 +24,7 @@ public class GameView {
 	private int[] positions;
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels = 16;
+	private final int unitSize = MapCell.STEEL.getUnitSize();// any icon because unit size is the same for all;
 	List<Integer> trees;
 	List<Cell> tanks;
 	List<Bullet> bullets;
@@ -261,11 +262,12 @@ public class GameView {
 		dynamics.setCellSize(sizePixels);
 
 		Cell cell;
+		final double multiplier = ( (double)sizePixels)/unitSize;
 
 		Iterator<Cell> iter = dynamics.iterator();
 		while(iter.hasNext() ){
 			cell = iter.next();
-			cell.drawCell(gContext, tiles);
+			cell.drawCell(gContext, tiles, multiplier);
 		}
 
 	}
