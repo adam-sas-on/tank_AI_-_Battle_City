@@ -22,7 +22,6 @@ public class GameView {
 	private Canvas canvas;
 	private GraphicsContext gContext;
 	private static Image tiles;
-	private MapLoader mapLoader;
 	private Cell[] cells;
 	private int[] positions;
 	private final int rowColCells = 26;
@@ -38,7 +37,6 @@ public class GameView {
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
 
-		mapLoader = MapLoader.getInstance();
 
 		cells = new Cell[rowColCells*rowColCells];
 		positions = new int[rowColCells];
@@ -169,17 +167,6 @@ public class GameView {
 				return false;
 		}
 
-		/*Iterator<Cell> iter = tanks.iterator();
-		Cell sprite;
-
-		while(iter.hasNext() ){
-			sprite = iter.next();
-			if(sprite.equals(cell) )
-				continue;
-
-			if(cell.collide(sprite) )
-				return false;
-		}*/
 		return true;
 	}
 
@@ -238,38 +225,6 @@ public class GameView {
 		return accessible;
 	}
 
-	private void moveBullets(){
-		Cell cell;
-		int row, col, rowEnd, colEnd;
-
-		col = cells.length - 1;
-		cell = cells[col];
-		rowEnd = cell.getRow() + cell.getCellSize();
-		colEnd = cell.getCol() + cell.getCellSize();
-
-		Iterator<Bullet> iter = bullets.iterator();
-		Bullet bullet;
-		boolean keepActive;
-		while(iter.hasNext() ){
-			bullet = iter.next();
-			keepActive = bullet.move();
-			bullet.setUpCell(cell, sizePixels);
-			//cell = bullet.getCell();
-
-			//cell.drawCell(gContext, tiles);
-			if(!keepActive)
-				iter.remove();
-
-			row = cell.getRow();
-			col = cell.getCol();
-			if(row < 0 || col < 0 || row >= rowEnd || col >= colEnd)
-				bullet.setSmallExplode();
-		}
-	}
-
-	public void loadMapSetPlayers(String fileName, PlayerAITank player1, PlayerAITank player2){
-		//mapLoader.loadMap(cells[0], fileName, player1, player2, trees);
-	}
 
 	public Scene drawStart(){
 		GridPane gridPane = new GridPane();
@@ -291,8 +246,6 @@ public class GameView {
 		dynamics.setCellSize(sizePixels);
 
 		Cell cell;
-
-		moveBullets();
 
 		Iterator<Cell> iter = dynamics.iterator();
 		while(iter.hasNext() ){
