@@ -1,13 +1,11 @@
 package com.company.view;
 
 import com.company.GameDynamics;
-import com.company.model.PlayerAITank;
 import com.company.model.Bullet;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -24,22 +22,22 @@ public class GameView {
 	private static Image tiles;
 	private Cell[] cells;
 	private int[] positions;
-	private final int rowColCells = 26;
-	private final int sizePixels = 16;
+	private int rowCells = 26, colCells = 26;
+	private int sizePixels = 16;
 	List<Integer> trees;
 	List<Cell> tanks;
 	List<Bullet> bullets;
 
 	public GameView(){
-		canvas = new Canvas(rowColCells*sizePixels, rowColCells*sizePixels);
+		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
 
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
 
 
-		cells = new Cell[rowColCells*rowColCells];
-		positions = new int[rowColCells];
+		cells = new Cell[rowCells * rowCells];
+		positions = new int[rowCells];
 		setCellsStructure();
 
 		exampleCells();
@@ -49,10 +47,27 @@ public class GameView {
 	}
 
 	public int getRowColCells(){
-		return rowColCells;
+		return rowCells;
 	}
 	public int getSizePixels(){
 		return sizePixels;
+	}
+
+	public void setColsRows(int newCols, int newRows){
+		if(newCols > 1)
+			colCells = newCols;
+		if(newRows > 1)
+			rowCells = newRows;
+	}
+
+	public void modifyCellSize(int stageWidth, int stageHeight){
+		int widthSizePixels = stageWidth/colCells;
+		sizePixels = stageHeight/rowCells;
+		if(sizePixels > widthSizePixels)
+			sizePixels = widthSizePixels;
+
+		canvas.setWidth(colCells*sizePixels);
+		canvas.setHeight(rowCells*sizePixels);
 	}
 
 	private int binarySearchPos(int pos){
@@ -86,17 +101,17 @@ public class GameView {
 	}
 
 	private void setUpperRowCells(){
-		cells[0].linkNeighborCells(null, cells[1], cells[rowColCells], null);
+		cells[0].linkNeighborCells(null, cells[1], cells[rowCells], null);
 		cells[0].setPos(0, 0);
 
-		int i, rowLimit = rowColCells - 1;
+		int i, rowLimit = rowCells - 1;
 		for(i = 1; i < rowLimit; i++){
-			cells[i].linkNeighborCells(null, cells[i+1], cells[i+rowColCells], cells[i-1]);
+			cells[i].linkNeighborCells(null, cells[i+1], cells[i+ rowCells], cells[i-1]);
 			cells[i].setPos(i*sizePixels, 0);
 			positions[i] = i*sizePixels;
 		}
 
-		cells[i].linkNeighborCells(null, null, cells[i+rowColCells], cells[i-1]);
+		cells[i].linkNeighborCells(null, null, cells[i+ rowCells], cells[i-1]);
 		cells[i].setPos(i*sizePixels, 0);
 		positions[i] = i*sizePixels;
 	}
@@ -112,33 +127,33 @@ public class GameView {
 		setUpperRowCells();
 
 		int rowIndex, colIndex,
-				rowColLimit = rowColCells - 1;
+				rowColLimit = rowCells - 1;
 
-		i = rowColCells;
+		i = rowCells;
 		for(rowIndex = 1; rowIndex < rowColLimit; rowIndex++, i++){// loop through rows;
-			cells[i].linkNeighborCells(cells[i-rowColCells], cells[i+1], cells[i+rowColCells], null);// left side;
+			cells[i].linkNeighborCells(cells[i- rowCells], cells[i+1], cells[i+ rowCells], null);// left side;
 			cells[i].setPos(0, rowIndex*sizePixels);
 			positions[rowIndex] = rowIndex*sizePixels;
 
 			for(colIndex = 1, i++; colIndex < rowColLimit; colIndex++, i++){
-				cells[i].linkNeighborCells(cells[i-rowColCells], cells[i+1], cells[i+rowColCells], cells[i-1]);
+				cells[i].linkNeighborCells(cells[i- rowCells], cells[i+1], cells[i+ rowCells], cells[i-1]);
 				cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
 			}
 
-			cells[i].linkNeighborCells(cells[i-rowColCells], null, cells[i+rowColCells], cells[i-1]);// right side;
+			cells[i].linkNeighborCells(cells[i- rowCells], null, cells[i+ rowCells], cells[i-1]);// right side;
 			cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
 		}
 
-		cells[i].linkNeighborCells(cells[i-rowColCells], cells[i+1], null, null);
+		cells[i].linkNeighborCells(cells[i- rowCells], cells[i+1], null, null);
 		cells[i].setPos(0, rowIndex*sizePixels);
 		positions[rowIndex] = rowIndex*sizePixels;
 
 		for(colIndex = 1, i++; colIndex < rowColLimit; colIndex++, i++) {// connect lower row;
-			cells[i].linkNeighborCells(cells[i - rowColCells], cells[i + 1], null, cells[i - 1]);
+			cells[i].linkNeighborCells(cells[i - rowCells], cells[i + 1], null, cells[i - 1]);
 			cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
 		}
 
-		cells[i].linkNeighborCells(cells[i-rowColCells], null, null, cells[i-1]);
+		cells[i].linkNeighborCells(cells[i- rowCells], null, null, cells[i-1]);
 		cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
 	}
 
@@ -158,7 +173,7 @@ public class GameView {
 		tanks.add(cell);
 	}
 
-	private boolean cellNotCollideWithOthers(Cell cell){
+	/*private boolean cellNotCollideWithOthers(Cell cell){
 		for(Cell sprite : tanks){
 			if(sprite.equals(cell) )
 				continue;
@@ -223,7 +238,7 @@ public class GameView {
 			cell.setPos(col, row);
 
 		return accessible;
-	}
+	}*/
 
 
 	public Scene drawStart(){

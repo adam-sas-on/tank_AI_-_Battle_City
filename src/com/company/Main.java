@@ -4,6 +4,8 @@ import com.company.view.GameView;
 import javafx.application.Application;
 //import javafx.fxml.FXMLLoader;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -36,6 +38,8 @@ public class Main extends Application {
 			}
 		});
 
+		handleResize(primaryStage, view);
+
 		primaryStage.setTitle("Battle City - java");
 		primaryStage.show();
 	}
@@ -53,4 +57,21 @@ public class Main extends Application {
 	private void onKeyReleased(KeyEvent event){
 		game.stopTanks(event);
 	}
+
+	private void handleResize(Stage stage, GameView view){
+		stage.widthProperty().addListener(new ChangeListener<Number>(){
+			@Override
+			public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1){
+				view.modifyCellSize((int)stage.getWidth(), (int)stage.getHeight());
+			}
+		});
+
+		stage.heightProperty().addListener(new ChangeListener<Number>(){
+			@Override
+			public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1){
+				view.modifyCellSize((int)stage.getWidth(), (int)stage.getHeight());
+			}
+		});
+	}
+
 }
