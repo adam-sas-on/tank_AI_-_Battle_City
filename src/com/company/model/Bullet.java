@@ -8,13 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Bullet {
-	private double pixelSpeed;
-	private float xDirection, yDirection;
+	private int pixelSpeed;
+	private int xDirection, yDirection;
 
-	private double x_pos, y_pos;
-	private double leftColDiff, leftRowDiff;
-	private double rightColDiff, rightRowDiff;
-	private final double bulletSize;
+	private int x_pos, y_pos;
+	private int leftColDiff, leftRowDiff;
+	private int rightColDiff, rightRowDiff;
+	private final int bulletSize;
 
 	private boolean isPlayers;
 	private boolean canDestroySteel;
@@ -26,14 +26,13 @@ public class Bullet {
 	private Map<MapCell,MapCell> rightSideDestruction;
 	private Map<MapCell,MapCell> leftSideDestruction;
 
-	public Bullet(double bulletSpeed, double tankSize, KeyCode direction, double tankX, double tankY, DamageClass damages){
+	public Bullet(int bulletSpeed, int tankSize, KeyCode direction, int tankX, int tankY, DamageClass damages){
 		pixelSpeed = bulletSpeed;// speed: 6 cells / 1000 ms;
-		if(pixelSpeed < 1.5)
-			pixelSpeed = 1.5;
+
 		isPlayers = canDestroySteel = false;// most bullets;
-		xDirection = (float) 0.0;
-		yDirection = (float) 0.0;
-		bulletSize = MapCell.BULLET_UP.getSize() / ((double)MapCell.BULLET_UP.getUnitSize());
+		xDirection = 0;
+		yDirection = 0;
+		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 
 		cell = new Cell();
 		rightSideDestruction = new HashMap<>(14);
@@ -48,7 +47,7 @@ public class Bullet {
 		damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
 	}
 
-	private void setMapCellAndPosition(double tankSize, KeyCode direction, double tankX, double tankY){
+	private void setMapCellAndPosition(int tankSize, KeyCode direction, int tankX, int tankY){
 		x_pos = tankX;
 		y_pos = tankY;
 
@@ -57,31 +56,31 @@ public class Bullet {
 		switch(direction){
 			case UP:
 				bulletMapCell = MapCell.BULLET_UP;
-				yDirection = (float) -1.0;
-				x_pos += (tankSize - bulletSize)/2.0;
+				yDirection = -1;
+				x_pos += (tankSize - bulletSize)/2;
 
 				rightColDiff = bulletSize;
 				break;
 			case RIGHT:
 				bulletMapCell = MapCell.BULLET_RIGHT;
-				xDirection = (float) 1.0;
+				xDirection = 1;
 				x_pos += tankSize - bulletSize;
-				y_pos += (tankSize - bulletSize)/2.0;
+				y_pos += (tankSize - bulletSize)/2;
 
 				leftColDiff = bulletSize;
 				rightColDiff = rightRowDiff = bulletSize;
 				break;
 			case LEFT:
 				bulletMapCell = MapCell.BULLET_LEFT;
-				xDirection = (float) -1.0;
-				y_pos += (tankSize - bulletSize)/2.0;
+				xDirection = -1;
+				y_pos += (tankSize - bulletSize)/2;
 
 				leftRowDiff = bulletSize;
 				break;
 			default:
 				bulletMapCell = MapCell.BULLET_DOWN;
-				yDirection = (float) 1.0;
-				x_pos += (tankSize - bulletSize)/2.0;
+				yDirection = 1;
+				x_pos += (tankSize - bulletSize)/2;
 				y_pos += tankSize - bulletSize;
 
 				rightRowDiff = bulletSize;
@@ -90,14 +89,19 @@ public class Bullet {
 	}
 
 
-	public Cell getCell(){
+	/*public Cell getCell(){
 		return cell;
+	}*/
+
+	public void setUpCell(Cell cell, int cellUnitSize, final int cellPrecisionSize){
+		cell.setMapCell(bulletMapCell);
+		cell.setPos(x_pos, y_pos);
+		cell.roundPos(cellPrecisionSize, cellUnitSize);
 	}
 
-	public void setUpCell(Cell cell, int cellUnitSize){
-		cell.setMapCell(bulletMapCell);
-		int col = (int) Math.round(x_pos*cellUnitSize), row = (int) Math.round(y_pos*cellUnitSize);
-		cell.setPos(col, row);
+	public void getBulletPos(int[] colRowPos){
+		colRowPos[0] = x_pos;
+		colRowPos[1] = y_pos;
 	}
 
 	/**
@@ -116,8 +120,8 @@ public class Bullet {
 	public void getLeftCornerPos(int[] colRowPos){
 		int cellSize = bulletMapCell.getUnitSize();
 		try {
-			colRowPos[0] = (int) ( (x_pos + leftColDiff)*cellSize);
-			colRowPos[1] = (int) ( (y_pos + leftRowDiff)*cellSize);
+			colRowPos[0] = (x_pos + leftColDiff)*cellSize;
+			colRowPos[1] = (y_pos + leftRowDiff)*cellSize;
 		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
@@ -137,8 +141,8 @@ public class Bullet {
 	public void getRightCornerPos(int[] colRowPos){
 		int cellSize = bulletMapCell.getUnitSize();
 		try {
-			colRowPos[0] = (int) ( (x_pos + rightColDiff)*cellSize);
-			colRowPos[1] = (int) ( (y_pos + rightRowDiff)*cellSize);
+			colRowPos[0] = (x_pos + rightColDiff)*cellSize;
+			colRowPos[1] = (y_pos + rightRowDiff)*cellSize;
 		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
@@ -177,8 +181,7 @@ public class Bullet {
 		y_pos += pixelSpeed* yDirection;
 		x_pos += pixelSpeed* xDirection;
 
-		int col = (int)Math.round(x_pos), row = (int)Math.round(y_pos);
-		cell.setPos(col, row);
+		cell.setPos(x_pos, y_pos);
 		return true;
 	}
 
@@ -195,9 +198,10 @@ public class Bullet {
 	public void setSmallExplode(){
 		if(explodeIndex < 0) {
 			explodeIndex = 0;
-			explodes = new MapCell[]{MapCell.EXPLODE_1};
-			double explodeSize = MapCell.EXPLODE_1.getSize()/((double)bulletMapCell.getUnitSize() ), posDiff;
-			posDiff = (explodeSize - bulletSize)/2.0;
+			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_1};
+			bulletMapCell = MapCell.EXPLODE_1;
+			int explodeSize = (MapCell.EXPLODE_1.getSize()*bulletSize)/(bulletMapCell.getUnitSize() ), posDiff;
+			posDiff = explodeSize - bulletSize;
 			x_pos -= posDiff;
 			y_pos -= posDiff;
 		}
