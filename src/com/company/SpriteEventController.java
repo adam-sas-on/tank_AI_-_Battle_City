@@ -50,7 +50,11 @@ public class SpriteEventController {
 	}
 
 	public KeyCode getKeyCode(){
-		switch(turningAngle){
+		return getKeyCode(turningAngle);
+	}
+
+	public KeyCode getKeyCode(int directionAngle){
+		switch(directionAngle){
 			case 0:
 				return KeyCode.RIGHT;
 			case upAngle:
