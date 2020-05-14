@@ -85,6 +85,52 @@ public class Cell {
 		}
 	}
 
+	public int checkModifyRow(KeyCode direction, int rowToCheck){
+		int modifiedRow = rowToCheck;
+		switch(direction){
+			case UP:
+				if(!canMoveUp || !accessible)
+					modifiedRow = downCell.getRow();
+				break;
+			case RIGHT:
+				if(!canMoveRight || !accessible)
+					modifiedRow = row;
+				break;
+			case DOWN:
+				if(!canMoveDown || !accessible)
+					modifiedRow = row;
+				break;
+			case LEFT:
+				if(!canMoveLeft || !accessible)
+					modifiedRow = rightCell.getRow();
+				break;
+		}
+		return modifiedRow;
+	}
+
+	public int checkModifyCol(KeyCode direction, int colToCheck){
+		int modifiedCol = colToCheck;
+		switch(direction){
+			case UP:
+				if(!canMoveUp || !accessible)
+					modifiedCol = downCell.getCol();
+				break;
+			case RIGHT:
+				if(!canMoveRight || !accessible)
+					modifiedCol = col;
+				break;
+			case DOWN:
+				if(!canMoveDown || !accessible)
+					modifiedCol = col;
+				break;
+			case LEFT:
+				if(!canMoveLeft || !accessible)
+					modifiedCol = rightCell.getCol();
+				break;
+		}
+		return modifiedCol;
+	}
+
 	public void roundPos(final int oldUnitSize, final int newUnitSize){
 		col = (col*newUnitSize)/oldUnitSize;// round down (floor);
 		row = (row*newUnitSize)/oldUnitSize;
@@ -152,7 +198,9 @@ public class Cell {
 				sideMapCell2 = rightCell.getMapCell();
 		}
 
-		if(upCell != null){
+		if(upCell != null){// can move from UP;
+			upCell.blockMoveToDown(mapCell, sideMapCell2);
+
 			cellToSet = upCell.getUpCell();
 			cellToSet2 = null;
 			if(cellToSet != null){// up-up cell exists;
@@ -164,13 +212,8 @@ public class Cell {
 				cellToSet2.blockMoveToDown(sideMapCell1, mapCell);
 		}
 
-		if(downCell != null){
-			cellToSet = downCell;
-			cellToSet2 = downCell.getLeftCell();
-			if(cellToSet.getRightCell() != null)// down cell has right neighbour;
-				cellToSet.blockMoveToUp(mapCell, sideMapCell2);
-			if(cellToSet2 != null)
-				cellToSet2.blockMoveToUp(sideMapCell1, mapCell);
+		if(downCell != null && leftCell != null){// can move from down
+			leftCell.blockMoveToUp(sideMapCell1, mapCell);
 		}
 
 		// - - - horizontal;
@@ -182,7 +225,7 @@ public class Cell {
 				sideMapCell2 = downCell.getMapCell();
 		}
 
-		if(leftCell != null){
+		if(leftCell != null){// can move from left?
 			cellToSet = leftCell.getLeftCell();
 			cellToSet2 = null;
 			if(cellToSet != null){// left-left cell exists;
@@ -194,13 +237,8 @@ public class Cell {
 				cellToSet2.blockMoveToRight(sideMapCell1, mapCell);
 		}
 
-		if(rightCell != null){
-			cellToSet = rightCell;
-			cellToSet2 = rightCell.getUpCell();
-			if(cellToSet.getDownCell() != null)
-				cellToSet.blockMoveToLeft(mapCell, sideMapCell2);
-			if(cellToSet2 != null)
-				cellToSet2.blockMoveToLeft(sideMapCell1, mapCell);
+		if(rightCell != null && upCell != null){// can move from right;
+			upCell.blockMoveToLeft(sideMapCell1, mapCell);
 		}
 	}
 	/* Above without assertions:

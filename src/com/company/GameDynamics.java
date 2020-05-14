@@ -211,7 +211,7 @@ public class GameDynamics implements Iterable<Cell> {
 			}
 
 			bullets[i].getBulletPos(xyPos);
-			if(xyPos[0] <= 0 || xyPos[1] <= 0 || xyPos[0] >= colLimit || xyPos[1] >= rowCells*cellPrecisionUnitSize){
+			if(xyPos[0] <= 0 || xyPos[1] <= 0 || xyPos[0] >= colLimit || xyPos[1] >= (rowCells-1)*cellPrecisionUnitSize){
 				bullets[i].setSmallExplode();
 			}
 
@@ -225,9 +225,8 @@ public class GameDynamics implements Iterable<Cell> {
 		Bullet bullet;
 		Cell checkCell;
 
-		player1.getPos(xyPos);
-		checkCell = cellByPosition(xyPos[0], xyPos[1]);
 		moved = player1.move(xyPos);
+		checkCell = cellByPosition(xyPos[0], xyPos[1]);
 		if(moved){
 			player1.blockMovement(checkCell, xyPos[0], xyPos[1]);
 		}
@@ -237,9 +236,8 @@ public class GameDynamics implements Iterable<Cell> {
 			addBullet(bullet);
 
 
-		player2.getPos(xyPos);
-		checkCell = cellByPosition(xyPos[0], xyPos[1]);
 		moved = player2.move(xyPos);
+		checkCell = cellByPosition(xyPos[0], xyPos[1]);
 		if(moved)
 			player2.blockMovement(checkCell, xyPos[0], xyPos[1]);
 

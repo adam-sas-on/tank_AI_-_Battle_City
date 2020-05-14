@@ -114,12 +114,14 @@ public class PlayerAITank implements Tank {
 			return false;
 
 		KeyCode directionCode = tankDriver.getKeyCode(currentDirection);
-		canKeepMoving = cell.canMove(directionCode);
+		x_pos = cell.checkModifyCol(directionCode, x);
+		y_pos = cell.checkModifyRow(directionCode, y);
+		//canKeepMoving = cell.canMove(directionCode);
 
-		if(canKeepMoving){
+		/*if(canKeepMoving){
 			x_pos = x;
 			y_pos = y;
-		}
+		}*/
 
 		return canKeepMoving;
 	}
@@ -138,6 +140,8 @@ public class PlayerAITank implements Tank {
 		if(newDirection != currentDirection){
 			xPosNew = roundInRange(x_pos, cellPrecisionSize);
 			yPosNew = roundInRange(y_pos, cellPrecisionSize);
+			x_pos = xPosNew;
+			y_pos = yPosNew;
 
 			currentIcons = icons.get(newDirection);
 			currentDirection = newDirection;
