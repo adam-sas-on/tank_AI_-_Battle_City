@@ -85,6 +85,11 @@ public class Cell {
 		}
 	}
 
+	public void roundPos(final int oldUnitSize, final int newUnitSize){
+		col = (col*newUnitSize)/oldUnitSize;// round down (floor);
+		row = (row*newUnitSize)/oldUnitSize;
+	}
+
 	public void resetMovement(final int col, final int row, final int maxCols, final int maxRows){
 		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = true;
 		Cell stepper = leftCell;
@@ -108,6 +113,102 @@ public class Cell {
 				canMoveDown = false;
 		}
 	}
+
+	public void blockMoveToUp(MapCell mapCell1, MapCell mapCell2){
+		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
+				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
+		canMoveUp = accessible1 && accessible2;
+	}
+
+	public void blockMoveToRight(MapCell mapCell1, MapCell mapCell2){
+		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
+				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
+		canMoveRight = accessible1 && accessible2;
+	}
+
+	public void blockMoveToDown(MapCell mapCell1, MapCell mapCell2){
+		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
+				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
+		canMoveDown = accessible1 && accessible2;
+	}
+
+	public void blockMoveToLeft(MapCell mapCell1, MapCell mapCell2){
+		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
+				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
+		canMoveLeft = accessible1 && accessible2;
+	}
+
+	public void blockMovementsAround(){
+		if(accessible)
+			return;
+
+		MapCell sideMapCell1 = null, sideMapCell2 = null;
+		Cell cellToSet, cellToSet2;
+		// - - - vertical;
+		if(upCell != null || downCell != null){
+			if(leftCell != null)
+				sideMapCell1 = leftCell.getMapCell();
+			if(rightCell != null)
+				sideMapCell2 = rightCell.getMapCell();
+		}
+
+		if(upCell != null){
+			cellToSet = upCell.getUpCell();
+			cellToSet2 = null;
+			if(cellToSet != null){// up-up cell exists;
+				cellToSet2 = cellToSet.getLeftCell();
+				if(cellToSet.getRightCell() != null)// up-up cell has right neighbour;
+					cellToSet.blockMoveToDown(mapCell, sideMapCell2);
+			}
+			if(cellToSet2 != null)
+				cellToSet2.blockMoveToDown(sideMapCell1, mapCell);
+		}
+
+		if(downCell != null){
+			cellToSet = downCell;
+			cellToSet2 = downCell.getLeftCell();
+			if(cellToSet.getRightCell() != null)// down cell has right neighbour;
+				cellToSet.blockMoveToUp(mapCell, sideMapCell2);
+			if(cellToSet2 != null)
+				cellToSet2.blockMoveToUp(sideMapCell1, mapCell);
+		}
+
+		// - - - horizontal;
+		sideMapCell1 = sideMapCell2 = null;
+		if(leftCell != null || rightCell != null){
+			if(upCell != null)
+				sideMapCell1 = upCell.getMapCell();
+			if(downCell != null)
+				sideMapCell2 = downCell.getMapCell();
+		}
+
+		if(leftCell != null){
+			cellToSet = leftCell.getLeftCell();
+			cellToSet2 = null;
+			if(cellToSet != null){// left-left cell exists;
+				cellToSet2 = cellToSet.getUpCell();
+				if(cellToSet.getDownCell() != null)// left-left cell has down neighbour;
+					cellToSet.blockMoveToRight(mapCell, sideMapCell2);
+			}
+			if(cellToSet2 != null)
+				cellToSet2.blockMoveToRight(sideMapCell1, mapCell);
+		}
+
+		if(rightCell != null){
+			cellToSet = rightCell;
+			cellToSet2 = rightCell.getUpCell();
+			if(cellToSet.getDownCell() != null)
+				cellToSet.blockMoveToLeft(mapCell, sideMapCell2);
+			if(cellToSet2 != null)
+				cellToSet2.blockMoveToLeft(sideMapCell1, mapCell);
+		}
+	}
+	/* Above without assertions:
+		cellToSet = rightCell.getUpCell();
+		cellToSet.blockMoveToLeft(sideMapCell1, mapCell);
+		cellToSet = rightCell;
+		cellToSet.blockMoveToLeft(mapCell, sideMapCell2);
+	*/
 
 	public void setPos(int col, int row){
 		this.col = col;

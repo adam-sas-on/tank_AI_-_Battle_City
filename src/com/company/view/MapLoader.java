@@ -58,7 +58,9 @@ public class MapLoader {
 		Collections.sort(mapFiles);
 	}
 
-	public void loadMap(Cell rootCell, String fileName, PlayerAITank player1, PlayerAITank player2, List<Integer> trees){
+	public void loadMap(Cell rootCell, String fileName,
+						PlayerAITank player1, PlayerAITank player2,
+						List<Integer> trees, GameView view){
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
 		int cols = 0, rows = 0;
@@ -67,6 +69,7 @@ public class MapLoader {
 		if(scan.hasNextInt() )
 			rows = scan.nextInt();
 
+		view.setColsRows(cols, rows);
 
 		boolean[] freeCells = new boolean[(cols + 1)*2];
 		int futureRowIndex = cols + 1, currentRowIndex = 0;
@@ -104,46 +107,60 @@ public class MapLoader {
 				switch(line.charAt(col)){
 					case '#':
 						stepCell.setMapCell(MapCell.STEEL);
+						stepCell.blockMovementsAround();
 						break;
 					case 'B':
 						stepCell.setMapCell(MapCell.BRICK);
+						stepCell.blockMovementsAround();
 						break;
 					case '/':
 						stepCell.setMapCell(MapCell.BRICK_L_UP_LEFT);
+						stepCell.blockMovementsAround();
 						break;
 					case '\\':
 						stepCell.setMapCell(MapCell.BRICK_L_UP_RIGHT);
+						stepCell.blockMovementsAround();
 						break;
 					case '>':
 						stepCell.setMapCell(MapCell.BRICK_L_DOWN_RIGHT);
+						stepCell.blockMovementsAround();
 						break;
 					case 'L':
 						stepCell.setMapCell(MapCell.BRICK_L_DOWN_LEFT);
+						stepCell.blockMovementsAround();
 						break;
 					case '[':
 						stepCell.setMapCell(MapCell.BRICK_I_LEFT);
+						stepCell.blockMovementsAround();
 						break;
 					case '_':
 						stepCell.setMapCell(MapCell.BRICK_I_DOWN);
+						stepCell.blockMovementsAround();
 						break;
 					case '|':
 					case ']':
 						stepCell.setMapCell(MapCell.BRICK_I_RIGHT);
+						stepCell.blockMovementsAround();
 						break;
 					case '"':
 						stepCell.setMapCell(MapCell.BRICK_I_UP);
+						stepCell.blockMovementsAround();
 						break;
 					case '`':
 						stepCell.setMapCell(MapCell.BRICK_UP_LEFT);
+						stepCell.blockMovementsAround();
 						break;
 					case '\'':
 						stepCell.setMapCell(MapCell.BRICK_UP_RIGHT);
+						stepCell.blockMovementsAround();
 						break;
 					case '*':
 						stepCell.setMapCell(MapCell.BRICK_DOWN_RIGHT);
+						stepCell.blockMovementsAround();
 						break;
 					case ',':
 						stepCell.setMapCell(MapCell.BRICK_DOWN_LEFT);
+						stepCell.blockMovementsAround();
 						break;
 					case 'I':
 						stepCell.setMapCell(MapCell.ICE);
@@ -158,21 +175,23 @@ public class MapLoader {
 						break;
 					case 'W':
 						stepCell.setMapCell(MapCell.WATER);
+						stepCell.blockMovementsAround();
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case 'E':
 						stepCell.setMapCell(MapCell.EAGLE);
+						stepCell.blockMovementsAround();
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '1':
-						player1.setPos(col, row);
+						player1.setPos(stepCell.getCol(), stepCell.getRow() );
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '2':
-						player2.setPos(col, row);
+						player2.setPos(stepCell.getCol(), stepCell.getRow() );
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
@@ -187,4 +206,11 @@ public class MapLoader {
 		}
 	}
 
+	public int getMaxRows(){
+		return maxRows;
+	}
+
+	public int getMaxCols(){
+		return maxCols;
+	}
 }
