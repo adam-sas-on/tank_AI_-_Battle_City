@@ -6,6 +6,7 @@ import com.company.model.PlayerAITank;
 import com.company.model.Enemy;
 import com.company.view.Cell;
 import com.company.view.GameView;
+import com.company.view.MapCell;
 import com.company.view.MapLoader;
 
 import java.util.ArrayList;
@@ -26,15 +27,18 @@ public class GameDynamics implements Iterable<Cell> {
 	private int rowCells;
 	private int colCells;
 	private final int maxCols;
-	private int cellUnitSize;
-	private double[] xyPos = new double[2];
+	private final int cellPrecisionUnitSize;
+	private int[] xyPos = new int[2];
 	private List<Integer> treesIds;
+	private int cellUnitSize;
 	private Cell iterCell;
 
 
-	public GameDynamics(int maxCols, int maxRows){
+	public GameDynamics(int maxCols, int maxRows, int cellUnitSize){
 		rowCells = colCells = 26;// default Battle City map size;
 		this.maxCols = maxCols;
+
+		cellPrecisionUnitSize = Math.max(MapCell.BRICK.getUnitSize(), cellUnitSize);
 
 		tanks = new LinkedList<>();
 		treesIds = new ArrayList<>();
@@ -55,11 +59,11 @@ public class GameDynamics implements Iterable<Cell> {
 		int i, rowLimit = maxCols - 1;
 		for(i = 1; i < rowLimit; i++){
 			cells[i].linkNeighborCells(null, cells[i+1], cells[i+maxCols], cells[i-1]);
-			cells[i].setPos(i, 0);
+			cells[i].setPos(i*cellPrecisionUnitSize, 0);
 		}
 
 		cells[i].linkNeighborCells(null, null, cells[i+maxCols], cells[i-1]);
-		cells[i].setPos(i, 0);
+		cells[i].setPos(i*cellPrecisionUnitSize, 0);
 	}
 
 	private void setCellsStructure(int maxCols, int maxRows){
@@ -79,30 +83,38 @@ public class GameDynamics implements Iterable<Cell> {
 		i = maxCols;
 		for(rowIndex = 1; rowIndex < rowLimit; rowIndex++, i++){// loop through rows;
 			cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1],  cells[i + maxCols], null);
-			cells[i].setPos(0, rowIndex);
+			cells[i].setPos(0, rowIndex*cellPrecisionUnitSize);
 
 			for(colIndex = 1, i++; colIndex < colLimit; colIndex++, i++){// loop through cols;
 				cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1],  cells[i + maxCols],  cells[i - 1]);
-				cells[i].setPos(colIndex, rowIndex);
+				cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
 			}
 
 			cells[i].linkNeighborCells(cells[i - maxCols],  null,  cells[i + maxCols],  cells[i - 1]);
-			cells[i].setPos(colIndex, rowIndex);
+			cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
 		}
 
 		// last row;
 		cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1],  null, null);
-		cells[i].setPos(0, rowIndex);
+		cells[i].setPos(0, rowIndex*cellPrecisionUnitSize);
 
 		for(colIndex = 1, i++; colIndex < colLimit; colIndex++, i++){// connect lowest row;
 			cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1], null, cells[i - 1]);
-			cells[i].setPos(colIndex, rowIndex);
+			cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
 		}
 
 		cells[i].linkNeighborCells(cells[i - maxCols], null, null, cells[i - 1]);
-		cells[i].setPos(colIndex, rowIndex);
+		cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
 	}
 
+	private Cell cellByPosition(int newCol, int newRow){
+		int col = newCol/cellPrecisionUnitSize, row = newRow/cellPrecisionUnitSize;
+		if(col < 0 || row < 0 || row >= rowCells || col >= colCells)
+			return null;
+
+		int cellIndex = row*maxCols + col;
+		return cells[cellIndex];
+	}
 
 	private boolean isPosAccessible(double newCol, double newRow){
 		int col = (int) Math.floor(newCol), row = (int) Math.floor(newRow);
@@ -150,11 +162,11 @@ public class GameDynamics implements Iterable<Cell> {
 		cell.setPos(col, row);
 	}
 
-	public void loadMap(String mapFileName, MapLoader mapLoader){
+	public void loadMap(String mapFileName, MapLoader mapLoader, GameView view){
 		if(player1 == null || player2 == null)
 			throw new NullPointerException("Can not load map: players are not set");
 
-		mapLoader.loadMap(cells[0], mapFileName, player1, player2, treesIds);
+		mapLoader.loadMap(cells[0], mapFileName, player1, player2, treesIds, view);
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
@@ -187,17 +199,12 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 
-	public void nextStep(GameView view){
-		Bullet bullet;
-		player1.move(view);
-		bullet = player1.fireBullet(damages);
-		if(bullet != null)
-			addBullet(bullet);
+	public void nextStep(){
 
-		player2.move(view);
+		/*player2.move(view);
 		bullet = player2.fireBullet(damages);
 		if(bullet != null)
-			addBullet(bullet);
+			addBullet(bullet);*/
 	}
 
 
@@ -210,7 +217,7 @@ public class GameDynamics implements Iterable<Cell> {
 	@Override
 	public Iterator<Cell> iterator(){
 		Iterator<Cell> iter = new Iterator<>() {
-			private boolean iterateEnvironment = true, tanksIterated = false, bulletsIterated = false;
+			private boolean iterateEnvironment = true, tanksIterated = false, bulletsIterated = bulletsCount < 1;
 			private boolean player1NotIterated = true, player2NotIterated = player2 != null;
 			private int iterateIndex = 0;
 			private Iterator<Enemy> tankIter = tanks.iterator();
@@ -225,9 +232,10 @@ public class GameDynamics implements Iterable<Cell> {
 			public Cell next(){
 				Cell cell;
 				if(iterateEnvironment){
-					int index = iterateIndex/colCells*(maxCols - colCells) + iterateIndex;// index + remaining cols;
+					int index = iterateIndex/colCells*(maxCols - colCells) + iterateIndex, newCol;// index + remaining cols;
 					cell = cells[index];
-					iterCell.setPos(cell.getCol()*cellUnitSize, cell.getRow()*cellUnitSize);
+					newCol = (cell.getCol()*cellUnitSize)/cellPrecisionUnitSize;
+					iterCell.setPos(newCol, (cell.getRow()*cellUnitSize)/cellPrecisionUnitSize);
 					iterCell.setMapCell(cell.getMapCell());
 
 					iterateIndex++;
@@ -240,7 +248,7 @@ public class GameDynamics implements Iterable<Cell> {
 						player1.setUpCell(iterCell, cellUnitSize);
 						player1NotIterated = false;
 					} else if(player2NotIterated){
-						player1.setUpCell(iterCell, cellUnitSize);
+						player2.setUpCell(iterCell, cellUnitSize);
 						player2NotIterated = false;
 					} else if(tankIter.hasNext() ){
 						cell = tankIter.next().getCell();
@@ -254,10 +262,12 @@ public class GameDynamics implements Iterable<Cell> {
 						iterateIndex = 0;
 					}
 				} else {
-					int treeInd = treesIds.get(iterateIndex);
+					int treeInd = treesIds.get(iterateIndex), newCol;
 					iterateIndex++;
 					cell = cells[treeInd];// be sure this is properly implemented;
-					iterCell.setPos(cell.getCol()*cellUnitSize, cell.getRow()*cellUnitSize);
+					newCol = (cell.getCol()*cellUnitSize)/cellPrecisionUnitSize;
+					iterCell.setPos(newCol, (cell.getRow()*cellUnitSize)/cellPrecisionUnitSize);
+					iterCell.setMapCell(cell.getMapCell() );
 				}
 				return iterCell;
 			}
