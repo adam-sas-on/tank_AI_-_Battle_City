@@ -23,12 +23,12 @@ public class PlayerAITank implements Tank {
 	private int bulletSteps;
 	private final int nextBulletSteps;
 	private final int size;
-	private final int cellUnitSize;
+	private final int cellPrecisionSize;
 
 	public PlayerAITank(SpriteEventController driver, int msInterval, int cellUnitSize) {
 		tankDriver = driver;
 
-		this.cellUnitSize = cellUnitSize;
+		cellPrecisionSize = cellUnitSize;
 		size = (cellUnitSize*MapCell.TANK_1_LVL_1_STATE_1_UP.getSize())/(MapCell.TANK_1_LVL_1_STATE_1_UP.getUnitSize() );
 		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 cells / 5000 ms;
 
@@ -53,12 +53,11 @@ public class PlayerAITank implements Tank {
 	}
 
 	public void setPosOnPlayer1(){
-		setPos(4*cellUnitSize, 12*cellUnitSize);
-		System.out.println(4*cellUnitSize + "; " + 12*cellUnitSize);
+		setPos(4* cellPrecisionSize, 12* cellPrecisionSize);
 	}
 
 	public void setPosOnPlayer2(){
-		setPos(8*cellUnitSize, 12*cellUnitSize);
+		setPos(8* cellPrecisionSize, 12* cellPrecisionSize);
 	}
 
 	public Bullet fireBullet(DamageClass damages){
@@ -90,10 +89,10 @@ public class PlayerAITank implements Tank {
 	}
 
 	@Override
-	public void setUpCell(Cell cell, int cellUnitNewSize) {
+	public void setUpCell(Cell cell, int newCellUnitSize) {
 		cell.setMapCell(currentIcons[currentIconInd]);
 		cell.setPos(x_pos, y_pos);
-		cell.roundPos(cellUnitSize, cellUnitNewSize);
+		cell.roundPos(cellPrecisionSize, newCellUnitSize);
 	}
 
 	public void addIcons(int direction, MapCell[] cells){
@@ -137,8 +136,8 @@ public class PlayerAITank implements Tank {
 		KeyCode directionCode = tankDriver.getKeyCode();
 
 		if(newDirection != currentDirection){
-			xPosNew = roundInRange(x_pos, cellUnitSize);
-			yPosNew = roundInRange(y_pos, cellUnitSize);
+			xPosNew = roundInRange(x_pos, cellPrecisionSize);
+			yPosNew = roundInRange(y_pos, cellPrecisionSize);
 
 			currentIcons = icons.get(newDirection);
 			currentDirection = newDirection;
