@@ -198,13 +198,56 @@ public class GameDynamics implements Iterable<Cell> {
 		bulletsCount--;
 	}
 
+	private void moveBullets(){
+		boolean keepMoving;
+
+		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
+		int i = 0;
+		while(i < bulletsCount){
+			keepMoving = bullets[i].move();
+			if(!keepMoving) {
+				removeBullet(i);
+				continue;
+			}
+
+			bullets[i].getBulletPos(xyPos);
+			if(xyPos[0] <= 0 || xyPos[1] <= 0 || xyPos[0] >= colLimit || xyPos[1] >= rowCells*cellPrecisionUnitSize){
+				bullets[i].setSmallExplode();
+			}
+
+			i++;
+		}
+
+	}
 
 	public void nextStep(){
+		boolean moved;
+		Bullet bullet;
+		Cell checkCell;
 
-		/*player2.move(view);
+		player1.getPos(xyPos);
+		checkCell = cellByPosition(xyPos[0], xyPos[1]);
+		moved = player1.move(xyPos);
+		if(moved){
+			player1.blockMovement(checkCell, xyPos[0], xyPos[1]);
+		}
+
+		bullet = player1.fireBullet(damages);
+		if(bullet != null)
+			addBullet(bullet);
+
+
+		player2.getPos(xyPos);
+		checkCell = cellByPosition(xyPos[0], xyPos[1]);
+		moved = player2.move(xyPos);
+		if(moved)
+			player2.blockMovement(checkCell, xyPos[0], xyPos[1]);
+
 		bullet = player2.fireBullet(damages);
 		if(bullet != null)
-			addBullet(bullet);*/
+			addBullet(bullet);
+
+		moveBullets();
 	}
 
 
@@ -256,7 +299,7 @@ public class GameDynamics implements Iterable<Cell> {
 						tanksIterated = true;
 					}
 				} else if(!bulletsIterated){
-					bullets[iterateIndex++].setUpCell(iterCell, cellUnitSize);
+					bullets[iterateIndex++].setUpCell(iterCell, cellUnitSize, cellPrecisionUnitSize);
 					if(iterateIndex >= bulletsCount){
 						bulletsIterated = true;
 						iterateIndex = 0;
