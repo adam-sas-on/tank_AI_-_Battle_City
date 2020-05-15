@@ -136,6 +136,43 @@ public class Cell {
 		row = (row*newUnitSize)/oldUnitSize;
 	}
 
+	private boolean inaccessibleAndBigger(Cell cell, final int basicSize){
+		int mapCellSize = cell.getMapCell().getSize();
+		return mapCellSize > basicSize && !cell.isAccessible();
+	}
+
+	/**
+	 * Checks all cells up-left around;
+	 * @return true is any of cells around is not accessible
+	 */
+	private boolean isOnBiggerBlockingCell(){
+		int basicCellSize = MapCell.BRICK.getUnitSize();
+		Cell checkCell;
+		MapCell checkedMapCell;
+		boolean isBlocking = false;
+
+		checkCell = upCell;
+		if(checkCell != null){
+			isBlocking = inaccessibleAndBigger(checkCell, basicCellSize);
+			if(isBlocking)
+				return true;
+		}
+
+		checkCell = leftCell;
+		if(checkCell != null){
+			isBlocking = inaccessibleAndBigger(checkCell, basicCellSize);
+			if(isBlocking)
+				return true;
+
+			checkCell = checkCell.getUpCell();
+			if(checkCell != null)
+				isBlocking = inaccessibleAndBigger(checkCell, basicCellSize);
+		}
+
+		// (!accessible1 && isBigger1) || (!accessible2  && isBigger2) || (!accessible3  && isBigger3);
+		return isBlocking;
+	}
+
 	public void resetMovement(final int col, final int row, final int maxCols, final int maxRows){
 		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = true;
 		Cell stepper = leftCell;
@@ -216,7 +253,6 @@ public class Cell {
 			return;
 
 		MapCell sideMapCell1 = null, sideMapCell2 = null;
-		Cell cellToSet, cellToSet2;
 		// - - - vertical;
 		if(upCell != null || downCell != null){
 			if(leftCell != null)
