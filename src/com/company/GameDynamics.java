@@ -198,6 +198,29 @@ public class GameDynamics implements Iterable<Cell> {
 		bulletsCount--;
 	}
 
+	private void performEnvironmentExplosion(int bulletIndex){
+		Cell cellRight, cellLeft;
+		boolean exploded = false;
+
+		bullets[bulletIndex].getRightCornerPos(xyPos);
+		cellRight = cellByPosition(xyPos[0], xyPos[1]);
+		bullets[bulletIndex].getLeftCornerPos(xyPos);
+		cellLeft = cellByPosition(xyPos[0], xyPos[1]);
+
+		if(cellRight != null && cellRight.isDestructible() ){
+			bullets[bulletIndex].setRightDamageCell(cellRight);
+			exploded = true;
+		}
+
+		if(cellLeft != null && cellLeft.isDestructible() ){
+			bullets[bulletIndex].setLeftDamageCell(cellLeft);
+			exploded = true;
+		}
+
+		if(exploded)
+			bullets[bulletIndex].setSmallExplode();
+	}
+
 	private void moveBullets(){
 		boolean keepMoving;
 
@@ -213,8 +236,11 @@ public class GameDynamics implements Iterable<Cell> {
 			bullets[i].getBulletPos(xyPos);
 			if(xyPos[0] <= 0 || xyPos[1] <= 0 || xyPos[0] >= colLimit || xyPos[1] >= (rowCells-1)*cellPrecisionUnitSize){
 				bullets[i].setSmallExplode();
+				i++;
+				continue;
 			}
 
+			performEnvironmentExplosion(i);
 			i++;
 		}
 

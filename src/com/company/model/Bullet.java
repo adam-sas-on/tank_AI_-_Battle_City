@@ -118,10 +118,9 @@ public class Bullet {
 	 * @param colRowPos: array to assign values {col, row};
 	 */
 	public void getLeftCornerPos(int[] colRowPos){
-		int cellSize = bulletMapCell.getUnitSize();
 		try {
-			colRowPos[0] = (x_pos + leftColDiff)*cellSize;
-			colRowPos[1] = (y_pos + leftRowDiff)*cellSize;
+			colRowPos[0] = x_pos + leftColDiff;
+			colRowPos[1] = y_pos + leftRowDiff;
 		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
@@ -139,10 +138,9 @@ public class Bullet {
 	 * @param colRowPos: array to assign values {col, row};
 	 */
 	public void getRightCornerPos(int[] colRowPos){
-		int cellSize = bulletMapCell.getUnitSize();
 		try {
-			colRowPos[0] = (x_pos + rightColDiff)*cellSize;
-			colRowPos[1] = (y_pos + rightRowDiff)*cellSize;
+			colRowPos[0] = x_pos + rightColDiff;
+			colRowPos[1] = y_pos + rightRowDiff;
 		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
@@ -159,7 +157,7 @@ public class Bullet {
 	}
 
 	public void setDoubleSpeed(){
-		pixelSpeed *= 2.0;
+		pixelSpeed *= 2;
 	}
 
 	public void setDestructivePower(int tankLevel){
@@ -202,20 +200,24 @@ public class Bullet {
 			bulletMapCell = MapCell.EXPLODE_1;
 			int explodeSize = (MapCell.EXPLODE_1.getSize()*bulletSize)/(bulletMapCell.getUnitSize() ), posDiff;
 			posDiff = explodeSize - bulletSize;
-			x_pos -= posDiff;
-			y_pos -= posDiff;
+			x_pos -= posDiff*(1 - xDirection);
+			y_pos -= posDiff*(1 - yDirection);
 		}
 	}
 
 	public void setRightDamageCell(Cell cell){
-		MapCell cellType = cell.getMapCell();
-		cellType = rightSideDestruction.get(cellType);
-		cell.setMapCell(cellType);
+		if(explodeIndex < 0) {
+			MapCell cellType = cell.getMapCell();
+			cellType = rightSideDestruction.get(cellType);
+			cell.setMapCell(cellType);
+		}
 	}
 
 	public void setLeftDamageCell(Cell cell){
-		MapCell cellType = cell.getMapCell();
-		cellType = leftSideDestruction.get(cellType);
-		cell.setMapCell(cellType);
+		if(explodeIndex < 0) {
+			MapCell cellType = cell.getMapCell();
+			cellType = leftSideDestruction.get(cellType);
+			cell.setMapCell(cellType);
+		}
 	}
 }
