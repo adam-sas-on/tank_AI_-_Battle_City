@@ -6,9 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class MapLoader {
 	private static MapLoader instance = null;
@@ -22,6 +20,19 @@ public class MapLoader {
 		if(instance == null)
 			instance = new MapLoader();
 		return instance;
+	}
+
+	private void addNeighbourCells(List<Cell> cellList, Cell rootCell){
+		if(rootCell.getRightCell() != null)
+			cellList.add(rootCell.getRightCell() );
+
+		Cell cell = rootCell.getDownCell();
+		if(cell != null){
+			cellList.add(cell);
+			cell = cell.getRightCell();
+			if(cell != null)
+				cellList.add(cell);
+		}
 	}
 
 	public void getFileList(List<String> mapFiles){
@@ -82,6 +93,8 @@ public class MapLoader {
 		String line;
 		for(row = freeCells.length - 1; row >= 0; row--)
 			freeCells[row] = true;
+
+		List<Cell> nextCellToBlock = new LinkedList<>();
 
 		for(row = 0; row < rows && rowCellBegin != null; row++){
 			line = scan.nextLine();
@@ -176,12 +189,16 @@ public class MapLoader {
 					case 'W':
 						stepCell.setMapCell(MapCell.WATER);
 						stepCell.blockMovementsAround();
+						addNeighbourCells(nextCellToBlock, stepCell);
+
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case 'E':
 						stepCell.setMapCell(MapCell.EAGLE);
 						stepCell.blockMovementsAround();
+						addNeighbourCells(nextCellToBlock, stepCell);
+
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
@@ -203,6 +220,13 @@ public class MapLoader {
 			col = futureRowIndex;// SWAP(currentRowIndex, futureRowIndex);
 			futureRowIndex = currentRowIndex;
 			currentRowIndex = col;
+		}
+
+		Iterator<Cell> iter = nextCellToBlock.listIterator();
+		while(iter.hasNext() ){
+			stepCell = iter.next();
+			stepCell.blockMovementsAround();
+			iter.remove();
 		}
 	}
 
