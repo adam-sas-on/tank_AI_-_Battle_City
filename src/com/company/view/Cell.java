@@ -70,7 +70,7 @@ public class Cell {
 		return destructible;
 	}
 
-	public boolean canMove(KeyCode direction){
+	/*public boolean canMove(KeyCode direction){
 		switch(direction){
 			case UP:
 				return canMoveUp;
@@ -83,7 +83,7 @@ public class Cell {
 			default:
 				return false;
 		}
-	}
+	}*/
 
 	public int checkModifyRow(KeyCode direction, int rowToCheck){
 		int modifiedRow = rowToCheck;
@@ -184,6 +184,33 @@ public class Cell {
 		canMoveLeft = accessible1 && accessible2;
 	}
 
+	private void canMoveFromUp(MapCell leftMapCell, MapCell rightMapCell){
+		Cell cellToSet, cellToSet2 = null;
+		upCell.blockMoveToDown(mapCell, rightMapCell);
+
+		cellToSet = upCell.getUpCell();
+		if(cellToSet != null){// up-up cell exists;
+			cellToSet2 = cellToSet.getLeftCell();
+			if(cellToSet.getRightCell() != null)// up-up cell has right neighbour;
+				cellToSet.blockMoveToDown(mapCell, rightMapCell);
+		}
+		if(cellToSet2 != null)
+			cellToSet2.blockMoveToDown(leftMapCell, mapCell);
+	}
+
+	private void canMoveFromLeft(MapCell upperMapCell, MapCell lowerMapCell){
+		Cell cellToSet, cellToSet2 = null;
+
+		cellToSet = leftCell.getLeftCell();
+		if(cellToSet != null){// left-left cell exists;
+			cellToSet2 = cellToSet.getUpCell();
+			if(cellToSet.getDownCell() != null)// left-left cell has down neighbour;
+				cellToSet.blockMoveToRight(mapCell, lowerMapCell);
+		}
+		if(cellToSet2 != null)
+			cellToSet2.blockMoveToRight(upperMapCell, mapCell);
+	}
+
 	public void blockMovementsAround(){
 		if(accessible)
 			return;
@@ -199,17 +226,7 @@ public class Cell {
 		}
 
 		if(upCell != null){// can move from UP;
-			upCell.blockMoveToDown(mapCell, sideMapCell2);
-
-			cellToSet = upCell.getUpCell();
-			cellToSet2 = null;
-			if(cellToSet != null){// up-up cell exists;
-				cellToSet2 = cellToSet.getLeftCell();
-				if(cellToSet.getRightCell() != null)// up-up cell has right neighbour;
-					cellToSet.blockMoveToDown(mapCell, sideMapCell2);
-			}
-			if(cellToSet2 != null)
-				cellToSet2.blockMoveToDown(sideMapCell1, mapCell);
+			canMoveFromUp(sideMapCell1, sideMapCell2);
 		}
 
 		if(downCell != null && leftCell != null){// can move from down
@@ -226,27 +243,14 @@ public class Cell {
 		}
 
 		if(leftCell != null){// can move from left?
-			cellToSet = leftCell.getLeftCell();
-			cellToSet2 = null;
-			if(cellToSet != null){// left-left cell exists;
-				cellToSet2 = cellToSet.getUpCell();
-				if(cellToSet.getDownCell() != null)// left-left cell has down neighbour;
-					cellToSet.blockMoveToRight(mapCell, sideMapCell2);
-			}
-			if(cellToSet2 != null)
-				cellToSet2.blockMoveToRight(sideMapCell1, mapCell);
+			canMoveFromLeft(sideMapCell1, sideMapCell2);
 		}
 
 		if(rightCell != null && upCell != null){// can move from right;
 			upCell.blockMoveToLeft(sideMapCell1, mapCell);
 		}
 	}
-	/* Above without assertions:
-		cellToSet = rightCell.getUpCell();
-		cellToSet.blockMoveToLeft(sideMapCell1, mapCell);
-		cellToSet = rightCell;
-		cellToSet.blockMoveToLeft(mapCell, sideMapCell2);
-	*/
+
 
 	public void setPos(int col, int row){
 		this.col = col;
