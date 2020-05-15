@@ -70,21 +70,6 @@ public class Cell {
 		return destructible;
 	}
 
-	/*public boolean canMove(KeyCode direction){
-		switch(direction){
-			case UP:
-				return canMoveUp;
-			case RIGHT:
-				return canMoveRight;
-			case DOWN:
-				return canMoveDown;
-			case LEFT:
-				return canMoveLeft;
-			default:
-				return false;
-		}
-	}*/
-
 	public int checkModifyRow(KeyCode direction, int rowToCheck){
 		int modifiedRow = rowToCheck;
 		switch(direction){
@@ -136,7 +121,9 @@ public class Cell {
 		row = (row*newUnitSize)/oldUnitSize;
 	}
 
-	private boolean inaccessibleAndBigger(Cell cell, final int basicSize){
+	/*private boolean inaccessibleAndBigger(Cell cell, final int basicSize){
+		if(cell.getMapCell() == null)
+			return false;
 		int mapCellSize = cell.getMapCell().getSize();
 		return mapCellSize > basicSize && !cell.isAccessible();
 	}
@@ -144,11 +131,10 @@ public class Cell {
 	/**
 	 * Checks all cells up-left around;
 	 * @return true is any of cells around is not accessible
-	 */
+	 * /
 	private boolean isOnBiggerBlockingCell(){
 		int basicCellSize = MapCell.BRICK.getUnitSize();
 		Cell checkCell;
-		MapCell checkedMapCell;
 		boolean isBlocking = false;
 
 		checkCell = upCell;
@@ -171,7 +157,7 @@ public class Cell {
 
 		// (!accessible1 && isBigger1) || (!accessible2  && isBigger2) || (!accessible3  && isBigger3);
 		return isBlocking;
-	}
+	}*/
 
 	public void resetMovement(final int col, final int row, final int maxCols, final int maxRows){
 		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = true;
@@ -197,93 +183,68 @@ public class Cell {
 		}
 	}
 
-	public void blockMoveToUp(MapCell mapCell1, MapCell mapCell2){
-		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
-				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
-		canMoveUp = accessible1 && accessible2;
+	public void blockUnblockMoveToUp(boolean unsetBlockade){
+		canMoveUp = unsetBlockade;
 	}
 
-	public void blockMoveToRight(MapCell mapCell1, MapCell mapCell2){
-		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
-				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
-		canMoveRight = accessible1 && accessible2;
+	public void blockUnblockMoveToRight(boolean unsetBlockade){
+		canMoveRight = unsetBlockade;
 	}
 
-	public void blockMoveToDown(MapCell mapCell1, MapCell mapCell2){
-		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
-				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
-		canMoveDown = accessible1 && accessible2;
+	public void blockUnblockMoveToDown(boolean unsetBlockade){
+		canMoveDown = unsetBlockade;
 	}
 
-	public void blockMoveToLeft(MapCell mapCell1, MapCell mapCell2){
-		boolean accessible1 = (mapCell1 == null) || mapCell1.isAccessible(),
-				accessible2 = (mapCell2 == null) || mapCell2.isAccessible();
-		canMoveLeft = accessible1 && accessible2;
+	public void blockUnblockMoveToLeft(boolean unsetBlockade){
+		canMoveLeft = unsetBlockade;
 	}
 
-	private void canMoveFromUp(MapCell leftMapCell, MapCell rightMapCell){
+	private void canMoveFromUp(boolean unsetBlockade){
 		Cell cellToSet, cellToSet2 = null;
-		upCell.blockMoveToDown(mapCell, rightMapCell);
+		upCell.blockUnblockMoveToDown(unsetBlockade);
 
 		cellToSet = upCell.getUpCell();
 		if(cellToSet != null){// up-up cell exists;
 			cellToSet2 = cellToSet.getLeftCell();
 			if(cellToSet.getRightCell() != null)// up-up cell has right neighbour;
-				cellToSet.blockMoveToDown(mapCell, rightMapCell);
+				cellToSet.blockUnblockMoveToDown(unsetBlockade);
 		}
 		if(cellToSet2 != null)
-			cellToSet2.blockMoveToDown(leftMapCell, mapCell);
+			cellToSet2.blockUnblockMoveToDown(unsetBlockade);
 	}
 
-	private void canMoveFromLeft(MapCell upperMapCell, MapCell lowerMapCell){
+	private void canMoveFromLeft(boolean unsetBlockade){
 		Cell cellToSet, cellToSet2 = null;
 
 		cellToSet = leftCell.getLeftCell();
 		if(cellToSet != null){// left-left cell exists;
 			cellToSet2 = cellToSet.getUpCell();
 			if(cellToSet.getDownCell() != null)// left-left cell has down neighbour;
-				cellToSet.blockMoveToRight(mapCell, lowerMapCell);
+				cellToSet.blockUnblockMoveToRight(unsetBlockade);
 		}
 		if(cellToSet2 != null)
-			cellToSet2.blockMoveToRight(upperMapCell, mapCell);
+			cellToSet2.blockUnblockMoveToRight(unsetBlockade);
 	}
 
 	public void blockMovementsAround(){
-		if(accessible)
-			return;
+		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = false;
 
-		MapCell sideMapCell1 = null, sideMapCell2 = null;
 		// - - - vertical;
-		if(upCell != null || downCell != null){
-			if(leftCell != null)
-				sideMapCell1 = leftCell.getMapCell();
-			if(rightCell != null)
-				sideMapCell2 = rightCell.getMapCell();
-		}
-
 		if(upCell != null){// can move from UP;
-			canMoveFromUp(sideMapCell1, sideMapCell2);
+			canMoveFromUp(false);
 		}
 
 		if(downCell != null && leftCell != null){// can move from down
-			leftCell.blockMoveToUp(sideMapCell1, mapCell);
+			leftCell.blockUnblockMoveToUp(false);
 		}
 
 		// - - - horizontal;
-		sideMapCell1 = sideMapCell2 = null;
-		if(leftCell != null || rightCell != null){
-			if(upCell != null)
-				sideMapCell1 = upCell.getMapCell();
-			if(downCell != null)
-				sideMapCell2 = downCell.getMapCell();
-		}
-
 		if(leftCell != null){// can move from left?
-			canMoveFromLeft(sideMapCell1, sideMapCell2);
+			canMoveFromLeft(false);
 		}
 
 		if(rightCell != null && upCell != null){// can move from right;
-			upCell.blockMoveToLeft(sideMapCell1, mapCell);
+			upCell.blockUnblockMoveToLeft(false);
 		}
 	}
 
