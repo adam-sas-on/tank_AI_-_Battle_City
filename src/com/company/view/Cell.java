@@ -272,6 +272,57 @@ public class Cell {
 			id = index;
 	}
 
+	private void setUpperRowCells(Cell[] cells, int cols, final int cellPrecisionUnitSize){
+		cells[0].linkNeighborCells(null, cells[1], cells[cols], null);
+		cells[0].setPos(0, 0);
+
+		int i, rowLimit = cols - 1;
+		for(i = 1; i < rowLimit; i++){
+			cells[i].linkNeighborCells(null, cells[i+1], cells[i+cols], cells[i-1]);
+			cells[i].setPos(i*cellPrecisionUnitSize, 0);
+		}
+
+		cells[i].linkNeighborCells(null, null, cells[i+cols], cells[i-1]);
+		cells[i].setPos(i*cellPrecisionUnitSize, 0);
+	}
+
+	public void setCellStructure(Cell[] cells, int cols, int rows, final int cellPrecisionUnitSize){
+		if(cols*rows > cells.length)
+			throw new IndexOutOfBoundsException("Array of cells is too small to set the structure!");
+
+		cells[0] = this;
+
+		setUpperRowCells(cells, cols, cellPrecisionUnitSize);
+
+		int rowIndex, colIndex, i;
+		final int rowLimit = rows - 1, colLimit = cols - 1;
+
+		i = cols;
+		for(rowIndex = 1; rowIndex < rowLimit; rowIndex++, i++){// loop through rows;
+			cells[i].linkNeighborCells(cells[i - cols],  cells[i + 1],  cells[i + cols], null);
+			cells[i].setPos(0, rowIndex*cellPrecisionUnitSize);
+
+			for(colIndex = 1, i++; colIndex < colLimit; colIndex++, i++){// loop through cols;
+				cells[i].linkNeighborCells(cells[i - cols],  cells[i + 1],  cells[i + cols],  cells[i - 1]);
+				cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
+			}
+
+			cells[i].linkNeighborCells(cells[i - cols],  null,  cells[i + cols],  cells[i - 1]);
+			cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
+		}
+
+		// last row;
+		cells[i].linkNeighborCells(cells[i - cols],  cells[i + 1],  null, null);
+		cells[i].setPos(0, rowIndex*cellPrecisionUnitSize);
+
+		for(colIndex = 1, i++; colIndex < colLimit; colIndex++, i++){// connect lowest row;
+			cells[i].linkNeighborCells(cells[i - cols],  cells[i + 1], null, cells[i - 1]);
+			cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
+		}
+
+		cells[i].linkNeighborCells(cells[i - cols], null, null, cells[i - 1]);
+		cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
+	}
 
 	public boolean collide(Cell cell){
 		int row2nd = cell.getRow(), col2nd = cell.getCol(),
