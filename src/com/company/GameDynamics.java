@@ -52,7 +52,7 @@ public class GameDynamics implements Iterable<Cell> {
 		damages = DamageClass.getInstance();
 	}
 
-	private void setUpperRowCells(int maxCols){
+	/*private void setUpperRowCells(int maxCols){
 		cells[0].linkNeighborCells(null, cells[1], cells[maxCols], null);
 		cells[0].setPos(0, 0);
 
@@ -64,7 +64,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		cells[i].linkNeighborCells(null, null, cells[i+maxCols], cells[i-1]);
 		cells[i].setPos(i*cellPrecisionUnitSize, 0);
-	}
+	}*/
 
 	private void setCellsStructure(int maxCols, int maxRows){
 		int i, cellsCount = maxCols*maxRows;
@@ -75,7 +75,8 @@ public class GameDynamics implements Iterable<Cell> {
 			cells[i].setIndexId(i);
 		}
 
-		setUpperRowCells(maxCols);
+		cells[0].setCellStructure(cells, maxCols, maxRows, cellPrecisionUnitSize);
+		/*setUpperRowCells(maxCols);
 
 		int rowIndex, colIndex;
 		final int rowLimit = maxRows - 1, colLimit = maxCols - 1;
@@ -104,7 +105,7 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		cells[i].linkNeighborCells(cells[i - maxCols], null, null, cells[i - 1]);
-		cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
+		cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);*/
 	}
 
 	private Cell cellByPosition(int newCol, int newRow){
