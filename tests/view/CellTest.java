@@ -4,11 +4,11 @@ import com.company.view.Cell;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -107,12 +107,19 @@ class CellTest {
 		return result;
 	}
 
-	private Cell cellByPosition(int xPos, int yPos){
+	private int cellIndexForPosition(int xPos, int yPos){
 		int col = xPos/pixelsInCell, row = yPos/pixelsInCell;
 		if(col < 0 || row < 0 || row >= rows || col >= cols)
+			return -1;
+
+		return row*cols + col;
+	}
+
+	private Cell cellByPosition(int xPos, int yPos){
+		int cellIndex = cellIndexForPosition(xPos, yPos);
+		if(cellIndex < 0)
 			return null;
 
-		int cellIndex = row*cols + col;
 		return cells[cellIndex];
 	}
 	// - - - - - - - - - - - - -
@@ -382,6 +389,174 @@ class CellTest {
 		if(failCount > 1){
 			fail("blockMovementsVerticalCellOpenRightTest: can not run the test!");
 		}
+	}
+
+	/**
+	 * Next 2 tests are for cases where whole horizontal wall/blockade has a one-cell hole;
+	 * sprite shouldn't be able to move through that hole
+	 * (arrays of positions before and after the move should have the same values);
+	 * @param col is a column of cells to check if it block;
+	 */
+	@ParameterizedTest
+	@MethodSource("colValues")
+	void unblockingOneHorizontalCellUpperTest(int col){
+		Cell cell;
+		int index, expectedRow, i, cellIndex;
+		int[] resultRows = new int[4], expectedRows = new int[4];// 4 neighbours for index of cell;
+		resultRows[0] = resultRows[1] = resultRows[2] = resultRows[3] = -1;
+		expectedRows[0] = expectedRows[1] = expectedRows[2] = expectedRows[3] = -1;
+
+		index = setHorizontalBlockade(-1);
+		expectedRow = index*pixelsInCell;
+		cellIndex = cellIndexForPosition(col*pixelsInCell, expectedRow);
+		if(cellIndex < 0 || cellIndex >= cells.length)
+			return;
+
+		cells[cellIndex].setMapCell(null);
+		cells[cellIndex].unblockMovementsAround();
+		expectedRow = (index - 2)*pixelsInCell;
+		cellIndex = expectedRow + pixelsInCell/2;// + (0, pixelsInCell);
+
+		for(i = -2; i < 2; i++){
+			if(col + i < 0 || col + i >= cols)
+				continue;
+
+			cell = cellByPosition((col + i)*pixelsInCell, cellIndex);
+			if(cell == null)
+				continue;
+
+			expectedRows[i + 2] = expectedRow;
+			resultRows[i + 2] = cell.checkModifyRow(KeyCode.DOWN, cellIndex);
+		}
+
+		System.out.println(Arrays.toString(resultRows));
+		assertArrayEquals(expectedRows, resultRows);
+	}
+
+	@ParameterizedTest
+	@MethodSource("colValues")
+	void unblockingOneHorizontalCellLowerTest(int col){
+		int index, expectedRow, cellIndex;
+		int[] resultRows = new int[4], expectedRows = new int[4];// 4 neighbours for index of cell;
+		resultRows[0] = resultRows[1] = resultRows[2] = resultRows[3] = -1;
+		expectedRows[0] = expectedRows[1] = expectedRows[2] = expectedRows[3] = -1;
+
+		index = setHorizontalBlockade(-1);
+		expectedRow = index*pixelsInCell;
+		cellIndex = cellIndexForPosition(col*pixelsInCell, expectedRow);
+		if(cellIndex < 0 || cellIndex >= cells.length)
+			return;
+
+		cells[cellIndex].setMapCell(null);
+		cells[cellIndex].unblockMovementsAround();
+		expectedRow = (index + 1)*pixelsInCell;
+		cellIndex = expectedRow - pixelsInCell/2;// - (0, pixelsInCell);
+
+		Cell cell;
+		int i;
+		for(i = -2; i < 2; i++){
+			if(col + i < 0 || col + i >= cols)
+				continue;
+
+			cell = cellByPosition((col + i)*pixelsInCell, cellIndex);
+			if(cell == null)
+				continue;
+
+			expectedRows[i + 2] = expectedRow;
+			resultRows[i + 2] = cell.checkModifyRow(KeyCode.UP, cellIndex);
+		}
+
+		if(expectedRows[0] < 0 && expectedRows[1] < 0 && expectedRows[2] < 0 && expectedRows[3] < 0)
+			fail("unblockingOneHorizontalCellLowerTest: all tests couldn't run for col = " + col);
+
+		System.out.println(Arrays.toString(resultRows));
+		assertArrayEquals(expectedRows, resultRows);
+	}
+
+	/**
+	 * Next 2 tests are for cases where whole vertical wall/blockade has a one-cell hole;
+	 * sprite shouldn't be able to move through that hole
+	 * (arrays of positions before and after the move should have the same values);
+	 * @param row is a row of cells to check if it block;
+	 */
+	@ParameterizedTest
+	@MethodSource("rowValues")
+	void unblockingOneVerticalCellLeftTest(int row){
+		int index, expectedCol, cellIndex;
+		int[] resultCols = new int[4], expectedCols = new int[4];// 4 neighbours for index of cell;
+		resultCols[0] = resultCols[1] = resultCols[2] = resultCols[3] = -1;
+		expectedCols[0] = expectedCols[1] = expectedCols[2] = expectedCols[3] = -1;
+
+		index = setVerticalBlockade(-1);
+		expectedCol = index*pixelsInCell;
+		cellIndex = cellIndexForPosition(expectedCol, row*pixelsInCell);
+		if(cellIndex < 0 || cellIndex >= rows*cols)
+			return;
+
+		cells[cellIndex].setMapCell(null);
+		cells[cellIndex].unblockMovementsAround();
+		expectedCol = (index - 2)*pixelsInCell;
+		cellIndex = expectedCol + pixelsInCell/2;// + (0, pixelsInCell);
+
+		Cell cell;
+		int i;
+		for(i = -2; i < 2; i++){
+			if(row + i < 0 || row + i >= rows)
+				continue;
+
+			cell = cellByPosition(cellIndex, (row + i)*pixelsInCell);
+			if(cell == null)
+				continue;
+
+			expectedCols[i + 2] = expectedCol;
+			resultCols[i + 2] = cell.checkModifyCol(KeyCode.RIGHT, cellIndex);
+		}
+
+		if(expectedCols[0] < 0 && expectedCols[1] < 0 && expectedCols[2] < 0 && expectedCols[3] < 0)
+			fail("unblockingOneVerticalCellLeftTest: all tests couldn't run for row = " + row);
+
+		System.out.println(Arrays.toString(resultCols) );
+		assertArrayEquals(expectedCols, resultCols);
+	}
+
+	@ParameterizedTest
+	@MethodSource("rowValues")
+	void unblockingOneVerticalCellRightTest(int row){
+		int index, expectedCol, cellIndex;
+		int[] resultCols = new int[4], expectedCols = new int[4];// 4 neighbours for index of cell;
+		resultCols[0] = resultCols[1] = resultCols[2] = resultCols[3] = -1;
+		expectedCols[0] = expectedCols[1] = expectedCols[2] = expectedCols[3] = -1;
+
+		index = setVerticalBlockade(-1);
+		expectedCol = index*pixelsInCell;
+		cellIndex = cellIndexForPosition(expectedCol, row*pixelsInCell);
+		if(cellIndex < 0 || cellIndex >= rows*cols)
+			return;
+
+		cells[cellIndex].setMapCell(null);
+		cells[cellIndex].unblockMovementsAround();
+		expectedCol = (index + 1)*pixelsInCell;
+		cellIndex = expectedCol - pixelsInCell/2;// - (0, pixelsInCell);
+
+		Cell cell;
+		int i;
+		for(i = -2; i < 2; i++){
+			if(row + i < 0 || row + i >= rows)
+				continue;
+
+			cell = cellByPosition(cellIndex, (row + i)*pixelsInCell);
+			if(cell == null)
+				continue;
+
+			expectedCols[i + 2] = expectedCol;
+			resultCols[i + 2] = cell.checkModifyCol(KeyCode.LEFT, cellIndex);
+		}
+
+		if(expectedCols[0] < 0 && expectedCols[1] < 0 && expectedCols[2] < 0 && expectedCols[3] < 0)
+			fail("unblockingOneVerticalCellRightTest: all tests couldn't run for row = " + row);
+
+		System.out.println(Arrays.toString(resultCols) );
+		assertArrayEquals(expectedCols, resultCols);
 	}
 
 }
