@@ -44,11 +44,11 @@ class CellTest {
 	}
 
 	static Stream<Arguments> colValues(){
-		rowsCols = buildRowsCols(cols - 2);
+		rowsCols = buildRowsCols(cols - 1);
 		return rowsCols;
 	}
 	static Stream<Arguments> rowValues(){
-		rowsCols = buildRowsCols(rows - 2);
+		rowsCols = buildRowsCols(rows - 1);
 		return rowsCols;
 	}
 
@@ -121,18 +121,23 @@ class CellTest {
 	@MethodSource("colValues")
 	void blockMovementsHorizontalUpperTest(int col){
 		int index = setHorizontalBlockade(-1);
+		String message;
 
 		if(index < 0){
-			System.out.println("Can not run the test for col = " + col);
+			message = "blockMovementsHorizontalUpperTest: can not run the test for col = " + col;
+			System.out.println(message);
+			fail(message);
 			return;
 		}
 
 		int expectedRow = (index - 2)*pixelsInCell, i;
-		i = expectedRow + pixelsInCell/2;
+		i = expectedRow + pixelsInCell/2;// + (0, pixelsInCell)  <- anything from;
 		Cell rowCell = cellByPosition(col*pixelsInCell, i);
 
 		if(rowCell == null) {
-			System.out.println("Can not run the test for col = " + col);
+			message = "blockMovementsHorizontalUpperTest: can not run the test for col = " + col;
+			System.out.println(message);
+			fail(message);
 			return;
 		}
 
@@ -151,9 +156,12 @@ class CellTest {
 	@MethodSource("colValues")
 	void blockMovementsHorizontalLowerTest(int col){
 		int index = setHorizontalBlockade(-1);
+		String message;
 
 		if(index < 0){
-			System.out.println("Can not run the test for col = " + col);
+			message = "blockMovementsHorizontalLowerTest: can not run the test for col = " + col;
+			System.out.println(message);
+			fail(message);
 			return;
 		}
 
@@ -161,8 +169,10 @@ class CellTest {
 		i = expectedRow - pixelsInCell/2;// - (0, pixelsInCell);
 		Cell rowCell = cellByPosition(col*pixelsInCell, i);
 
-		if(rowCell == null) {
-			System.out.println("Can not run the test for col = " + col);
+		if(rowCell == null){
+			message = "blockMovementsHorizontalLowerTest: can not run the test for col = " + col;
+			System.out.println(message);
+			fail(message);
 			return;
 		}
 
@@ -185,8 +195,10 @@ class CellTest {
 		i = expectedCol + pixelsInCell/2;// + (0, pixelsInCell);
 		Cell colCell = cellByPosition(i, row*pixelsInCell);
 
-		if(colCell == null) {
-			System.out.println("Can not run the test for row = " + row);
+		if(colCell == null){
+			String message = "blockMovementsVerticalLeftTest: can not run the test for row = " + row;
+			System.out.println(message);
+			fail(message);
 			return;
 		}
 
@@ -208,8 +220,10 @@ class CellTest {
 		i = expectedCol - pixelsInCell/2;// - (0, pixelsInCell);
 		Cell colCell = cellByPosition(i, row*pixelsInCell);
 
-		if(colCell == null) {
-			System.out.println("Can not run the test for row = " + row);
+		if(colCell == null){
+			String message = "blockMovementsVerticalRightTest: can not run the test for row = " + row;
+			System.out.println(message);
+			fail(message);
 			return;
 		}
 
@@ -220,6 +234,154 @@ class CellTest {
 
 		assertEquals(expectedRow, resultRow);
 		assertEquals(expectedCol, resultCol);
+	}
+
+	@ParameterizedTest
+	@MethodSource("colValues")
+	void blockMovementsHorizontalCellOpenUpperTest(int col){
+		int index = setHorizontalBlockade(col);
+
+		int expectedRow = (index - 2)*pixelsInCell, i;
+		i = expectedRow + pixelsInCell/2;// + (0, pixelsInCell);
+		Cell rowCell = cellByPosition((col - 1)*pixelsInCell, i);
+
+		int expectedCol, resultRow, resultCol, failCount = 0;
+
+		if(rowCell != null){
+			expectedCol = rowCell.getCol();
+			resultRow = rowCell.checkModifyRow(KeyCode.DOWN, i);
+			resultCol = rowCell.checkModifyCol(KeyCode.DOWN, expectedCol);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		rowCell = cellByPosition(col*pixelsInCell, i);
+		if(rowCell != null){
+			expectedCol = rowCell.getCol();
+			resultRow = rowCell.checkModifyRow(KeyCode.DOWN, i);
+			resultCol = rowCell.checkModifyCol(KeyCode.DOWN, expectedCol);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		if(failCount > 1){
+			fail("blockMovementsHorizontalCellOpenUpperTest: can not run the test!");
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("colValues")
+	void blockMovementsHorizontalCellOpenLowerTest(int col){
+		int index = setHorizontalBlockade(col);
+
+		int expectedRow = (index + 1)*pixelsInCell, i;
+		i = expectedRow - pixelsInCell/2;// - (0, pixelsInCell);
+		Cell rowCell = cellByPosition((col - 1)*pixelsInCell, i);
+
+		int expectedCol, resultRow, resultCol, failCount = 0;
+
+		if(rowCell != null){
+			expectedCol = rowCell.getCol();
+			resultRow = rowCell.checkModifyRow(KeyCode.UP, i);
+			resultCol = rowCell.checkModifyCol(KeyCode.UP, expectedCol);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		rowCell = cellByPosition(col*pixelsInCell, i);
+		if(rowCell != null){
+			expectedCol = rowCell.getCol();
+			resultRow = rowCell.checkModifyRow(KeyCode.UP, i);
+			resultCol = rowCell.checkModifyCol(KeyCode.UP, expectedCol);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		if(failCount > 1){
+			fail("blockMovementsHorizontalCellOpenLowerTest: can not run the test!");
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("rowValues")
+	void blockMovementsVerticalCellOpenLeftTest(int row){
+		int index = setVerticalBlockade(row);
+
+		int expectedCol = (index - 2)*pixelsInCell, i;
+		i = expectedCol + pixelsInCell/2;// + (0, pixelsInCell);
+		Cell colCell = cellByPosition(i, (row - 1)*pixelsInCell);
+
+		int expectedRow, resultRow, resultCol, failCount = 0;
+
+		if(colCell != null) {
+			expectedRow = colCell.getRow();
+			resultRow = colCell.checkModifyRow(KeyCode.RIGHT, expectedRow);
+			resultCol = colCell.checkModifyCol(KeyCode.RIGHT, i);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		colCell = cellByPosition(i, row*pixelsInCell);
+		if(colCell != null){
+			expectedRow = colCell.getRow();
+			resultRow = colCell.checkModifyRow(KeyCode.RIGHT, expectedRow);
+			resultCol = colCell.checkModifyCol(KeyCode.RIGHT, i);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		if(failCount > 1){
+			fail("blockMovementsVerticalCellOpenLeftTest: can not run the test!");
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("rowValues")
+	void blockMovementsVerticalCellOpenRightTest(int row){
+		int index = setVerticalBlockade(row);
+
+		int expectedCol = (index + 1)*pixelsInCell, i;
+		i = expectedCol - pixelsInCell/2;// - (0, pixelsInCell);
+		Cell colCell = cellByPosition(i, (row - 1)*pixelsInCell);
+
+		int expectedRow, resultRow, resultCol, failCount = 0;
+
+		if(colCell != null) {
+			expectedRow = colCell.getRow();
+			resultRow = colCell.checkModifyRow(KeyCode.LEFT, expectedRow);
+			resultCol = colCell.checkModifyCol(KeyCode.LEFT, i);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		colCell = cellByPosition(i, row*pixelsInCell);
+		if(colCell != null){
+			expectedRow = colCell.getRow();
+			resultRow = colCell.checkModifyRow(KeyCode.LEFT, expectedRow);
+			resultCol = colCell.checkModifyCol(KeyCode.LEFT, i);
+
+			assertEquals(expectedRow, resultRow);
+			assertEquals(expectedCol, resultCol);
+		} else
+			failCount++;
+
+		if(failCount > 1){
+			fail("blockMovementsVerticalCellOpenRightTest: can not run the test!");
+		}
 	}
 
 }
