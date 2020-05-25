@@ -24,19 +24,21 @@ public class PlayerAITank implements Tank {
 	private final int nextBulletSteps;
 	private final int size;
 	private final int cellPrecisionSize;
+	private final int playerNumber;
+	private static int numberStepper;
 
 	public PlayerAITank(SpriteEventController driver, int msInterval, int cellUnitSize) {
 		tankDriver = driver;
 
 		cellPrecisionSize = cellUnitSize;
-		size = (cellUnitSize*MapCell.TANK_1_LVL_1_STATE_1_UP.getSize())/(MapCell.TANK_1_LVL_1_STATE_1_UP.getUnitSize() );
+		size = (cellUnitSize*MapCell.TANK_1_LVL_1_STATE_1_UP.getSize())/(MapCell.getUnitSize() );
 		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 cells / 5000 ms;
 
 		nextBulletSteps = (1000*3)/(msInterval*2*2);
 		bulletSteps = 0;
 		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 cells / second;
 
-		currentDirection = driver.directionForUp();
+		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
 
 		level = 1;
 		icons = new HashMap<>();
@@ -44,6 +46,8 @@ public class PlayerAITank implements Tank {
 		canKeepMoving = true;
 
 		setPos(4*cellUnitSize, 12*cellUnitSize);
+		numberStepper++;
+		playerNumber = numberStepper;
 	}
 
 	private int roundInRange(final int value, final int rangeSize){
@@ -52,12 +56,12 @@ public class PlayerAITank implements Tank {
 		return diff + roundDown;
 	}
 
-	public void setPosOnPlayer1(){
-		setPos(4* cellPrecisionSize, 12* cellPrecisionSize);
-	}
-
-	public void setPosOnPlayer2(){
-		setPos(8* cellPrecisionSize, 12* cellPrecisionSize);
+	public void setDefaultPlayerPosition(){
+		if(playerNumber == 1){
+			setPos(4 * cellPrecisionSize, 12 * cellPrecisionSize);
+		} else {
+			setPos(8 * cellPrecisionSize, 12 * cellPrecisionSize);
+		}
 	}
 
 	public Bullet fireBullet(DamageClass damages){
@@ -95,11 +99,54 @@ public class PlayerAITank implements Tank {
 		cell.roundPos(cellPrecisionSize, newCellUnitSize);
 	}
 
-	public void addIcons(int direction, MapCell[] cells){
-		if(icons.isEmpty() ){
+	public void setIcons(){
+		MapCell[] cells;
+		int direction = tankDriver.directionByKeyCodeOrUp(KeyCode.UP);
+
+		if(playerNumber < 2)
+			cells = MapCell.player1UpState(level);
+		else
+			cells = MapCell.player2UpState(level);
+
+		if(icons.isEmpty() )
 			currentIcons = cells;
-		}
 		icons.put(direction, cells);
+
+		direction = tankDriver.directionByKeyCodeOrUp(KeyCode.RIGHT);
+		if(playerNumber < 2){
+			cells = MapCell.player1RightState(level);
+		} else
+			cells = MapCell.player2RightState(level);
+		icons.put(direction, cells);
+
+		if(playerNumber < 2){
+			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.DOWN);
+			icons.put(direction, MapCell.player1DownState(level) );
+
+			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.LEFT);
+			icons.put(direction, MapCell.player1LeftState(level) );
+		} else {
+			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.DOWN);
+			cells = MapCell.player2DownState(level);
+			icons.put(direction, cells);
+
+			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.LEFT);
+			cells = MapCell.player2LeftState(level);
+			icons.put(direction, cells);
+		}
+	}
+
+	public void promoteDegrade(boolean doPromote){
+		if(doPromote){
+			level++;
+		} else {
+			level--;
+			if(level <= 0)
+				canKeepMoving = false;
+		}
+
+		if(level < 5)// don't change icons for every higher level then max = 4;
+			setIcons();
 	}
 
 	@Override
@@ -108,22 +155,14 @@ public class PlayerAITank implements Tank {
 		y_pos = y;
 	}
 
-	public boolean blockMovement(Cell cell, int x, int y){
-		canKeepMoving = false;
+	public void blockMovement(Cell cell, int x, int y){
 		if(cell == null)
-			return false;
+			return;
 
 		KeyCode directionCode = tankDriver.getKeyCode(currentDirection);
 		x_pos = cell.checkModifyCol(directionCode, x);
 		y_pos = cell.checkModifyRow(directionCode, y);
 		//canKeepMoving = cell.canMove(directionCode);
-
-		/*if(canKeepMoving){
-			x_pos = x;
-			y_pos = y;
-		}*/
-
-		return canKeepMoving;
 	}
 
 	@Override
