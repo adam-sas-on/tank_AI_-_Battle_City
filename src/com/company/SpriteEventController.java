@@ -68,8 +68,17 @@ public class SpriteEventController {
 		}
 	}
 
-	public int directionForUp(){
-		return upAngle;
+	public int directionByKeyCodeOrUp(final KeyCode keyCode){
+		switch(keyCode){
+			case RIGHT:
+				return  0;
+			case DOWN:
+				return 270;
+			case LEFT:
+				return 180;
+			default:
+				return upAngle;
+		}
 	}
 
 	public void setEvent(final KeyCode keyCode){
