@@ -429,7 +429,7 @@ class CellTest {
 			resultRows[i + 2] = cell.checkModifyRow(KeyCode.DOWN, cellIndex);
 		}
 
-		System.out.println(Arrays.toString(resultRows));
+		System.out.println("col = " + col + "; result: " + Arrays.toString(resultRows));
 		assertArrayEquals(expectedRows, resultRows);
 	}
 
@@ -469,7 +469,7 @@ class CellTest {
 		if(expectedRows[0] < 0 && expectedRows[1] < 0 && expectedRows[2] < 0 && expectedRows[3] < 0)
 			fail("unblockingOneHorizontalCellLowerTest: all tests couldn't run for col = " + col);
 
-		System.out.println(Arrays.toString(resultRows));
+		System.out.println("col = " + col + "; result: " + Arrays.toString(resultRows));
 		assertArrayEquals(expectedRows, resultRows);
 	}
 
@@ -515,7 +515,7 @@ class CellTest {
 		if(expectedCols[0] < 0 && expectedCols[1] < 0 && expectedCols[2] < 0 && expectedCols[3] < 0)
 			fail("unblockingOneVerticalCellLeftTest: all tests couldn't run for row = " + row);
 
-		System.out.println(Arrays.toString(resultCols) );
+		System.out.println("row = " + row + "; result: " + Arrays.toString(resultCols) );
 		assertArrayEquals(expectedCols, resultCols);
 	}
 
@@ -555,7 +555,7 @@ class CellTest {
 		if(expectedCols[0] < 0 && expectedCols[1] < 0 && expectedCols[2] < 0 && expectedCols[3] < 0)
 			fail("unblockingOneVerticalCellRightTest: all tests couldn't run for row = " + row);
 
-		System.out.println(Arrays.toString(resultCols) );
+		System.out.println("row = " + row + "; result: " + Arrays.toString(resultCols) );
 		assertArrayEquals(expectedCols, resultCols);
 	}
 
