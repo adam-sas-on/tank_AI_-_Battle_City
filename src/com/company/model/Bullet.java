@@ -205,19 +205,25 @@ public class Bullet {
 		}
 	}
 
-	public void setRightDamageCell(Cell cell){
+	public boolean setRightDamageCell(Cell cell){
+		boolean changed = false;
 		if(explodeIndex < 0) {
-			MapCell cellType = cell.getMapCell();
-			cellType = rightSideDestruction.get(cellType);
+			MapCell oldCellType = cell.getMapCell(), cellType;
+			cellType = rightSideDestruction.get(oldCellType);
 			cell.setMapCell(cellType);
+			changed = oldCellType != cellType;
 		}
+		return changed;
 	}
 
-	public void setLeftDamageCell(Cell cell){
+	public boolean setLeftDamageCell(Cell cell){
+		boolean changed = false;
 		if(explodeIndex < 0) {
-			MapCell cellType = cell.getMapCell();
-			cellType = leftSideDestruction.get(cellType);
+			MapCell oldCellType = cell.getMapCell(), cellType;
+			cellType = leftSideDestruction.get(oldCellType);
 			cell.setMapCell(cellType);
+			changed = oldCellType != cellType;
 		}
+		return changed;
 	}
 }
