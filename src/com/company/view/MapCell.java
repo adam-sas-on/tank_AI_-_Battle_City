@@ -150,7 +150,7 @@ public enum MapCell {
 	public int getSize(){
 		return width;
 	}
-	public int getUnitSize(){
+	public static int getUnitSize(){
 		return 16;
 	}
 
@@ -159,5 +159,105 @@ public enum MapCell {
 	}
 	public boolean isDestructible(){
 		return destructible;
+	}
+
+	// - - - - - Icons for 1-st player for several side of movements;
+	public static MapCell[] player1UpState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_1_LVL_2_STATE_1_UP, MapCell.TANK_1_LVL_2_STATE_2_UP};
+			case 3:
+				return new MapCell[]{MapCell.TANK_1_LVL_3_STATE_1_UP, MapCell.TANK_1_LVL_3_STATE_2_UP};
+			case 4:
+				return new MapCell[]{MapCell.TANK_1_LVL_4_STATE_1_UP, MapCell.TANK_1_LVL_4_STATE_2_UP};
+			default:
+				return new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_UP, MapCell.TANK_1_LVL_1_STATE_2_UP};
+		}
+	}
+	public static MapCell[] player1RightState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_1_LVL_2_STATE_1_RIGHT, MapCell.TANK_1_LVL_2_STATE_2_RIGHT};
+			case 3:
+				return new MapCell[]{MapCell.TANK_1_LVL_3_STATE_1_RIGHT, MapCell.TANK_1_LVL_3_STATE_2_RIGHT};
+			case 4:
+				return new MapCell[]{MapCell.TANK_1_LVL_4_STATE_1_RIGHT, MapCell.TANK_1_LVL_4_STATE_2_RIGHT};
+			default:
+				return new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_RIGHT, MapCell.TANK_1_LVL_1_STATE_2_RIGHT};
+		}
+	}
+	public static MapCell[] player1DownState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_1_LVL_2_STATE_1_DOWN, MapCell.TANK_1_LVL_2_STATE_2_DOWN};
+			case 3:
+				return new MapCell[]{MapCell.TANK_1_LVL_3_STATE_1_DOWN, MapCell.TANK_1_LVL_3_STATE_2_DOWN};
+			case 4:
+				return new MapCell[]{MapCell.TANK_1_LVL_4_STATE_1_DOWN, MapCell.TANK_1_LVL_4_STATE_2_DOWN};
+			default:
+				return new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_DOWN, MapCell.TANK_1_LVL_1_STATE_2_DOWN};
+		}
+	}
+	public static MapCell[] player1LeftState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_1_LVL_2_STATE_1_LEFT, MapCell.TANK_1_LVL_2_STATE_2_LEFT};
+			case 3:
+				return new MapCell[]{MapCell.TANK_1_LVL_3_STATE_1_LEFT, MapCell.TANK_1_LVL_3_STATE_2_LEFT};
+			case 4:
+				return new MapCell[]{MapCell.TANK_1_LVL_4_STATE_1_LEFT, MapCell.TANK_1_LVL_4_STATE_2_LEFT};
+			default:
+				return new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_LEFT, MapCell.TANK_1_LVL_1_STATE_2_LEFT};
+		}
+	}
+
+	// - - - - - Icons for 2-nd player for several side of movements;
+	public static MapCell[] player2UpState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_2_LVL_2_STATE_1_UP, MapCell.TANK_2_LVL_2_STATE_2_UP};
+			case 3:
+				return new MapCell[]{MapCell.TANK_2_LVL_3_STATE_1_UP, MapCell.TANK_2_LVL_3_STATE_2_UP};
+			case 4:
+				return new MapCell[]{MapCell.TANK_2_LVL_4_STATE_1_UP, MapCell.TANK_2_LVL_4_STATE_2_UP};
+			default:
+				return new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_UP, MapCell.TANK_2_LVL_1_STATE_2_UP};
+		}
+	}
+	public static MapCell[] player2RightState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_2_LVL_2_STATE_1_RIGHT, MapCell.TANK_2_LVL_2_STATE_2_RIGHT};
+			case 3:
+				return new MapCell[]{MapCell.TANK_2_LVL_3_STATE_1_RIGHT, MapCell.TANK_2_LVL_3_STATE_2_RIGHT};
+			case 4:
+				return new MapCell[]{MapCell.TANK_2_LVL_4_STATE_1_RIGHT, MapCell.TANK_2_LVL_4_STATE_2_RIGHT};
+			default:
+				return new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_RIGHT, MapCell.TANK_2_LVL_1_STATE_2_RIGHT};
+		}
+	}
+	public static MapCell[] player2DownState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_2_LVL_2_STATE_1_DOWN, MapCell.TANK_2_LVL_2_STATE_2_DOWN};
+			case 3:
+				return new MapCell[]{MapCell.TANK_2_LVL_3_STATE_1_DOWN, MapCell.TANK_2_LVL_3_STATE_2_DOWN};
+			case 4:
+				return new MapCell[]{MapCell.TANK_2_LVL_4_STATE_1_DOWN, MapCell.TANK_2_LVL_4_STATE_2_DOWN};
+			default:
+				return new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_DOWN, MapCell.TANK_2_LVL_1_STATE_2_DOWN};
+		}
+	}
+	public static MapCell[] player2LeftState(int level){
+		switch(level){
+			case 2:
+				return new MapCell[]{MapCell.TANK_2_LVL_2_STATE_1_LEFT, MapCell.TANK_2_LVL_2_STATE_2_LEFT};
+			case 3:
+				return new MapCell[]{MapCell.TANK_2_LVL_3_STATE_1_LEFT, MapCell.TANK_2_LVL_3_STATE_2_LEFT};
+			case 4:
+				return new MapCell[]{MapCell.TANK_2_LVL_4_STATE_1_LEFT, MapCell.TANK_2_LVL_4_STATE_2_LEFT};
+			default:
+				return new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_LEFT, MapCell.TANK_2_LVL_1_STATE_2_LEFT};
+		}
 	}
 }
