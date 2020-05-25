@@ -27,6 +27,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private int rowCells;
 	private int colCells;
 	private final int maxCols;
+	private Cell collectibles;
 	private final int cellPrecisionUnitSize;
 	private int[] xyPos = new int[2];
 	private List<Integer> treesIds;
@@ -209,13 +210,13 @@ public class GameDynamics implements Iterable<Cell> {
 		cellLeft = cellByPosition(xyPos[0], xyPos[1]);
 
 		if(cellRight != null && cellRight.isDestructible() ){
-			bullets[bulletIndex].setRightDamageCell(cellRight);
-			exploded = true;
+			exploded = bullets[bulletIndex].setRightDamageCell(cellRight);
+			cellRight.unblockMovementsAround();
 		}
 
 		if(cellLeft != null && cellLeft.isDestructible() ){
-			bullets[bulletIndex].setLeftDamageCell(cellLeft);
-			exploded = true;
+			exploded |= bullets[bulletIndex].setLeftDamageCell(cellLeft);
+			cellLeft.unblockMovementsAround();
 		}
 
 		if(exploded)

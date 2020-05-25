@@ -215,6 +215,7 @@ public class Cell {
 
 	private void canMoveFromLeft(boolean unsetBlockade){
 		Cell cellToSet, cellToSet2 = null;
+		leftCell.blockUnblockMoveToRight(unsetBlockade);
 
 		cellToSet = leftCell.getLeftCell();
 		if(cellToSet != null){// left-left cell exists;
@@ -224,6 +225,102 @@ public class Cell {
 		}
 		if(cellToSet2 != null)
 			cellToSet2.blockUnblockMoveToRight(unsetBlockade);
+	}
+
+	private boolean getMovementCase(Cell cell1, Cell cell2){
+		if(cell1 == null || cell2 == null)
+			return false;
+		return cell1.isAccessible() && cell2.isAccessible();
+	}
+
+	private void checkToUnblockUpperCells(){
+		if(upCell == null)
+			return;
+
+		Cell cellToSet, checkCell;
+		boolean canMove;
+
+		// - - - vertical;
+		cellToSet = upCell.getUpCell();
+		if(cellToSet != null){// UP-cell has UP-neighbour:
+			canMove = getMovementCase(upCell, rightCell) && cellToSet.isAccessible();
+			cellToSet.blockUnblockMoveToDown(canMove);
+
+			cellToSet = cellToSet.getLeftCell();
+			if(cellToSet != null){
+				checkCell = upCell.getLeftCell();
+				canMove = getMovementCase(checkCell, leftCell) && cellToSet.isAccessible();
+				cellToSet.blockUnblockMoveToDown(canMove);
+			}
+		}
+
+		if(downCell != null){// set/unset blockade for upper-cell;
+			checkCell = downCell.getRightCell();
+			canMove = getMovementCase(checkCell, downCell) && upCell.isAccessible();
+			upCell.blockUnblockMoveToDown(canMove);
+		}
+	}
+
+	private void checkToUnblockLeftCells(){
+		if(leftCell == null)
+			return;
+
+		Cell cellToSet, checkCell;
+		boolean canMove;
+
+		// - - - horizontal;
+		cellToSet = leftCell.getLeftCell();
+		if(cellToSet != null){
+			canMove = getMovementCase(leftCell, downCell) && cellToSet.isAccessible();
+			cellToSet.blockUnblockMoveToRight(canMove);
+
+			cellToSet = cellToSet.getUpCell();
+			if(cellToSet != null){
+				checkCell = leftCell.getUpCell();
+				canMove = getMovementCase(checkCell, upCell) && cellToSet.isAccessible();
+				cellToSet.blockUnblockMoveToRight(canMove);
+			}
+		}
+
+		if(rightCell != null){
+			checkCell = rightCell.getDownCell();
+			canMove = getMovementCase(checkCell, rightCell) && leftCell.isAccessible();
+			leftCell.blockUnblockMoveToRight(canMove);
+		}
+	}
+
+	private void selfCheckToUnblockRight(){
+		if(rightCell == null)
+			return;
+
+		if( !rightCell.isAccessible() )
+			return;
+
+		canMoveUp = true;
+
+		Cell checkCell1 = rightCell.getRightCell();
+		if(checkCell1 == null)
+			return;
+
+		Cell checkCell2 = checkCell1.getDownCell();
+		canMoveRight = getMovementCase(checkCell1, checkCell2);
+	}
+
+	private void selfCheckToUnblockDown(){
+		if(downCell == null)
+			return;
+
+		if( !downCell.isAccessible() )
+			return;
+
+		canMoveLeft = true;
+
+		Cell checkCell1 = downCell.getDownCell();
+		if(checkCell1 == null)
+			return;
+
+		Cell checkCell2 = checkCell1.getRightCell();
+		canMoveDown = getMovementCase(checkCell1, checkCell2);
 	}
 
 	public void blockMovementsAround(){
@@ -246,6 +343,23 @@ public class Cell {
 		if(rightCell != null && upCell != null){// can move from right;
 			upCell.blockUnblockMoveToLeft(false);
 		}
+	}
+
+	public void unblockMovementsAround(){
+		if(!accessible)
+			return;
+
+		if(upCell != null)
+			upCell.blockUnblockMoveToLeft( upCell.isAccessible() );
+
+		if(leftCell != null)
+			leftCell.blockUnblockMoveToUp( leftCell.isAccessible() );
+
+		checkToUnblockUpperCells();
+		checkToUnblockLeftCells();
+
+		selfCheckToUnblockRight();
+		selfCheckToUnblockDown();
 	}
 
 
