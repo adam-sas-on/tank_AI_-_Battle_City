@@ -88,17 +88,6 @@ public class Bullet {
 		}
 	}
 
-
-	/*public Cell getCell(){
-		return cell;
-	}*/
-
-	public void setUpCell(Cell cell, int cellUnitSize, final int cellPrecisionSize){
-		cell.setMapCell(bulletMapCell);
-		cell.setPos(x_pos, y_pos);
-		cell.roundPos(cellPrecisionSize, cellUnitSize);
-	}
-
 	public void getBulletPos(int[] colRowPos){
 		colRowPos[0] = x_pos;
 		colRowPos[1] = y_pos;
@@ -152,6 +141,13 @@ public class Bullet {
 		return isPlayers;
 	}
 
+
+	public void setUpCell(Cell cell, int cellUnitSize, final int cellPrecisionSize){
+		cell.setMapCell(bulletMapCell);
+		cell.setPos(x_pos, y_pos);
+		cell.roundPos(cellPrecisionSize, cellUnitSize);
+	}
+
 	public void assignToPlayer(){
 		isPlayers = true;
 	}
@@ -166,6 +162,10 @@ public class Bullet {
 	}
 	public void makeWeak(){
 		canDestroySteel = false;
+	}
+
+	public boolean isExploding(){
+		return explodeIndex >= 0;
 	}
 
 	public boolean move(){
@@ -198,7 +198,7 @@ public class Bullet {
 			explodeIndex = 0;
 			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_1};
 			bulletMapCell = MapCell.EXPLODE_1;
-			int explodeSize = (MapCell.EXPLODE_1.getSize()*bulletSize)/(bulletMapCell.getUnitSize() ), posDiff;
+			int explodeSize = (MapCell.EXPLODE_1.getSize()*bulletSize)/(MapCell.getUnitSize() ), posDiff;
 			posDiff = explodeSize - bulletSize;
 			x_pos -= posDiff*(1 - xDirection);
 			y_pos -= posDiff*(1 - yDirection);
@@ -211,7 +211,7 @@ public class Bullet {
 			MapCell oldCellType = cell.getMapCell(), cellType;
 			cellType = rightSideDestruction.get(oldCellType);
 			cell.setMapCell(cellType);
-			changed = oldCellType != cellType;
+			changed = oldCellType != cellType || oldCellType == MapCell.STEEL;
 		}
 		return changed;
 	}
@@ -222,7 +222,7 @@ public class Bullet {
 			MapCell oldCellType = cell.getMapCell(), cellType;
 			cellType = leftSideDestruction.get(oldCellType);
 			cell.setMapCell(cellType);
-			changed = oldCellType != cellType;
+			changed = oldCellType != cellType || oldCellType == MapCell.STEEL;
 		}
 		return changed;
 	}
