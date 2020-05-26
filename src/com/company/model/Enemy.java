@@ -106,36 +106,6 @@ public abstract class Enemy {
 		}
 	}
 
-	public void turn(KeyCode newDirection, GameView view){
-		double xPosNew = x_pos, yPosNew = y_pos;
-		if(newDirection != currentDirection){
-			view.changeCellPositionToClosest(cell);
-			yPosNew = cell.getRow();
-			xPosNew = cell.getCol();
-
-			currentIcons = icons.get(newDirection);
-			int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
-			boolean accessible = view.setPosIfAccessible(cell, col, row, newDirection);
-			if(accessible){
-				x_pos = col;
-				y_pos = row;
-			}
-		}
-
-		if(currentIcons != null){
-			currentIconInd++;
-			currentIconInd = currentIconInd %currentIcons.length;
-			cell.setMapCell(currentIcons[currentIconInd]);
-		}
-
-		ride = true;
-		currentDirection = newDirection;
-	}
-
-	public void stop(){
-		ride = false;
-	}
-
 	public abstract Bullet fireBullet(int msInterval, int cellSize, DamageClass damages);
 
 }
