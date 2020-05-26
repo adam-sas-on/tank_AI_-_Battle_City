@@ -135,8 +135,12 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	public void loadMap(String mapFileName, MapLoader mapLoader, GameView view){
+		bulletsCount = 0;
 		if(player1 == null || player2 == null)
 			throw new NullPointerException("Can not load map: players are not set");
+
+		player1.setDefaultPlayerPosition();
+		player2.setDefaultPlayerPosition();
 
 		mapLoader.loadMap(cells[0], mapFileName, player1, player2, treesIds, view);
 	}
