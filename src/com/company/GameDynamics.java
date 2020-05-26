@@ -39,7 +39,7 @@ public class GameDynamics implements Iterable<Cell> {
 		rowCells = colCells = 26;// default Battle City map size;
 		this.maxCols = maxCols;
 
-		cellPrecisionUnitSize = Math.max(MapCell.BRICK.getUnitSize(), cellUnitSize);
+		cellPrecisionUnitSize = Math.max(MapCell.getUnitSize(), cellUnitSize);
 
 		tanks = new LinkedList<>();
 		treesIds = new ArrayList<>();
@@ -77,36 +77,6 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		cells[0].setCellStructure(cells, maxCols, maxRows, cellPrecisionUnitSize);
-		/*setUpperRowCells(maxCols);
-
-		int rowIndex, colIndex;
-		final int rowLimit = maxRows - 1, colLimit = maxCols - 1;
-
-		i = maxCols;
-		for(rowIndex = 1; rowIndex < rowLimit; rowIndex++, i++){// loop through rows;
-			cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1],  cells[i + maxCols], null);
-			cells[i].setPos(0, rowIndex*cellPrecisionUnitSize);
-
-			for(colIndex = 1, i++; colIndex < colLimit; colIndex++, i++){// loop through cols;
-				cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1],  cells[i + maxCols],  cells[i - 1]);
-				cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
-			}
-
-			cells[i].linkNeighborCells(cells[i - maxCols],  null,  cells[i + maxCols],  cells[i - 1]);
-			cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
-		}
-
-		// last row;
-		cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1],  null, null);
-		cells[i].setPos(0, rowIndex*cellPrecisionUnitSize);
-
-		for(colIndex = 1, i++; colIndex < colLimit; colIndex++, i++){// connect lowest row;
-			cells[i].linkNeighborCells(cells[i - maxCols],  cells[i + 1], null, cells[i - 1]);
-			cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
-		}
-
-		cells[i].linkNeighborCells(cells[i - maxCols], null, null, cells[i - 1]);
-		cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);*/
 	}
 
 	private Cell cellByPosition(int newCol, int newRow){
@@ -200,6 +170,12 @@ public class GameDynamics implements Iterable<Cell> {
 		bulletsCount--;
 	}
 
+	private void createCollectible(){
+		collectibles = new Cell();
+		collectibles.setMapCell(MapCell.STAR);
+		collectibles.setPos(3, 3);
+	}
+
 	private void performEnvironmentExplosion(int bulletIndex){
 		Cell cellRight, cellLeft;
 		boolean exploded = false;
@@ -223,23 +199,55 @@ public class GameDynamics implements Iterable<Cell> {
 			bullets[bulletIndex].setSmallExplode();
 	}
 
+	private int bulletsContact(int bulletIndex){
+		Cell bulletCell, bulletCheckCell;
+		int i;
+		boolean collide;
+
+		bulletCell = new Cell();
+		bulletCheckCell = new Cell();
+		bullets[bulletIndex].setUpCell(bulletCell, cellUnitSize, cellPrecisionUnitSize);
+
+		for(i = bulletIndex + 1; i < bulletsCount; i++){
+			if(bullets[i].isExploding() )
+				continue;
+
+			bullets[i].setUpCell(bulletCheckCell, cellUnitSize, cellPrecisionUnitSize);
+			collide = bulletCheckCell.collide(bulletCell, cellUnitSize);
+			if(collide)
+				return i;
+		}
+		return -1;
+	}
+
 	private void moveBullets(){
 		boolean keepMoving;
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
-		int i = 0;
+		int i = 0, bulletIndex;
+
 		while(i < bulletsCount){
 			keepMoving = bullets[i].move();
-			if(!keepMoving) {
+			if(!keepMoving){// explosion sprite finished;
 				removeBullet(i);
 				continue;
 			}
 
+			// - - - bullet touches border:
 			bullets[i].getBulletPos(xyPos);
 			if(xyPos[0] <= 0 || xyPos[1] <= 0 || xyPos[0] >= colLimit || xyPos[1] >= (rowCells-1)*cellPrecisionUnitSize){
 				bullets[i].setSmallExplode();
 				i++;
 				continue;
+			}
+
+			if(bullets[i].belongsToPlayer() ){
+				bulletIndex = bulletsContact(i);
+				if(bulletIndex >= 0){
+					bullets[i].setSmallExplode();
+					removeBullet(bulletIndex);
+					continue;
+				}
 			}
 
 			performEnvironmentExplosion(i);
@@ -286,15 +294,16 @@ public class GameDynamics implements Iterable<Cell> {
 	@Override
 	public Iterator<Cell> iterator(){
 		Iterator<Cell> iter = new Iterator<>() {
-			private boolean iterateEnvironment = true, tanksIterated = false, bulletsIterated = bulletsCount < 1;
+			private boolean iterateEnvironment = true, iterateTanks = true, bulletsIterated = bulletsCount < 1;
 			private boolean player1NotIterated = true, player2NotIterated = player2 != null;
+			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles != null;
 			private int iterateIndex = 0;
 			private Iterator<Enemy> tankIter = tanks.iterator();
 			private final int treesCount = treesIds.size();
 
 			@Override
 			public boolean hasNext(){
-				return iterateEnvironment || !tanksIterated || !bulletsIterated || iterateIndex < treesCount;
+				return iterateEnvironment || iterateTanks || !bulletsIterated || iterateTrees || drawCollectible;
 			}
 
 			@Override
@@ -312,7 +321,7 @@ public class GameDynamics implements Iterable<Cell> {
 						iterateIndex = 0;
 						iterateEnvironment = false;
 					}
-				} else if(!tanksIterated){
+				} else if(iterateTanks){
 					if(player1NotIterated){
 						player1.setUpCell(iterCell, cellUnitSize);
 						player1NotIterated = false;
@@ -322,7 +331,7 @@ public class GameDynamics implements Iterable<Cell> {
 					} else if(tankIter.hasNext() ){
 						cell = tankIter.next().getCell();
 					} else {
-						tanksIterated = true;
+						iterateTanks = false;
 					}
 				} else if(!bulletsIterated){
 					bullets[iterateIndex++].setUpCell(iterCell, cellUnitSize, cellPrecisionUnitSize);
@@ -330,14 +339,21 @@ public class GameDynamics implements Iterable<Cell> {
 						bulletsIterated = true;
 						iterateIndex = 0;
 					}
-				} else {
+				} else if(iterateTrees){
 					int treeInd = treesIds.get(iterateIndex), newCol;
 					iterateIndex++;
 					cell = cells[treeInd];// be sure this is properly implemented;
 					newCol = (cell.getCol()*cellUnitSize)/cellPrecisionUnitSize;
 					iterCell.setPos(newCol, (cell.getRow()*cellUnitSize)/cellPrecisionUnitSize);
 					iterCell.setMapCell(cell.getMapCell() );
+
+					iterateTrees = iterateIndex < treesCount;
+				} else {
+					iterCell.setMapCell( collectibles.getMapCell() );
+					iterCell.setPos( collectibles.getCol(), collectibles.getRow() );
+					drawCollectible = false;
 				}
+
 				return iterCell;
 			}
 
