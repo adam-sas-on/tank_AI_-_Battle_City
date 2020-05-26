@@ -1,5 +1,6 @@
 package com.company.view;
 
+import com.company.model.EnemyPort;
 import com.company.model.PlayerAITank;
 
 import java.io.BufferedReader;
@@ -71,7 +72,10 @@ public class MapLoader {
 
 	public void loadMap(Cell rootCell, String fileName,
 						PlayerAITank player1, PlayerAITank player2,
-						List<Integer> trees, GameView view){
+						List<EnemyPort> ports, List<Integer> trees,
+						GameView view){
+		trees.clear();
+
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
 		int cols = 0, rows = 0;
@@ -87,12 +91,19 @@ public class MapLoader {
 
 		scan.nextLine();
 
-		trees.clear();
 		Cell stepCell, rowCellBegin = rootCell;
 		int col, row;
 		String line;
 		for(row = freeCells.length - 1; row >= 0; row--)
 			freeCells[row] = true;
+
+		EnemyPort enemyPort;
+		int portsSize, portsCounter = 0;
+		if(ports == null){
+			ports = new ArrayList<>();
+			portsSize = 0;
+		} else
+			portsSize = ports.size();
 
 		List<Cell> nextCellToBlock = new LinkedList<>();
 
@@ -193,6 +204,16 @@ public class MapLoader {
 
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
+						break;
+					case '@':
+						if(portsCounter < portsSize){
+							ports.get(portsCounter).setPos(stepCell.getCol(), stepCell.getRow() );
+						} else {
+							enemyPort = new EnemyPort();
+							enemyPort.setPos(stepCell.getCol(), stepCell.getRow());
+							ports.add(enemyPort);
+						}
+						portsCounter++;
 						break;
 					case 'E':
 						stepCell.setMapCell(MapCell.EAGLE);

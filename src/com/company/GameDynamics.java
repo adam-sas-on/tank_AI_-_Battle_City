@@ -1,9 +1,6 @@
 package com.company;
 
-import com.company.model.Bullet;
-import com.company.model.DamageClass;
-import com.company.model.PlayerAITank;
-import com.company.model.Enemy;
+import com.company.model.*;
 import com.company.view.Cell;
 import com.company.view.GameView;
 import com.company.view.MapCell;
@@ -17,7 +14,10 @@ import java.util.List;
 public class GameDynamics implements Iterable<Cell> {
 	private PlayerAITank player1;
 	private PlayerAITank player2;
+
 	private List<Enemy> tanks;
+	private List<EnemyPort> enemyPorts;
+
 	private Bullet[] bullets;
 	private int bulletsCount;
 	private final double bulletsCountMultiplier = 1.4;
@@ -28,10 +28,10 @@ public class GameDynamics implements Iterable<Cell> {
 	private int colCells;
 	private final int maxCols;
 	private Cell collectibles;
-	private final int cellPrecisionUnitSize;
-	private int[] xyPos = new int[2];
 	private List<Integer> treesIds;
 	private int cellUnitSize;
+	private final int cellPrecisionUnitSize;
+	private int[] xyPos = new int[2];
 	private Cell iterCell;
 
 
@@ -42,6 +42,7 @@ public class GameDynamics implements Iterable<Cell> {
 		cellPrecisionUnitSize = Math.max(MapCell.getUnitSize(), cellUnitSize);
 
 		tanks = new LinkedList<>();
+		enemyPorts = new ArrayList<>();
 		treesIds = new ArrayList<>();
 
 		bulletsCount = 0;
@@ -142,7 +143,7 @@ public class GameDynamics implements Iterable<Cell> {
 		player1.setDefaultPlayerPosition();
 		player2.setDefaultPlayerPosition();
 
-		mapLoader.loadMap(cells[0], mapFileName, player1, player2, treesIds, view);
+		mapLoader.loadMap(cells[0], mapFileName, player1, player2, enemyPorts, treesIds, view);
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
