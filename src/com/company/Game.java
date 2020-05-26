@@ -18,6 +18,7 @@ public class Game {
 	private static GameView view;
 	private final ScheduledExecutorService runGame;
 	private static final int msInterval = 20;
+	private final int cellPrecisionUnitSize = 10000;
 	private static GameDynamics dynamics;
 	private static boolean pause;
 
@@ -30,30 +31,31 @@ public class Game {
 
 	public Game(GameView view){
 		Game.view = view;
-		runGame = Executors.newSingleThreadScheduledExecutor();
-		dynamics = new GameDynamics(26, 26);
-		pause = false;
-
 		mapLoader = MapLoader.getInstance();
 		maps = new ArrayList<>();
 		mapLoader.getFileList(maps);
 
+		runGame = Executors.newSingleThreadScheduledExecutor();
+		dynamics = new GameDynamics(mapLoader.getMaxCols(), mapLoader.getMaxRows(), cellPrecisionUnitSize);
+		pause = false;
+
+
 		setControllers();
 
-		player1 = new PlayerAITank(20, player1driver);
-		player1.setPosOnPlayer1();
+		player1 = new PlayerAITank(player1driver, 20, cellPrecisionUnitSize);
+		player1.setDefaultPlayerPosition();
 
-		player2 = new PlayerAITank(20, player2driver);
-		player2.setPosOnPlayer2();
+		player2 = new PlayerAITank(player2driver, 20, cellPrecisionUnitSize);
+		player2.setDefaultPlayerPosition();
 		setPlayerIcons();
 		dynamics.setFirstPlayer(player1);
 		dynamics.setSecondPlayer(player2);
 
-		dynamics.loadMap(maps.get(2), mapLoader);
+		dynamics.loadMap(maps.get(6), mapLoader, view);
 
-		view.loadMapSetPlayers("map_2.txt", player1, player2);
-		view.addCell(player1.getCell());
-		view.addCell(player2.getCell());
+		//view.loadMapSetPlayers("map_2.txt", player1, player2);
+		//view.addCell(player1.getCell());
+		//view.addCell(player2.getCell());
 	}
 
 	private void setControllers(){
@@ -65,38 +67,10 @@ public class Game {
 	}
 
 	private void setPlayerIcons(){
-		MapCell[] cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_UP, MapCell.TANK_1_LVL_1_STATE_2_UP};
-		int directionAngle = player1driver.moveKeyValue(KeyCode.UP);
-		player1.addIcons(directionAngle, cells);
-
-		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_RIGHT, MapCell.TANK_1_LVL_1_STATE_2_RIGHT};
-		directionAngle = player1driver.moveKeyValue(KeyCode.RIGHT);
-		player1.addIcons(directionAngle, cells);
-
-		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_DOWN, MapCell.TANK_1_LVL_1_STATE_2_DOWN};
-		directionAngle = player1driver.moveKeyValue(KeyCode.DOWN);
-		player1.addIcons(directionAngle, cells);
-
-		cells = new MapCell[]{MapCell.TANK_1_LVL_1_STATE_1_LEFT, MapCell.TANK_1_LVL_1_STATE_2_LEFT};
-		directionAngle = player1driver.moveKeyValue(KeyCode.LEFT);
-		player1.addIcons(directionAngle, cells);
+		player1.setIcons();
 
 		// - - - player 2nd;
-		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_UP, MapCell.TANK_2_LVL_1_STATE_2_UP};
-		directionAngle = player2driver.moveKeyValue(KeyCode.W);
-		player2.addIcons(directionAngle, cells);
-
-		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_RIGHT, MapCell.TANK_2_LVL_1_STATE_2_RIGHT};
-		directionAngle = player2driver.moveKeyValue(KeyCode.D);
-		player2.addIcons(directionAngle, cells);
-
-		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_DOWN, MapCell.TANK_2_LVL_1_STATE_2_DOWN};
-		directionAngle = player2driver.moveKeyValue(KeyCode.S);
-		player2.addIcons(directionAngle, cells);
-
-		cells = new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_LEFT, MapCell.TANK_2_LVL_1_STATE_2_LEFT};
-		directionAngle = player2driver.moveKeyValue(KeyCode.A);
-		player2.addIcons(directionAngle, cells);
+		player2.setIcons();
 	}
 
 	public Scene start(){
@@ -113,7 +87,8 @@ public class Game {
 		if(keyCode == KeyCode.C){
 			pause = !pause;
 			return;
-		}
+		} else if(pause)
+			return;
 
 		player1driver.setEvent(keyCode);
 		player2driver.setEvent(keyCode);
@@ -131,7 +106,7 @@ public class Game {
 		if(pause)
 			return;
 
-		dynamics.nextStep(view);
+		dynamics.nextStep();
 
 		//if(watch)
 			view.drawMap(dynamics);
