@@ -22,7 +22,7 @@ public class Main extends Application {
 
 		game = new Game(view);
 
-		Scene scene = game.start();
+		Scene scene = view.drawStart();
 
 		primaryStage.setScene(scene);
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyPressed);
@@ -42,6 +42,7 @@ public class Main extends Application {
 
 		primaryStage.setTitle("Battle City - java");
 		primaryStage.show();
+		game.start();
 	}
 
 

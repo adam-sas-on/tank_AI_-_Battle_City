@@ -2,11 +2,15 @@ package com.company;
 
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
-import com.company.view.MapCell;
 import com.company.view.MapLoader;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +24,11 @@ public class Game {
 	private static final int msInterval = 20;
 	private final int cellPrecisionUnitSize = 10000;
 	private static GameDynamics dynamics;
+	private final Timeline timeline;
 	private static boolean pause;
 
 	private static MapLoader mapLoader;
-	private List<String> maps;
+	private static List<String> maps;
 
 	private static SpriteEventController player1driver, player2driver;
 	private static PlayerAITank player1;
@@ -39,7 +44,6 @@ public class Game {
 		dynamics = new GameDynamics(mapLoader.getMaxCols(), mapLoader.getMaxRows(), cellPrecisionUnitSize);
 		pause = false;
 
-
 		setControllers();
 
 		player1 = new PlayerAITank(player1driver, 20, cellPrecisionUnitSize);
@@ -51,11 +55,18 @@ public class Game {
 		dynamics.setFirstPlayer(player1);
 		dynamics.setSecondPlayer(player2);
 
-		dynamics.loadMap(maps.get(6), mapLoader, view);
+		dynamics.loadMap(maps.get(15), mapLoader, view);
 
-		//view.loadMapSetPlayers("map_2.txt", player1, player2);
-		//view.addCell(player1.getCell());
-		//view.addCell(player2.getCell());
+		// Cannot assign a value to final variable 'timeline'
+		timeline = new Timeline(
+				new KeyFrame(Duration.ZERO, new EventHandler<>(){
+					@Override
+					public void handle(ActionEvent actionEvent){
+						view.drawMap(dynamics);
+					}
+				}),
+				new KeyFrame(Duration.millis(20))
+			);
 	}
 
 	private void setControllers(){
@@ -73,13 +84,11 @@ public class Game {
 		player2.setIcons();
 	}
 
-	public Scene start(){
-		Scene scene = view.drawStart();
-		//view.drawMap();
+	public void start(){
+		timeline.setCycleCount(Timeline.INDEFINITE);
 
 		runGame.scheduleAtFixedRate(Game::run, 0, msInterval, TimeUnit.MILLISECONDS);
-
-		return scene;
+		timeline.play();
 	}
 
 	public void listen(KeyEvent keyEvent){
@@ -101,18 +110,17 @@ public class Game {
 	}
 
 	public static void run(){
-		boolean watch = false;
+		//boolean watch = false;
 
 		if(pause)
 			return;
 
 		dynamics.nextStep();
 
-		//if(watch)
-			view.drawMap(dynamics);
 	}
 
 	public void stop(){
+		timeline.stop();
 		runGame.shutdown();
 		try {
 			runGame.awaitTermination(1, TimeUnit.SECONDS);
