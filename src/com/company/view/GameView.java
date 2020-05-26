@@ -24,27 +24,32 @@ public class GameView {
 	private int[] positions;
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels = 16;
-	private final int unitSize = MapCell.STEEL.getUnitSize();// any icon because unit size is the same for all;
+	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
+	private final int cellDefaultSize;
 	List<Integer> trees;
 	List<Cell> tanks;
 	List<Bullet> bullets;
 
-	public GameView(){
+	public GameView(int cellPrecisionUnitSize){
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
 
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
 
+		cellDefaultSize = Math.max(MapCell.getUnitSize(), cellPrecisionUnitSize);
 
 		cells = new Cell[rowCells * rowCells];
 		positions = new int[rowCells];
-		setCellsStructure();
 
 		exampleCells();
 		trees = new ArrayList<>();
 		tanks = new ArrayList<>();
 		bullets = new LinkedList<>();
+	}
+
+	public int getDefaultCellSize(){
+		return cellDefaultSize;
 	}
 
 	public int getRowColCells(){
@@ -101,62 +106,6 @@ public class GameView {
 		cell.setPos(col, row);
 	}
 
-	private void setUpperRowCells(){
-		cells[0].linkNeighborCells(null, cells[1], cells[rowCells], null);
-		cells[0].setPos(0, 0);
-
-		int i, rowLimit = rowCells - 1;
-		for(i = 1; i < rowLimit; i++){
-			cells[i].linkNeighborCells(null, cells[i+1], cells[i+ rowCells], cells[i-1]);
-			cells[i].setPos(i*sizePixels, 0);
-			positions[i] = i*sizePixels;
-		}
-
-		cells[i].linkNeighborCells(null, null, cells[i+ rowCells], cells[i-1]);
-		cells[i].setPos(i*sizePixels, 0);
-		positions[i] = i*sizePixels;
-	}
-
-	private void setCellsStructure() {
-		int i;
-		for (i = cells.length - 1; i >= 0; i--){
-			cells[i] = new Cell();
-			cells[i].setIndexId(i);
-		}
-
-		positions[0] = 0;
-		setUpperRowCells();
-
-		int rowIndex, colIndex,
-				rowColLimit = rowCells - 1;
-
-		i = rowCells;
-		for(rowIndex = 1; rowIndex < rowColLimit; rowIndex++, i++){// loop through rows;
-			cells[i].linkNeighborCells(cells[i- rowCells], cells[i+1], cells[i+ rowCells], null);// left side;
-			cells[i].setPos(0, rowIndex*sizePixels);
-			positions[rowIndex] = rowIndex*sizePixels;
-
-			for(colIndex = 1, i++; colIndex < rowColLimit; colIndex++, i++){
-				cells[i].linkNeighborCells(cells[i- rowCells], cells[i+1], cells[i+ rowCells], cells[i-1]);
-				cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
-			}
-
-			cells[i].linkNeighborCells(cells[i- rowCells], null, cells[i+ rowCells], cells[i-1]);// right side;
-			cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
-		}
-
-		cells[i].linkNeighborCells(cells[i- rowCells], cells[i+1], null, null);
-		cells[i].setPos(0, rowIndex*sizePixels);
-		positions[rowIndex] = rowIndex*sizePixels;
-
-		for(colIndex = 1, i++; colIndex < rowColLimit; colIndex++, i++) {// connect lower row;
-			cells[i].linkNeighborCells(cells[i - rowCells], cells[i + 1], null, cells[i - 1]);
-			cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
-		}
-
-		cells[i].linkNeighborCells(cells[i- rowCells], null, null, cells[i-1]);
-		cells[i].setPos(colIndex*sizePixels, rowIndex*sizePixels);
-	}
 
 	private void exampleCells(){
 		cells[0].setMapCell(MapCell.EAGLE);
@@ -164,14 +113,6 @@ public class GameView {
 		Cell cell = cells[0].getDownCell();
 		cell = cell.getDownCell();
 		cell.setMapCell(MapCell.TANK_2_LVL_3_STATE_1_RIGHT);
-	}
-
-	public void addBullet(Bullet bullet){
-		bullets.add(bullet);
-	}
-
-	public void addCell(Cell cell){
-		tanks.add(cell);
 	}
 
 	/*private boolean cellNotCollideWithOthers(Cell cell){

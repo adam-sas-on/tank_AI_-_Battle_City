@@ -17,8 +17,9 @@ public class Main extends Application {
 	Game game;
 
 	@Override
-	public void start(Stage primaryStage) throws Exception{
-		GameView view = new GameView();
+	public void start(Stage primaryStage) throws Exception {
+		int cellPrecisionUnitSize = 10000;
+		GameView view = new GameView(cellPrecisionUnitSize);
 
 		game = new Game(view);
 

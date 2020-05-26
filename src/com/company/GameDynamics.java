@@ -35,11 +35,11 @@ public class GameDynamics implements Iterable<Cell> {
 	private Cell iterCell;
 
 
-	public GameDynamics(int maxCols, int maxRows, int cellUnitSize){
+	public GameDynamics(int maxCols, int maxRows, GameView view){
 		rowCells = colCells = 26;// default Battle City map size;
 		this.maxCols = maxCols;
 
-		cellPrecisionUnitSize = Math.max(MapCell.getUnitSize(), cellUnitSize);
+		cellPrecisionUnitSize = view.getDefaultCellSize();
 
 		tanks = new LinkedList<>();
 		enemyPorts = new ArrayList<>();

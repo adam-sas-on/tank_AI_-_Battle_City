@@ -7,7 +7,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Duration;
@@ -22,7 +21,6 @@ public class Game {
 	private static GameView view;
 	private final ScheduledExecutorService runGame;
 	private static final int msInterval = 20;
-	private final int cellPrecisionUnitSize = 10000;
 	private static GameDynamics dynamics;
 	private final Timeline timeline;
 	private static boolean pause;
@@ -41,11 +39,12 @@ public class Game {
 		mapLoader.getFileList(maps);
 
 		runGame = Executors.newSingleThreadScheduledExecutor();
-		dynamics = new GameDynamics(mapLoader.getMaxCols(), mapLoader.getMaxRows(), cellPrecisionUnitSize);
+		dynamics = new GameDynamics(mapLoader.getMaxCols(), mapLoader.getMaxRows(), view);
 		pause = false;
 
 		setControllers();
 
+		int cellPrecisionUnitSize = view.getDefaultCellSize();
 		player1 = new PlayerAITank(player1driver, 20, cellPrecisionUnitSize);
 		player1.setDefaultPlayerPosition();
 
@@ -55,7 +54,7 @@ public class Game {
 		dynamics.setFirstPlayer(player1);
 		dynamics.setSecondPlayer(player2);
 
-		dynamics.loadMap(maps.get(15), mapLoader, view);
+		dynamics.loadMap(maps.get(14), mapLoader, view);
 
 		// Cannot assign a value to final variable 'timeline'
 		timeline = new Timeline(
