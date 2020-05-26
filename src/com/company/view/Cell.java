@@ -10,7 +10,7 @@ public class Cell {
 	// unit coordinates on map for cell or local cell for movable cell; coordinates on screen when drawing;
 	private int col;
 	private int row;
-	private int size;
+	private int size;// size of icon from image-cells in pixels;
 	private boolean destructible, accessible;
 	private Cell upCell, rightCell, downCell, leftCell;
 	private boolean canMoveUp, canMoveRight, canMoveDown, canMoveLeft;
@@ -438,11 +438,12 @@ public class Cell {
 		cells[i].setPos(colIndex*cellPrecisionUnitSize, rowIndex*cellPrecisionUnitSize);
 	}
 
-	public boolean collide(Cell cell){
+	public boolean collide(Cell cell, final int unitSizeOfCells){
 		int row2nd = cell.getRow(), col2nd = cell.getCol(),
-				size2nd = cell.getCellSize();
+			size2nd = (cell.getCellSize()*unitSizeOfCells )/MapCell.getUnitSize(),
+			sizeOfThis = (size*unitSizeOfCells )/MapCell.getUnitSize();
 
-		return row2nd + size2nd > row && col2nd + size2nd > col && row + size > row2nd && col + size > col2nd;
+		return row2nd + size2nd > row && col2nd + size2nd > col && row + sizeOfThis > row2nd && col + sizeOfThis > col2nd;
 	}
 
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){
