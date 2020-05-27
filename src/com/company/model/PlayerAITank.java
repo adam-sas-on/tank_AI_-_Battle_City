@@ -96,7 +96,6 @@ public class PlayerAITank implements Tank {
 	public void setUpCell(Cell cell, int newCellUnitSize) {
 		cell.setMapCell(currentIcons[currentIconInd]);
 		cell.setPos(x_pos, y_pos);
-		cell.roundPos(cellPrecisionSize, newCellUnitSize);
 	}
 
 	public void setIcons(){

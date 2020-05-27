@@ -23,7 +23,7 @@ public class GameView {
 	private Cell[] cells;
 	private int[] positions;
 	private int rowCells = 26, colCells = 26;
-	private int sizePixels = 16;
+	private int sizePixels;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
 	List<Integer> trees;
@@ -31,6 +31,8 @@ public class GameView {
 	List<Bullet> bullets;
 
 	public GameView(int cellPrecisionUnitSize){
+		sizePixels = unitSize;
+
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
 
@@ -42,7 +44,6 @@ public class GameView {
 		cells = new Cell[rowCells * rowCells];
 		positions = new int[rowCells];
 
-		exampleCells();
 		trees = new ArrayList<>();
 		tanks = new ArrayList<>();
 		bullets = new LinkedList<>();
@@ -208,6 +209,8 @@ public class GameView {
 		Iterator<Cell> iter = dynamics.iterator();
 		while(iter.hasNext() ){
 			cell = iter.next();
+			//cell.roundPos(cellDefaultSize, sizePixels);
+
 			cell.drawCell(gContext, tiles, multiplier);
 		}
 

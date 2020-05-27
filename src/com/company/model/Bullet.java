@@ -145,7 +145,6 @@ public class Bullet {
 	public void setUpCell(Cell cell, int cellUnitSize, final int cellPrecisionSize){
 		cell.setMapCell(bulletMapCell);
 		cell.setPos(x_pos, y_pos);
-		cell.roundPos(cellPrecisionSize, cellUnitSize);
 	}
 
 	public void assignToPlayer(){

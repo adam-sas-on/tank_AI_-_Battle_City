@@ -32,7 +32,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
 	private int[] xyPos = new int[2];
-	private Cell iterCell;
+	//private Cell iterCell;
 
 
 	public GameDynamics(int maxCols, int maxRows, GameView view){
@@ -49,7 +49,7 @@ public class GameDynamics implements Iterable<Cell> {
 		bullets = new Bullet[10];// any beginning size;
 
 		setCellsStructure(maxCols, maxRows);
-		iterCell = new Cell();
+		//iterCell = new Cell();
 
 		damages = DamageClass.getInstance();
 	}
@@ -299,6 +299,7 @@ public class GameDynamics implements Iterable<Cell> {
 	@Override
 	public Iterator<Cell> iterator(){
 		Iterator<Cell> iter = new Iterator<>() {
+			Cell iterCell = new Cell();
 			private boolean iterateEnvironment = true, iterateTanks = true, bulletsIterated = bulletsCount < 1;
 			private boolean player1NotIterated = true, player2NotIterated = player2 != null;
 			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles != null;
@@ -314,12 +315,15 @@ public class GameDynamics implements Iterable<Cell> {
 			@Override
 			public Cell next(){
 				Cell cell;
+				boolean doRound = false;
+
 				if(iterateEnvironment){
 					int index = iterateIndex/colCells*(maxCols - colCells) + iterateIndex, newCol;// index + remaining cols;
 					cell = cells[index];
-					newCol = (cell.getCol()*cellUnitSize)/cellPrecisionUnitSize;
-					iterCell.setPos(newCol, (cell.getRow()*cellUnitSize)/cellPrecisionUnitSize);
+					newCol = cell.getCol();
+					iterCell.setPos(newCol, cell.getRow() );
 					iterCell.setMapCell(cell.getMapCell());
+					doRound = true;
 
 					iterateIndex++;
 					if(iterateIndex >= rowCells*colCells){
@@ -329,9 +333,13 @@ public class GameDynamics implements Iterable<Cell> {
 				} else if(iterateTanks){
 					if(player1NotIterated){
 						player1.setUpCell(iterCell, cellUnitSize);
+						doRound = true;
+
 						player1NotIterated = false;
 					} else if(player2NotIterated){
 						player2.setUpCell(iterCell, cellUnitSize);
+						doRound = true;
+
 						player2NotIterated = false;
 					} else if(tankIter.hasNext() ){
 						cell = tankIter.next().getCell();
@@ -340,6 +348,7 @@ public class GameDynamics implements Iterable<Cell> {
 					}
 				} else if(!bulletsIterated){
 					bullets[iterateIndex++].setUpCell(iterCell, cellUnitSize, cellPrecisionUnitSize);
+					doRound = true;
 					if(iterateIndex >= bulletsCount){
 						bulletsIterated = true;
 						iterateIndex = 0;
@@ -348,16 +357,20 @@ public class GameDynamics implements Iterable<Cell> {
 					int treeInd = treesIds.get(iterateIndex), newCol;
 					iterateIndex++;
 					cell = cells[treeInd];// be sure this is properly implemented;
-					newCol = (cell.getCol()*cellUnitSize)/cellPrecisionUnitSize;
-					iterCell.setPos(newCol, (cell.getRow()*cellUnitSize)/cellPrecisionUnitSize);
+					newCol = cell.getCol();
+					iterCell.setPos(newCol, cell.getRow() );
 					iterCell.setMapCell(cell.getMapCell() );
+					doRound = true;
 
 					iterateTrees = iterateIndex < treesCount;
-				} else {
+				} else if(drawCollectible){
 					iterCell.setMapCell( collectibles.getMapCell() );
 					iterCell.setPos( collectibles.getCol(), collectibles.getRow() );
 					drawCollectible = false;
 				}
+
+				if(doRound)
+					iterCell.roundPos(cellPrecisionUnitSize, cellUnitSize);
 
 				return iterCell;
 			}
