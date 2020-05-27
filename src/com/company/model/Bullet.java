@@ -26,10 +26,18 @@ public class Bullet {
 	private Map<MapCell,MapCell> rightSideDestruction;
 	private Map<MapCell,MapCell> leftSideDestruction;
 
-	public Bullet(int bulletSpeed, int tankSize, KeyCode direction, int tankX, int tankY, DamageClass damages){
-		pixelSpeed = bulletSpeed;// speed: 6 cells / 1000 ms;
+	public Bullet(PlayerAITank player, DamageClass damages){
+		int[] xyPos = new int[2];
+		KeyCode direction;
+		int tankSize;
 
-		isPlayers = canDestroySteel = false;// most bullets;
+		player.getPos(xyPos);
+		direction = player.getDirectionCode();
+		tankSize = player.getTankSize();
+		pixelSpeed = player.getBulletSpeed();// default: speed: 6 cells / 1000 ms;
+
+		canDestroySteel = player.lastBulletCanDestroySteel();
+		isPlayers = true;
 		xDirection = 0;
 		yDirection = 0;
 		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
@@ -38,7 +46,7 @@ public class Bullet {
 		rightSideDestruction = new HashMap<>(14);
 		leftSideDestruction = new HashMap<>(14);
 
-		setMapCellAndPosition(tankSize, direction, tankX, tankY);
+		setMapCellAndPosition(tankSize, direction, xyPos[0], xyPos[1]);
 
 		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
 				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
@@ -149,18 +157,6 @@ public class Bullet {
 
 	public void assignToPlayer(){
 		isPlayers = true;
-	}
-
-	public void setDoubleSpeed(){
-		pixelSpeed *= 2;
-	}
-
-	public void setDestructivePower(int tankLevel){
-		if(tankLevel > 3)
-			canDestroySteel = true;
-	}
-	public void makeWeak(){
-		canDestroySteel = false;
 	}
 
 	public boolean isExploding(){

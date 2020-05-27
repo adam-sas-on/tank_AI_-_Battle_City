@@ -12,13 +12,13 @@ public class PlayerAITank implements Tank {
 	private SpriteEventController tankDriver;
 	private int cellSpeed;
 	private int bulletSpeed;
+	private int lastBulletPower;
 	private int x_pos, y_pos;
 	private boolean canKeepMoving;
 	private int level;
 	private int currentDirection;
 	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
-	private Cell currentCell;
 	private int currentIconInd;
 	private int bulletSteps;
 	private final int nextBulletSteps;
@@ -32,11 +32,11 @@ public class PlayerAITank implements Tank {
 
 		cellPrecisionSize = cellUnitSize;
 		size = (cellUnitSize*MapCell.TANK_1_LVL_1_STATE_1_UP.getSize())/(MapCell.getUnitSize() );
-		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 cells / 5000 ms;
+		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 full-cells / 5000 ms;
 
 		nextBulletSteps = (1000*3)/(msInterval*2*2);
 		bulletSteps = 0;
-		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 cells / second;
+		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 full-cells / second;
 
 		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
 
@@ -64,22 +64,18 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
-	public Bullet fireBullet(DamageClass damages){
+	public boolean fireBullet(DamageClass damages) {
 		int bulletPower = tankDriver.takeTheShootPower();
-		if(bulletPower < 1 || bulletSteps > 0)
-			return null;
+		if (bulletPower < 1 || bulletSteps > 0){
+			return false;
+		}
 
 		bulletSteps = nextBulletSteps;
-		KeyCode directionCode = tankDriver.getKeyCode();
+		lastBulletPower = bulletPower;
+		if(level < 4)
+			lastBulletPower = 1;
 
-		Bullet bullet = new Bullet(bulletSpeed, size, directionCode, x_pos, y_pos, damages);
-		bullet.assignToPlayer();
-		if(level > 1)
-			bullet.setDoubleSpeed();
-		if(bulletPower > 1)
-			bullet.setDestructivePower(level);
-
-		return bullet;
+		return true;
 	}
 
 	@Override
@@ -88,8 +84,29 @@ public class PlayerAITank implements Tank {
 	}
 
 	public void getPos(int[] xyPos){
-		xyPos[0] = x_pos;
-		xyPos[1] = y_pos;
+		try {
+			xyPos[0] = x_pos;
+			xyPos[1] = y_pos;
+		} catch(ArrayIndexOutOfBoundsException ignore){}
+	}
+
+	public int getTankSize(){
+		return size;
+	}
+
+	public KeyCode getDirectionCode(){
+		return tankDriver.getKeyCode();
+	}
+
+	public int getBulletSpeed(){
+		if(level < 1)
+			return 0;
+
+		return (level > 1)?bulletSpeed*2:bulletSpeed;
+	}
+
+	public boolean lastBulletCanDestroySteel(){
+		return lastBulletPower > 1;
 	}
 
 	@Override
