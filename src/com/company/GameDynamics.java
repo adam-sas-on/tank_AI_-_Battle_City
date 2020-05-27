@@ -29,6 +29,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private int colCells;
 	private final int maxCols;
 	private Cell collectibles;
+	private int collectibleTimer;
 	private List<Integer> treesIds;
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
@@ -211,6 +212,32 @@ public class GameDynamics implements Iterable<Cell> {
 		collectibles.setMapCell(mapCells[randomRow]);
 	}
 
+	private void collect(PlayerAITank player){
+		switch(collectibles.getMapCell() ){
+			case TIMER:
+				collectibleTimer = stepsPerSecond*30;
+				break;
+			case BOMB:
+				// todo: perform explosions for all enemy tanks;
+				break;
+			case STAR:
+				player.promoteDegrade(true);
+				break;
+			case TANK_LIVE:
+				// todo add live for player;
+				break;
+			case HELMET:
+				collectibleTimer = stepsPerSecond*30;
+				// todo: make player with blinking cell indestructible;
+				break;
+			case SPADE:
+				collectibleTimer = stepsPerSecond*30;
+				// todo: create steel around eagle;
+				break;
+		}
+		collectibles.setMapCell(null);
+	}
+
 	private void performEnvironmentExplosion(int bulletIndex){
 		Cell cellRight, cellLeft;
 		boolean exploded = false;
@@ -298,14 +325,15 @@ public class GameDynamics implements Iterable<Cell> {
 			player.blockMovement(checkCell, xyPos[0], xyPos[1]);
 		}
 
-		Bullet bullet = player.fireBullet(damages);
-		if(bullet != null)
+		if(player.fireBullet(damages) ){
+			Bullet bullet = new Bullet(player, damages);
 			addBullet(bullet);
+		}
 
 		checkCell = new Cell();
 		player.setUpCell(checkCell);
 		if(checkCell.collide(collectibles, cellPrecisionUnitSize) )
-			collectibles.setMapCell(null);
+			collect(player);
 	}
 
 	public void nextStep(){
@@ -316,6 +344,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		moveBullets();
 
+		// temporary creating collectible for testing;
 		int tensSeconds = steps/(stepsPerSecond*10);
 		if(tensSeconds%2 == 1 && collectibles.getMapCell() == null){
 			createCollectible();
