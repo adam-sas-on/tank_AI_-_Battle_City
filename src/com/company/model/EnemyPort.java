@@ -11,16 +11,21 @@ public class EnemyPort {
 	public EnemyPort(){
 		x_pos = y_pos = 0;
 
-		icons = new MapCell[]{MapCell.CREATE_1, MapCell.CREATE_2, MapCell.CREATE_3,
-				MapCell.CREATE_4, MapCell.CREATE_5, MapCell.CREATE_6};
+		icons = new MapCell[]{MapCell.CREATE_1, MapCell.CREATE_1, MapCell.CREATE_2, MapCell.CREATE_2,
+				MapCell.CREATE_3, MapCell.CREATE_3, MapCell.CREATE_4, MapCell.CREATE_4,
+				MapCell.CREATE_5, MapCell.CREATE_5, MapCell.CREATE_6, MapCell.CREATE_6};
 		currentIconInd = 0;
 	}
 
 
-	public void setUpCell(Cell cell, int newCellUnitSize, int cellPrecisionSize){
+	public void setUpCell(Cell cell) {
+		if(currentIconInd < 0){
+			cell.setMapCell(null);
+			return;
+		}
+
 		cell.setMapCell(icons[currentIconInd]);
 		cell.setPos(x_pos, y_pos);
-		cell.roundPos(cellPrecisionSize, newCellUnitSize);
 
 		currentIconInd++;
 		currentIconInd = currentIconInd %icons.length;
@@ -31,4 +36,11 @@ public class EnemyPort {
 		y_pos = y;
 	}
 
+	public void activatePort(){
+		currentIconInd = 0;
+	}
+
+	public void createTank(){
+		currentIconInd = -1;
+	}
 }
