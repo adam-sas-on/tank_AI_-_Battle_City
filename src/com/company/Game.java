@@ -18,22 +18,22 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Game {
-	private static GameView view;
+	private GameView view;
 	private final ScheduledExecutorService runGame;
-	private static final int msInterval = 20;
-	private static GameDynamics dynamics;
+	private final int msInterval = 20;
+	private GameDynamics dynamics;
 	private final Timeline timeline;
-	private static boolean pause;
+	private boolean pause;
 
-	private static MapLoader mapLoader;
-	private static List<String> maps;
+	private MapLoader mapLoader;
+	private List<String> maps;
 
-	private static SpriteEventController player1driver, player2driver;
-	private static PlayerAITank player1;
-	private static PlayerAITank player2;
+	private SpriteEventController player1driver, player2driver;
+	private PlayerAITank player1;
+	private PlayerAITank player2;
 
 	public Game(GameView view){
-		Game.view = view;
+		this.view = view;
 		mapLoader = MapLoader.getInstance();
 		maps = new ArrayList<>();
 		mapLoader.getFileList(maps);
@@ -44,7 +44,7 @@ public class Game {
 
 		setControllers();
 
-		int cellPrecisionUnitSize = view.getDefaultCellSize();
+		int cellPrecisionUnitSize = this.view.getDefaultCellSize();
 		player1 = new PlayerAITank(player1driver, 20, cellPrecisionUnitSize);
 		player1.setDefaultPlayerPosition();
 
@@ -86,7 +86,7 @@ public class Game {
 	public void start(){
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
-		runGame.scheduleAtFixedRate(Game::run, 0, msInterval, TimeUnit.MILLISECONDS);
+		runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
 		timeline.play();
 	}
 
@@ -108,7 +108,7 @@ public class Game {
 		player2driver.stopEvent(keyCode);
 	}
 
-	public static void run(){
+	public void run(){
 		//boolean watch = false;
 
 		if(pause)
