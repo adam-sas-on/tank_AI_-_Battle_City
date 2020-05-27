@@ -93,7 +93,7 @@ public class PlayerAITank implements Tank {
 	}
 
 	@Override
-	public void setUpCell(Cell cell, int newCellUnitSize) {
+	public void setUpCell(Cell cell){
 		cell.setMapCell(currentIcons[currentIconInd]);
 		cell.setPos(x_pos, y_pos);
 	}

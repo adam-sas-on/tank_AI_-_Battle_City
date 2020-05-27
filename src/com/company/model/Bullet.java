@@ -142,7 +142,7 @@ public class Bullet {
 	}
 
 
-	public void setUpCell(Cell cell, int cellUnitSize, final int cellPrecisionSize){
+	public void setUpCell(Cell cell){
 		cell.setMapCell(bulletMapCell);
 		cell.setPos(x_pos, y_pos);
 	}
