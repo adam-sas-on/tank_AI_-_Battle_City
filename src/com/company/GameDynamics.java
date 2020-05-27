@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.logic.BattleRandom;
 import com.company.model.*;
 import com.company.view.Cell;
 import com.company.view.GameView;
@@ -31,8 +32,10 @@ public class GameDynamics implements Iterable<Cell> {
 	private List<Integer> treesIds;
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
+
+	private BattleRandom rand;
 	private int[] xyPos = new int[2];
-	//private Cell iterCell;
+	private int stepsPerSecond, steps;
 
 
 	public GameDynamics(int maxCols, int maxRows, GameView view){
@@ -40,6 +43,7 @@ public class GameDynamics implements Iterable<Cell> {
 		this.maxCols = maxCols;
 
 		cellPrecisionUnitSize = view.getDefaultCellSize();
+		steps = 0;
 
 		tanks = new LinkedList<>();
 		enemyPorts = new ArrayList<>();
@@ -49,9 +53,11 @@ public class GameDynamics implements Iterable<Cell> {
 		bullets = new Bullet[10];// any beginning size;
 
 		setCellsStructure(maxCols, maxRows);
-		//iterCell = new Cell();
+		collectibles = new Cell();
 
 		damages = DamageClass.getInstance();
+
+		rand = new BattleRandom();
 	}
 
 	/*private void setUpperRowCells(int maxCols){
@@ -68,6 +74,15 @@ public class GameDynamics implements Iterable<Cell> {
 		cells[i].setPos(i*cellPrecisionUnitSize, 0);
 	}*/
 
+	private Cell cellByPosition(int newCol, int newRow){
+		int col = newCol/cellPrecisionUnitSize, row = newRow/cellPrecisionUnitSize;
+		if(col < 0 || row < 0 || row >= rowCells || col >= colCells)
+			return null;
+
+		int cellIndex = row*maxCols + col;
+		return cells[cellIndex];
+	}
+
 	private void setCellsStructure(int maxCols, int maxRows){
 		int i, cellsCount = maxCols*maxRows;
 
@@ -80,13 +95,9 @@ public class GameDynamics implements Iterable<Cell> {
 		cells[0].setCellStructure(cells, maxCols, maxRows, cellPrecisionUnitSize);
 	}
 
-	private Cell cellByPosition(int newCol, int newRow){
-		int col = newCol/cellPrecisionUnitSize, row = newRow/cellPrecisionUnitSize;
-		if(col < 0 || row < 0 || row >= rowCells || col >= colCells)
-			return null;
-
-		int cellIndex = row*maxCols + col;
-		return cells[cellIndex];
+	public void setStepsPerSecond(int msInterval){
+		int steps = 1000/msInterval;
+		stepsPerSecond = Math.max(steps, 2);
 	}
 
 	private boolean isPosAccessible(double newCol, double newRow){
@@ -153,7 +164,7 @@ public class GameDynamics implements Iterable<Cell> {
 		player2 = player;
 	}
 
-	public void addBullet(Bullet bullet){
+	private void addBullet(Bullet bullet){
 		if(bulletsCount + 1 > bullets.length){
 			int newLength = (int)(bullets.length*bulletsCountMultiplier);
 			Bullet[] newBullets = new Bullet[newLength];
@@ -176,9 +187,28 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void createCollectible(){
-		collectibles = new Cell();
-		collectibles.setMapCell(MapCell.STAR);
-		collectibles.setPos(3, 3);
+		Cell player1Cell, player2Cell;
+
+		player1Cell = new Cell();
+		player2Cell = new Cell();
+		player1.setUpCell(player1Cell);
+		player2.setUpCell(player2Cell);
+
+		int randomRow;
+		boolean collide = true;
+		while(collide){
+			randomRow = rand.randomOdd(rowCells - 1)*cellPrecisionUnitSize;
+			collectibles.setPos(rand.randomOdd(colCells - 1)*cellPrecisionUnitSize, randomRow);
+
+			collide = player1Cell.collide(collectibles, cellPrecisionUnitSize);
+			if(!collide)
+				collide = player2Cell.collide(collectibles, cellPrecisionUnitSize);
+			collide = false;
+		}
+
+		MapCell[] mapCells = new MapCell[]{MapCell.TIMER, MapCell.BOMB, MapCell.STAR, MapCell.TANK_LIVE, MapCell.HELMET, MapCell.SPADE};
+		randomRow = rand.randRange(0, mapCells.length);
+		collectibles.setMapCell(mapCells[randomRow]);
 	}
 
 	private void performEnvironmentExplosion(int bulletIndex){
@@ -218,7 +248,7 @@ public class GameDynamics implements Iterable<Cell> {
 				continue;
 
 			bullets[i].setUpCell(bulletCheckCell);
-			collide = bulletCheckCell.collide(bulletCell, cellUnitSize);
+			collide = bulletCheckCell.collide(bulletCell, cellPrecisionUnitSize);
 			if(collide)
 				return i;
 		}
@@ -261,32 +291,38 @@ public class GameDynamics implements Iterable<Cell> {
 
 	}
 
-	public void nextStep(){
-		boolean moved;
-		Bullet bullet;
-		Cell checkCell;
-
-		moved = player1.move(xyPos);
-		checkCell = cellByPosition(xyPos[0], xyPos[1]);
+	private void movePlayer(PlayerAITank player){
+		boolean moved = player.move(xyPos);
+		Cell checkCell = cellByPosition(xyPos[0], xyPos[1]);
 		if(moved){
-			player1.blockMovement(checkCell, xyPos[0], xyPos[1]);
+			player.blockMovement(checkCell, xyPos[0], xyPos[1]);
 		}
 
-		bullet = player1.fireBullet(damages);
+		Bullet bullet = player.fireBullet(damages);
 		if(bullet != null)
 			addBullet(bullet);
 
+		checkCell = new Cell();
+		player.setUpCell(checkCell);
+		if(checkCell.collide(collectibles, cellPrecisionUnitSize) )
+			collectibles.setMapCell(null);
+	}
 
-		moved = player2.move(xyPos);
-		checkCell = cellByPosition(xyPos[0], xyPos[1]);
-		if(moved)
-			player2.blockMovement(checkCell, xyPos[0], xyPos[1]);
+	public void nextStep(){
 
-		bullet = player2.fireBullet(damages);
-		if(bullet != null)
-			addBullet(bullet);
+		movePlayer(player1);
+
+		movePlayer(player2);
 
 		moveBullets();
+
+		int tensSeconds = steps/(stepsPerSecond*10);
+		if(tensSeconds%2 == 1 && collectibles.getMapCell() == null){
+			createCollectible();
+		} else if(tensSeconds%2 == 0)
+			collectibles.setMapCell(null);
+
+		steps++;
 	}
 
 
@@ -302,7 +338,7 @@ public class GameDynamics implements Iterable<Cell> {
 			Cell iterCell = new Cell();
 			private boolean iterateEnvironment = true, iterateTanks = true, iterateBullets = bulletsCount > 0;
 			private boolean player1NotIterated = true, player2NotIterated = player2 != null;
-			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles != null;
+			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
 			private boolean iteratePorts = enemyPorts.size() > 0;
 			private int iterateIndex = 0;
 			private Iterator<Enemy> tankIter = tanks.iterator();
@@ -375,6 +411,7 @@ public class GameDynamics implements Iterable<Cell> {
 				} else if(drawCollectible){
 					iterCell.setMapCell( collectibles.getMapCell() );
 					iterCell.setPos( collectibles.getCol(), collectibles.getRow() );
+					doRound = true;
 					drawCollectible = false;
 				}
 
