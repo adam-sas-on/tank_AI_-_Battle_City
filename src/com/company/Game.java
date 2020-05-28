@@ -34,12 +34,14 @@ public class Game {
 
 	public Game(GameView view){
 		this.view = view;
+		this.view.setFramesPerSeconds(msInterval);
+
 		mapLoader = MapLoader.getInstance();
 		maps = new ArrayList<>();
 		mapLoader.getFileList(maps);
 
 		runGame = Executors.newSingleThreadScheduledExecutor();
-		dynamics = new GameDynamics(mapLoader.getMaxCols(), mapLoader.getMaxRows(), view);
+		dynamics = new GameDynamics(mapLoader, view);
 		pause = false;
 
 		setControllers();

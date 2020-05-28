@@ -24,6 +24,7 @@ public class GameView {
 	private int[] positions;
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels;
+	private int framesPerSecond;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
 	List<Integer> trees;
@@ -32,6 +33,7 @@ public class GameView {
 
 	public GameView(int cellPrecisionUnitSize){
 		sizePixels = unitSize;
+		framesPerSecond = 2;
 
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
@@ -58,6 +60,16 @@ public class GameView {
 	}
 	public int getSizePixels(){
 		return sizePixels;
+	}
+
+	public int getFramesPerSecond(){
+		return framesPerSecond;
+	}
+
+	public void setFramesPerSeconds(int timeFrameInMilliseconds){
+		framesPerSecond = 1000/timeFrameInMilliseconds;
+		if(framesPerSecond < 2)
+			framesPerSecond = 2;
 	}
 
 	public void setColsRows(int newCols, int newRows){

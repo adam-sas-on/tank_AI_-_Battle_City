@@ -18,6 +18,8 @@ public class GameDynamics implements Iterable<Cell> {
 
 	private List<Enemy> tanks;
 	private List<EnemyPort> enemyPorts;
+	private int newTankSteps, currentStepsForNewTank;
+	private final int minimumStepsForNewTank;// game-steps after which new tank can appear;
 
 	private Bullet[] bullets;
 	private int bulletsCount;
@@ -29,22 +31,26 @@ public class GameDynamics implements Iterable<Cell> {
 	private int colCells;
 	private final int maxCols;
 	private Cell collectibles;
-	private int collectibleTimer;
+	private int collectibleTimer;// timer how long tank can be suspended or how long player can be indestructible;
 	private List<Integer> treesIds;
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
 
 	private BattleRandom rand;
 	private int[] xyPos = new int[2];
-	private int stepsPerSecond, steps;
+	private int steps;
+	private final int stepsPerSecond;
 
 
-	public GameDynamics(int maxCols, int maxRows, GameView view){
+	public GameDynamics(MapLoader mapLoader, GameView view){
 		rowCells = colCells = 26;// default Battle City map size;
-		this.maxCols = maxCols;
+		this.maxCols = mapLoader.getMaxCols();
 
 		cellPrecisionUnitSize = view.getDefaultCellSize();
-		steps = 0;
+		stepsPerSecond = view.getFramesPerSecond();
+		minimumStepsForNewTank = stepsPerSecond*2;// assumption that new tank appears after minimum 2s;
+		currentStepsForNewTank = stepsPerSecond*10;
+		steps = newTankSteps = 0;
 
 		tanks = new LinkedList<>();
 		enemyPorts = new ArrayList<>();
@@ -53,7 +59,7 @@ public class GameDynamics implements Iterable<Cell> {
 		bulletsCount = 0;
 		bullets = new Bullet[10];// any beginning size;
 
-		setCellsStructure(maxCols, maxRows);
+		setCellsStructure(maxCols, mapLoader.getMaxRows() );
 		collectibles = new Cell();
 
 		damages = DamageClass.getInstance();
@@ -94,11 +100,6 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		cells[0].setCellStructure(cells, maxCols, maxRows, cellPrecisionUnitSize);
-	}
-
-	public void setStepsPerSecond(int msInterval){
-		int steps = 1000/msInterval;
-		stepsPerSecond = Math.max(steps, 2);
 	}
 
 	private boolean isPosAccessible(double newCol, double newRow){
@@ -156,6 +157,9 @@ public class GameDynamics implements Iterable<Cell> {
 		player2.setDefaultPlayerPosition();
 
 		mapLoader.loadMap(cells[0], mapFileName, player1, player2, enemyPorts, treesIds, view);
+		currentStepsForNewTank--;
+		if(currentStepsForNewTank < minimumStepsForNewTank)
+			currentStepsForNewTank = minimumStepsForNewTank;
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
@@ -204,7 +208,6 @@ public class GameDynamics implements Iterable<Cell> {
 			collide = player1Cell.collide(collectibles, cellPrecisionUnitSize);
 			if(!collide)
 				collide = player2Cell.collide(collectibles, cellPrecisionUnitSize);
-			collide = false;
 		}
 
 		MapCell[] mapCells = new MapCell[]{MapCell.TIMER, MapCell.BOMB, MapCell.STAR, MapCell.TANK_LIVE, MapCell.HELMET, MapCell.SPADE};
