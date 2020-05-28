@@ -21,7 +21,7 @@ public class PlayerAITank implements Tank {
 	private MapCell[] currentIcons;
 	private int currentIconInd;
 	private int bulletSteps;
-	private final int nextBulletSteps;
+	private final int nextBulletSteps, nextBulletMinimumSteps;
 	private final int size;
 	private final int cellPrecisionSize;
 	private final int playerNumber;
@@ -34,9 +34,11 @@ public class PlayerAITank implements Tank {
 		size = (cellUnitSize*MapCell.TANK_1_LVL_1_STATE_1_UP.getSize())/(MapCell.getUnitSize() );
 		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 full-cells / 5000 ms;
 
-		nextBulletSteps = (1000*3)/(msInterval*2*2);
+		nextBulletSteps = (1000)/(msInterval);
 		bulletSteps = 0;
 		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 full-cells / second;
+		// steps after which bullets move twice their size:
+		nextBulletMinimumSteps = ( 2*MapCell.BULLET_UP.getSize() )/bulletSpeed;
 
 		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
 
@@ -70,7 +72,7 @@ public class PlayerAITank implements Tank {
 			return false;
 		}
 
-		bulletSteps = nextBulletSteps;
+		bulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
 		lastBulletPower = bulletPower;
 		if(level < 4)
 			lastBulletPower = 1;
@@ -161,8 +163,10 @@ public class PlayerAITank implements Tank {
 				canKeepMoving = false;
 		}
 
-		if(level < 5)// don't change icons for every higher level then max = 4;
+		if(level < 5){// don't change icons for every higher level then max = 4;
 			setIcons();
+			currentIcons = icons.get(currentDirection);
+		}
 	}
 
 	@Override
