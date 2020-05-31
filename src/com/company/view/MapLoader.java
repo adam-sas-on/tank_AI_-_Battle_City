@@ -1,6 +1,6 @@
 package com.company.view;
 
-import com.company.model.EnemyPort;
+import com.company.model.EnemyPorts;
 import com.company.model.PlayerAITank;
 
 import java.io.BufferedReader;
@@ -72,7 +72,7 @@ public class MapLoader {
 
 	public void loadMap(Cell rootCell, String fileName,
 						PlayerAITank player1, PlayerAITank player2,
-						List<EnemyPort> ports, List<Integer> trees,
+						EnemyPorts ports, List<Integer> trees,
 						GameView view){
 		trees.clear();
 
@@ -97,13 +97,10 @@ public class MapLoader {
 		for(row = freeCells.length - 1; row >= 0; row--)
 			freeCells[row] = true;
 
-		EnemyPort enemyPort;
-		int portsSize, portsCounter = 0;
 		if(ports == null){
-			ports = new ArrayList<>();
-			portsSize = 0;
+			throw new NullPointerException("loadMap: ports can not be null!");
 		} else
-			portsSize = ports.size();
+			ports.clear();
 
 		List<Cell> nextCellToBlock = new LinkedList<>();
 
@@ -206,14 +203,7 @@ public class MapLoader {
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '@':
-						if(portsCounter < portsSize){
-							ports.get(portsCounter).setPos(stepCell.getCol(), stepCell.getRow() );
-						} else {
-							enemyPort = new EnemyPort();
-							enemyPort.setPos(stepCell.getCol(), stepCell.getRow());
-							ports.add(enemyPort);
-						}
-						portsCounter++;
+						ports.add(stepCell.getCol(), stepCell.getRow());
 						break;
 					case 'E':
 						stepCell.setMapCell(MapCell.EAGLE);

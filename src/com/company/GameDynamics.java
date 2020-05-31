@@ -17,9 +17,8 @@ public class GameDynamics implements Iterable<Cell> {
 	private PlayerAITank player2;
 
 	private List<Enemy> tanks;
-	private List<EnemyPort> enemyPorts;
-	private int newTankSteps, currentStepsForNewTank;
-	private final int minimumStepsForNewTank;// game-steps after which new tank can appear;
+	private EnemyPorts ports;
+	private int newTankSteps;
 
 	private Bullet[] bullets;
 	private int bulletsCount;
@@ -48,12 +47,10 @@ public class GameDynamics implements Iterable<Cell> {
 
 		cellPrecisionUnitSize = view.getDefaultCellSize();
 		stepsPerSecond = view.getFramesPerSecond();
-		minimumStepsForNewTank = stepsPerSecond*2;// assumption that new tank appears after minimum 2s;
-		currentStepsForNewTank = stepsPerSecond*10;
 		steps = newTankSteps = 0;
 
 		tanks = new LinkedList<>();
-		enemyPorts = new ArrayList<>();
+		ports = new EnemyPorts(stepsPerSecond);
 		treesIds = new ArrayList<>();
 
 		bulletsCount = 0;
@@ -156,10 +153,9 @@ public class GameDynamics implements Iterable<Cell> {
 		player1.setDefaultPlayerPosition();
 		player2.setDefaultPlayerPosition();
 
-		mapLoader.loadMap(cells[0], mapFileName, player1, player2, enemyPorts, treesIds, view);
-		currentStepsForNewTank--;
-		if(currentStepsForNewTank < minimumStepsForNewTank)
-			currentStepsForNewTank = minimumStepsForNewTank;
+		mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
+		ports.levelUpPorts();
+		ports.activatePort();
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
@@ -310,6 +306,7 @@ public class GameDynamics implements Iterable<Cell> {
 				bulletIndex = bulletsContact(i);
 				if(bulletIndex >= 0){
 					bullets[i].setSmallExplode();
+					bullets[bulletIndex].resetBulletShooting();
 					removeBullet(bulletIndex);
 					continue;
 				}
@@ -328,7 +325,7 @@ public class GameDynamics implements Iterable<Cell> {
 			player.blockMovement(checkCell, xyPos[0], xyPos[1]);
 		}
 
-		if(player.fireBullet(damages) ){
+		if(player.fireBullet() ){
 			Bullet bullet = new Bullet(player, damages);
 			addBullet(bullet);
 		}
@@ -371,7 +368,7 @@ public class GameDynamics implements Iterable<Cell> {
 			private boolean iterateEnvironment = true, iterateTanks = true, iterateBullets = bulletsCount > 0;
 			private boolean player1NotIterated = true, player2NotIterated = player2 != null;
 			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
-			private boolean iteratePorts = enemyPorts.size() > 0;
+			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
 			private Iterator<Enemy> tankIter = tanks.iterator();
 			private final int treesCount = treesIds.size();
@@ -434,10 +431,11 @@ public class GameDynamics implements Iterable<Cell> {
 					if(!iterateTrees)
 						iterateIndex = 0;
 				} else if(iteratePorts){
-					enemyPorts.get(iterateIndex++).setUpCell(iterCell);
+					ports.setNextCell(iterCell);
+					iterateIndex++;
 					doRound = true;
 
-					iteratePorts = iterateIndex < enemyPorts.size();
+					iteratePorts = iterateIndex < ports.size();
 					if(!iteratePorts)
 						iterateIndex = 0;
 				} else if(drawCollectible){
