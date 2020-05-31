@@ -55,7 +55,10 @@ public class Bullet {
 				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
 		explodeIndex = -1;
 
-		damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
+		if(canDestroySteel)
+			damages.setFullDamages(rightSideDestruction, leftSideDestruction, direction);
+		else
+			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
 	}
 
 	private void setMapCellAndPosition(int tankSize, KeyCode direction, int tankX, int tankY){

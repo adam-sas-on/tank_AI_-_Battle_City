@@ -76,10 +76,11 @@ public class PlayerAITank implements Tank {
 		}
 
 		bulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
+
 		lastBulletPower = bulletPower;
 		if(level < 4)
 			lastBulletPower = 1;
-		bulletsInRange = 1;
+		bulletsInRange++;
 
 		return true;
 	}
@@ -117,8 +118,9 @@ public class PlayerAITank implements Tank {
 
 	public void resetBulletShots(int bulletsStepsDistance){
 		int currentNextBulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
-		if(bulletsStepsDistance < currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps)
+		if(bulletsStepsDistance < currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps) {
 			bulletSteps = nextBulletMinimumSteps;
+		}
 	}
 
 	@Override
@@ -179,6 +181,10 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
+	public void getShot(Bullet bullet){
+
+	}
+
 	@Override
 	public void setPos(int x, int y){
 		x_pos = x;
@@ -199,8 +205,8 @@ public class PlayerAITank implements Tank {
 	public boolean move(int[] newXY){
 		int newDirection = tankDriver.move();
 		bulletSteps--;
-		if(bulletSteps < 0)
-			bulletsInRange--;
+		if(bulletSteps == 0)
+			bulletsInRange = (bulletsInRange - 1)&3;
 
 		if(newDirection < 0)
 			return false;
