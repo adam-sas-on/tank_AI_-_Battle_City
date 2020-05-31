@@ -22,6 +22,8 @@ public class PlayerAITank implements Tank {
 	private int currentIconInd;
 	private int bulletSteps;
 	private int bulletsInRange;
+	private int freezeStepper, immortalStepper;
+	private final int stepsFor5Sec;
 	private final int nextBulletSteps, nextBulletMinimumSteps;
 	private final int size;
 	private final int cellPrecisionSize;
@@ -42,6 +44,9 @@ public class PlayerAITank implements Tank {
 		// steps after which bullets move 3 times their size:
 		int bulletUnitSize = (cellUnitSize*MapCell.BULLET_UP.getSize())/(MapCell.getUnitSize() );
 		nextBulletMinimumSteps = Math.max( ( 3*bulletUnitSize )/bulletSpeed, 2);
+
+		stepsFor5Sec = 5000/msInterval;
+		freezeStepper = immortalStepper = 0;
 
 		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
 
@@ -71,7 +76,7 @@ public class PlayerAITank implements Tank {
 
 	public boolean fireBullet(){
 		int bulletPower = tankDriver.takeTheShootPower();
-		if (bulletPower < 1 || /*bulletSteps > 0 ||*/ bulletsInRange > 0){
+		if (bulletPower < 1 || /*bulletSteps > 0 ||*/ bulletsInRange > 0 || freezeStepper > 0){
 			return false;
 		}
 
@@ -181,6 +186,21 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
+	public void makeImmortal(MapCell collectibleType){
+		if(collectibleType == MapCell.HELMET)
+			immortalStepper = stepsFor5Sec*2;// 10 seconds of immortality like it is in original game;
+	}
+	public MapCell getImmortalityCell(){
+		if(immortalStepper < 1)
+			return null;
+
+		int step = immortalStepper/2;
+		if( (step&2) != 0 )
+			return MapCell.IMMORTALITY_1;
+		else
+			return MapCell.IMMORTALITY_2;
+	}
+
 	public void getShot(Bullet bullet){
 
 	}
@@ -203,11 +223,19 @@ public class PlayerAITank implements Tank {
 
 	@Override
 	public boolean move(int[] newXY){
-		int newDirection = tankDriver.move();
 		bulletSteps--;
+		//bulletSteps2nd--;
 		if(bulletSteps == 0)
 			bulletsInRange = (bulletsInRange - 1)&3;
 
+		freezeStepper--;
+		if(freezeStepper > 0)
+			return false;
+
+		if(immortalStepper > 0)
+			immortalStepper--;
+
+		int newDirection = tankDriver.move();
 		if(newDirection < 0)
 			return false;
 
