@@ -21,6 +21,7 @@ public class PlayerAITank implements Tank {
 	private MapCell[] currentIcons;
 	private int currentIconInd;
 	private int bulletSteps;
+	private int bulletsInRange;
 	private final int nextBulletSteps, nextBulletMinimumSteps;
 	private final int size;
 	private final int cellPrecisionSize;
@@ -35,10 +36,12 @@ public class PlayerAITank implements Tank {
 		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 full-cells / 5000 ms;
 
 		nextBulletSteps = (1000)/(msInterval);
-		bulletSteps = 0;
+		bulletSteps = bulletsInRange = 0;
 		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 full-cells / second;
-		// steps after which bullets move twice their size:
-		nextBulletMinimumSteps = ( 2*MapCell.BULLET_UP.getSize() )/bulletSpeed;
+
+		// steps after which bullets move 3 times their size:
+		int bulletUnitSize = (cellUnitSize*MapCell.BULLET_UP.getSize())/(MapCell.getUnitSize() );
+		nextBulletMinimumSteps = Math.max( ( 3*bulletUnitSize )/bulletSpeed, 2);
 
 		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
 
@@ -66,9 +69,9 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
-	public boolean fireBullet(DamageClass damages) {
+	public boolean fireBullet(){
 		int bulletPower = tankDriver.takeTheShootPower();
-		if (bulletPower < 1 || bulletSteps > 0){
+		if (bulletPower < 1 || /*bulletSteps > 0 ||*/ bulletsInRange > 0){
 			return false;
 		}
 
@@ -76,6 +79,7 @@ public class PlayerAITank implements Tank {
 		lastBulletPower = bulletPower;
 		if(level < 4)
 			lastBulletPower = 1;
+		bulletsInRange = 1;
 
 		return true;
 	}
@@ -109,6 +113,12 @@ public class PlayerAITank implements Tank {
 
 	public boolean lastBulletCanDestroySteel(){
 		return lastBulletPower > 1;
+	}
+
+	public void resetBulletShots(int bulletsStepsDistance){
+		int currentNextBulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
+		if(bulletsStepsDistance < currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps)
+			bulletSteps = nextBulletMinimumSteps;
 	}
 
 	@Override
@@ -189,6 +199,8 @@ public class PlayerAITank implements Tank {
 	public boolean move(int[] newXY){
 		int newDirection = tankDriver.move();
 		bulletSteps--;
+		if(bulletSteps < 0)
+			bulletsInRange--;
 
 		if(newDirection < 0)
 			return false;

@@ -14,9 +14,11 @@ public class Bullet {
 	private int x_pos, y_pos;
 	private int leftColDiff, leftRowDiff;
 	private int rightColDiff, rightRowDiff;
+	private int flightSteps;
 	private final int bulletSize;
 
-	private boolean isPlayers;
+	private PlayerAITank player;
+	//private Enemy tank;
 	private boolean canDestroySteel;
 	private Cell cell;
 	private int explodeIndex;
@@ -37,9 +39,10 @@ public class Bullet {
 		pixelSpeed = player.getBulletSpeed();// default: speed: 6 cells / 1000 ms;
 
 		canDestroySteel = player.lastBulletCanDestroySteel();
-		isPlayers = true;
+		this.player = player;
 		xDirection = 0;
 		yDirection = 0;
+		flightSteps = 0;
 		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 
 		cell = new Cell();
@@ -146,17 +149,13 @@ public class Bullet {
 	}
 
 	public boolean belongsToPlayer(){
-		return isPlayers;
+		return player != null;
 	}
 
 
 	public void setUpCell(Cell cell){
 		cell.setMapCell(bulletMapCell);
 		cell.setPos(x_pos, y_pos);
-	}
-
-	public void assignToPlayer(){
-		isPlayers = true;
 	}
 
 	public boolean isExploding(){
@@ -173,9 +172,18 @@ public class Bullet {
 
 		y_pos += pixelSpeed* yDirection;
 		x_pos += pixelSpeed* xDirection;
+		flightSteps++;
 
 		cell.setPos(x_pos, y_pos);
 		return true;
+	}
+
+	public void resetBulletShooting(){
+		if(player != null) {
+			player.resetBulletShots(flightSteps);
+			player = null;
+		}/*else if(tank != null)
+			;*/
 	}
 
 	public void setExplode(){
@@ -185,6 +193,8 @@ public class Bullet {
 					MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
 			int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize()) / 2, col = cell.getCol();
 			cell.setPos(col - posDiff, cell.getRow() - posDiff);
+
+			resetBulletShooting();
 		}
 	}
 
@@ -197,6 +207,8 @@ public class Bullet {
 			posDiff = explodeSize - bulletSize;
 			x_pos -= posDiff*(1 - xDirection);
 			y_pos -= posDiff*(1 - yDirection);
+
+			resetBulletShooting();
 		}
 	}
 
