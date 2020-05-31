@@ -227,7 +227,7 @@ public class GameDynamics implements Iterable<Cell> {
 				break;
 			case HELMET:
 				collectibleTimer = stepsPerSecond*30;
-				// todo: make player with blinking cell indestructible;
+				player.makeImmortal(MapCell.HELMET);
 				break;
 			case SPADE:
 				collectibleTimer = stepsPerSecond*30;
@@ -366,7 +366,10 @@ public class GameDynamics implements Iterable<Cell> {
 		Iterator<Cell> iter = new Iterator<>() {
 			Cell iterCell = new Cell();
 			private boolean iterateEnvironment = true, iterateTanks = true, iterateBullets = bulletsCount > 0;
-			private boolean player1NotIterated = true, player2NotIterated = player2 != null;
+			private boolean iteratePlayer1 = player1 != null;
+			private boolean player1Immortality = iteratePlayer1 && player1.getImmortalityCell() != null;
+			private boolean iteratePlayer2 = player2 != null;
+			private boolean player2Immortality = iteratePlayer2 && player2.getImmortalityCell() != null;
 			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
 			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
@@ -387,8 +390,7 @@ public class GameDynamics implements Iterable<Cell> {
 				if(iterateEnvironment){
 					int index = iterateIndex/colCells*(maxCols - colCells) + iterateIndex;// index + remaining cols;
 					cell = cells[index];
-					iterCell.setPos(cell.getCol(), cell.getRow() );
-					iterCell.setMapCell(cell.getMapCell());
+					iterCell.setByOtherCell(cell);
 					doRound = true;
 
 					iterateIndex++;
@@ -396,22 +398,29 @@ public class GameDynamics implements Iterable<Cell> {
 						iterateIndex = 0;
 						iterateEnvironment = false;
 					}
+				} else if(iteratePlayer1){
+					player1.setUpCell(iterCell);
+					if(player1Immortality){
+						iterCell.setMapCell( player1.getImmortalityCell() );
+						player1Immortality = false;
+					} else
+						iteratePlayer1 = false;
+					doRound = true;
+				} else if(iteratePlayer2){
+					player2.setUpCell(iterCell);
+					if(player2Immortality){
+						iterCell.setMapCell( player2.getImmortalityCell() );
+						player2Immortality = false;
+					} else
+						iteratePlayer2 = false;
+					doRound = true;
+
 				} else if(iterateTanks){
-					if(player1NotIterated){
-						player1.setUpCell(iterCell);
-						doRound = true;
-
-						player1NotIterated = false;
-					} else if(player2NotIterated){
-						player2.setUpCell(iterCell);
-						doRound = true;
-
-						player2NotIterated = false;
-					} else if(tankIter.hasNext() ){
+					if(tankIter.hasNext() ){
 						cell = tankIter.next().getCell();
-					} else {
+					} else
 						iterateTanks = false;
-					}
+
 				} else if(iterateBullets){
 					bullets[iterateIndex++].setUpCell(iterCell);
 					doRound = true;
@@ -423,8 +432,7 @@ public class GameDynamics implements Iterable<Cell> {
 					int treeInd = treesIds.get(iterateIndex);
 					iterateIndex++;
 					cell = cells[treeInd];// be sure this is properly implemented;
-					iterCell.setPos(cell.getCol(), cell.getRow());
-					iterCell.setMapCell(cell.getMapCell());
+					iterCell.setByOtherCell(cell);
 					doRound = true;
 
 					iterateTrees = iterateIndex < treesCount;
@@ -439,8 +447,7 @@ public class GameDynamics implements Iterable<Cell> {
 					if(!iteratePorts)
 						iterateIndex = 0;
 				} else if(drawCollectible){
-					iterCell.setMapCell( collectibles.getMapCell() );
-					iterCell.setPos( collectibles.getCol(), collectibles.getRow() );
+					iterCell.setByOtherCell(collectibles);
 					doRound = true;
 					drawCollectible = false;
 				}

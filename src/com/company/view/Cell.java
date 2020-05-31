@@ -381,6 +381,15 @@ public class Cell {
 		}
 	}
 
+	public void setByOtherCell(Cell cell){
+		if(cell == null)
+			return;
+
+		col = cell.getCol();
+		row = cell.getRow();
+		setMapCell( cell.getMapCell() );
+	}
+
 	public void setIndexId(int index){
 		if(index >= 0)
 			id = index;
