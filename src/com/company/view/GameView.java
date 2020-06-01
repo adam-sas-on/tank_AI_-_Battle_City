@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -219,8 +220,13 @@ public class GameView {
 	}
 
 	public void typeText(String text){
-		gContext.setFill(Color.RED);
-		gContext.fillText(text, 0, 0);
+		gContext.setFill(Color.AZURE);
+		double width = canvas.getWidth(), charWidth = width/(text.length() + 2);
+		Font font = new Font("", 120);
+
+		gContext.setFont(font);
+		gContext.fillText(text, charWidth, canvas.getHeight()/2, width - charWidth*2);
+
 		pause = true;
 	}
 
