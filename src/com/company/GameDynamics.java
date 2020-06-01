@@ -29,7 +29,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private int rowCells;
 	private int colCells;
 	private final int maxCols;
-	private int eagleIndex;
+	private int eagleIndex, bulletOnEagleIndex;
 	private Cell collectibles;
 	private int collectibleTimer;// timer how long tank can be suspended or how long player can be indestructible;
 	private List<Integer> treesIds;
@@ -56,6 +56,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		bulletsCount = 0;
 		bullets = new Bullet[10];// any beginning size;
+		eagleIndex = bulletOnEagleIndex = -1;
 
 		setCellsStructure(maxCols, mapLoader.getMaxRows() );
 		collectibles = new Cell();
@@ -155,7 +156,7 @@ public class GameDynamics implements Iterable<Cell> {
 		player2.setDefaultPlayerPosition();
 
 		mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
-		setEagleIndex();System.out.println(eagleIndex);
+		setEagleIndex();
 		player1.revive();
 		player2.revive();
 		ports.levelUpPorts();
@@ -171,6 +172,7 @@ public class GameDynamics implements Iterable<Cell> {
 				return;
 			}
 		}
+		bulletOnEagleIndex = -1;
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
@@ -250,6 +252,13 @@ public class GameDynamics implements Iterable<Cell> {
 		collectibles.setMapCell(null);
 	}
 
+	private boolean cellCollideEagle(Cell cell){
+		if(eagleIndex < 0 || cell == null)
+			return false;
+
+		return cell.collide(cells[eagleIndex], cellPrecisionUnitSize);
+	}
+
 	private void performEnvironmentExplosion(int bulletIndex){
 		Cell cellRight, cellLeft;
 		boolean exploded = false;
@@ -293,17 +302,24 @@ public class GameDynamics implements Iterable<Cell> {
 		return -1;
 	}
 
-	private void moveBullets(){
-		boolean keepMoving;
+	private boolean moveBullets(){
+		boolean keepMoving, eagleExists = true;
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
 		int i = 0, bulletIndex;
 		Cell bulletCell = new Cell(), tankCell = new Cell();
 
-		while(i < bulletsCount){
+		while(i < bulletsCount && eagleExists){
 			keepMoving = bullets[i].move();
 			if(!keepMoving){// explosion sprite finished;
 				removeBullet(i);
+				if(i == bulletOnEagleIndex)
+					eagleExists = false;
+				continue;
+			}
+
+			if(bullets[i].isExploding() ) {
+				i++;
 				continue;
 			}
 
@@ -313,6 +329,13 @@ public class GameDynamics implements Iterable<Cell> {
 				bullets[i].setSmallExplode();
 				i++;
 				continue;
+			}
+
+			bullets[i].setUpCell(bulletCell);
+			if(cellCollideEagle(bulletCell) ){
+				cells[eagleIndex].setMapCell(MapCell.EAGLE_DESTROYED);
+				bullets[i].setExplode(cells[eagleIndex]);
+				bulletOnEagleIndex = i;
 			}
 
 			if(bullets[i].belongsToPlayer() ){
@@ -349,7 +372,7 @@ public class GameDynamics implements Iterable<Cell> {
 			performEnvironmentExplosion(i);
 			i++;
 		}
-
+		return eagleExists;
 	}
 
 	private void movePlayer(PlayerAITank player){
@@ -370,13 +393,14 @@ public class GameDynamics implements Iterable<Cell> {
 			collect(player);
 	}
 
-	public void nextStep(){
+	public boolean nextStep(){
 
 		movePlayer(player1);
 
 		movePlayer(player2);
 
-		moveBullets();
+		boolean eagleExists = true;
+		eagleExists = moveBullets();
 
 		// temporary creating collectible for testing;
 		int tensSeconds = steps/(stepsPerSecond*10);
@@ -386,6 +410,7 @@ public class GameDynamics implements Iterable<Cell> {
 			collectibles.setMapCell(null);
 
 		steps++;
+		return eagleExists;
 	}
 
 

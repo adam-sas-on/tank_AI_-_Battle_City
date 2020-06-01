@@ -96,6 +96,12 @@ public class Game {
 		KeyCode keyCode = keyEvent.getCode();
 		if(keyCode == KeyCode.C){
 			pause = !pause;
+
+			if(pause)
+				view.pauseDrawing();
+			else
+				view.keepDrawing();
+
 			return;
 		} else if(pause)
 			return;
@@ -111,13 +117,16 @@ public class Game {
 	}
 
 	public void run(){
-		//boolean watch = false;
+		boolean keepRunning;
 
 		if(pause)
 			return;
 
-		dynamics.nextStep();
-
+		keepRunning = dynamics.nextStep();
+		if(!keepRunning){
+			pause = true;
+			view.typeText("Game Over!");
+		}
 	}
 
 	public void stop(){
