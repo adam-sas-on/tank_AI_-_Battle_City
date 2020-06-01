@@ -25,6 +25,7 @@ public class GameView {
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels;
 	private int framesPerSecond;
+	private boolean pause;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
 	List<Integer> trees;
@@ -43,6 +44,7 @@ public class GameView {
 
 		cellDefaultSize = Math.max(MapCell.getUnitSize(), cellPrecisionUnitSize);
 
+		pause = false;
 		cells = new Cell[rowCells * rowCells];
 		positions = new int[rowCells];
 
@@ -77,6 +79,13 @@ public class GameView {
 			colCells = newCols;
 		if(newRows > 1)
 			rowCells = newRows;
+	}
+
+	public void pauseDrawing(){
+		pause = true;
+	}
+	public void keepDrawing(){
+		pause = false;
 	}
 
 	public void modifyCellSize(int stageWidth, int stageHeight){
@@ -209,7 +218,16 @@ public class GameView {
 		return scene;
 	}
 
+	public void typeText(String text){
+		gContext.setFill(Color.RED);
+		gContext.fillText(text, 0, 0);
+		pause = true;
+	}
+
 	public void drawMap(GameDynamics dynamics){
+		if(pause)
+			return;
+
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
