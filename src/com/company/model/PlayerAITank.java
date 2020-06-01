@@ -13,9 +13,9 @@ public class PlayerAITank implements Tank {
 	private int cellSpeed;
 	private int bulletSpeed;
 	private int lastBulletPower;
-	private int x_pos, y_pos;
+	private int x_pos, y_pos, xStart, yStart;
 	private boolean canKeepMoving;
-	private int level;
+	private int level, lifes;
 	private int currentDirection;
 	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
@@ -51,6 +51,7 @@ public class PlayerAITank implements Tank {
 		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
 
 		level = 1;
+		lifes = 3;
 		icons = new HashMap<>();
 		currentIconInd = 0;
 		canKeepMoving = true;
@@ -176,8 +177,14 @@ public class PlayerAITank implements Tank {
 			level++;
 		} else {
 			level--;
-			if(level <= 0)
+			if(level <= 0){
 				canKeepMoving = false;
+				lifes--;
+				if(lifes > 0){
+					level = 1;
+					revive();
+				}
+			}
 		}
 
 		if(level < 5){// don't change icons for every higher level then max = 4;
@@ -186,10 +193,20 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
-	public void makeImmortal(MapCell collectibleType){
-		if(collectibleType == MapCell.HELMET)
-			immortalStepper = stepsFor5Sec*2;// 10 seconds of immortality like it is in original game;
+	public void useCollectible(MapCell collectibleType){
+		switch(collectibleType){
+			case HELMET:
+				immortalStepper = stepsFor5Sec*2;// 10 seconds of immortality like it is in original game;
+				break;
+			case TANK_LIVE:
+				lifes++;
+				break;
+			case STAR:
+				promoteDegrade(true);
+				break;
+		}
 	}
+
 	public MapCell getImmortalityCell(){
 		if(immortalStepper < 1)
 			return null;
@@ -231,6 +248,21 @@ public class PlayerAITank implements Tank {
 	public void setPos(int x, int y){
 		x_pos = x;
 		y_pos = y;
+	}
+
+	public void setStartingPos(int x, int y){
+		xStart = x_pos = x;
+		yStart = y_pos = y;
+	}
+
+	public void revive(){
+		x_pos = xStart;
+		y_pos = yStart;
+		canKeepMoving = true;
+		currentDirection = tankDriver.directionByKeyCodeOrUp(KeyCode.UP);
+		currentIconInd = 0;
+		currentIcons = icons.get(currentDirection);
+		immortalStepper = stepsFor5Sec;
 	}
 
 	public void blockMovement(Cell cell, int x, int y){

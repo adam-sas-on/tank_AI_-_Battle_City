@@ -214,12 +214,12 @@ public class MapLoader {
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '1':
-						player1.setPos(stepCell.getCol(), stepCell.getRow() );
+						player1.setStartingPos(stepCell.getCol(), stepCell.getRow() );
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
 					case '2':
-						player2.setPos(stepCell.getCol(), stepCell.getRow() );
+						player2.setStartingPos(stepCell.getCol(), stepCell.getRow() );
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;
