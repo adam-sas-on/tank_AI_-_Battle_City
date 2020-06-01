@@ -194,13 +194,28 @@ public class Bullet {
 			;*/
 	}
 
-	public void setExplode(){
+	private void setDefaultPositionOfExplodes(){
+		int explodeSize = (MapCell.EXPLODE_1.getSize()*bulletSize)/(MapCell.getUnitSize()), posDiff;
+		posDiff = explodeSize - bulletSize;
+		x_pos -= posDiff * (1 - xDirection);
+		y_pos -= posDiff * (1 - yDirection);
+	}
+
+	public void setExplode(Cell cellOfExplodingObject){
 		if(explodeIndex < 0) {
 			explodeIndex = 0;
-			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
-					MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
-			int posDiff = (MapCell.EXPLODE_1.getSize() - cell.getCellSize()) / 2, col = cell.getCol();
-			cell.setPos(col - posDiff, cell.getRow() - posDiff);
+			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_1,
+					MapCell.EXPLODE_2, MapCell.EXPLODE_2, MapCell.EXPLODE_2,
+					MapCell.EXPLODE_3, MapCell.EXPLODE_3, MapCell.EXPLODE_3, MapCell.EXPLODE_3,
+					MapCell.EXPLODE_4, MapCell.EXPLODE_4, MapCell.EXPLODE_4,
+					MapCell.EXPLODE_5, MapCell.EXPLODE_5};
+
+			if(cellOfExplodingObject != null){
+				x_pos = cellOfExplodingObject.getCol();
+				y_pos = cellOfExplodingObject.getRow();
+			} else {
+				setDefaultPositionOfExplodes();
+			}
 
 			resetBulletShooting();
 		}
@@ -211,10 +226,8 @@ public class Bullet {
 			explodeIndex = 0;
 			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_1};
 			bulletMapCell = MapCell.EXPLODE_1;
-			int explodeSize = (MapCell.EXPLODE_1.getSize()*bulletSize)/(MapCell.getUnitSize() ), posDiff;
-			posDiff = explodeSize - bulletSize;
-			x_pos -= posDiff*(1 - xDirection);
-			y_pos -= posDiff*(1 - yDirection);
+
+			setDefaultPositionOfExplodes();
 
 			resetBulletShooting();
 		}
