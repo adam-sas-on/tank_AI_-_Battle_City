@@ -29,6 +29,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private int rowCells;
 	private int colCells;
 	private final int maxCols;
+	private int eagleIndex;
 	private Cell collectibles;
 	private int collectibleTimer;// timer how long tank can be suspended or how long player can be indestructible;
 	private List<Integer> treesIds;
@@ -154,8 +155,22 @@ public class GameDynamics implements Iterable<Cell> {
 		player2.setDefaultPlayerPosition();
 
 		mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
+		setEagleIndex();System.out.println(eagleIndex);
+		player1.revive();
+		player2.revive();
 		ports.levelUpPorts();
 		ports.activatePort();
+	}
+
+	private void setEagleIndex(){
+		int i = 0, indexLimit = rowCells*colCells, mapIndex;
+		for(eagleIndex = -1; i < indexLimit; i++){
+			mapIndex = i/colCells*(maxCols - colCells) + i;// i + remaining cols;
+			if(cells[i].getMapCell() == MapCell.EAGLE){
+				eagleIndex = mapIndex;
+				return;
+			}
+		}
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
@@ -212,7 +227,8 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void collect(PlayerAITank player){
-		switch(collectibles.getMapCell() ){
+		MapCell collectibleType = collectibles.getMapCell();
+		switch(collectibleType){
 			case TIMER:
 				collectibleTimer = stepsPerSecond*30;
 				break;
@@ -220,14 +236,11 @@ public class GameDynamics implements Iterable<Cell> {
 				// todo: perform explosions for all enemy tanks;
 				break;
 			case STAR:
-				player.promoteDegrade(true);
-				break;
 			case TANK_LIVE:
-				// todo add live for player;
-				break;
 			case HELMET:
-				collectibleTimer = stepsPerSecond*30;
-				player.makeImmortal(MapCell.HELMET);
+				player.useCollectible(collectibleType);
+				if(collectibleType == MapCell.HELMET)
+					collectibleTimer = stepsPerSecond*30;
 				break;
 			case SPADE:
 				collectibleTimer = stepsPerSecond*30;
