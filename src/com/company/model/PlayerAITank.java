@@ -20,7 +20,7 @@ public class PlayerAITank implements Tank {
 	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
 	private int currentIconInd;
-	private int bulletSteps;
+	private int bulletSteps, bulletSteps2nd;
 	private int bulletsInRange;
 	private int freezeStepper, immortalStepper;
 	private final int stepsFor5Sec;
@@ -38,7 +38,7 @@ public class PlayerAITank implements Tank {
 		cellSpeed = (12*msInterval*cellUnitSize*2)/5000;// speed: 12 full-cells / 5000 ms;
 
 		nextBulletSteps = (1000)/(msInterval);
-		bulletSteps = bulletsInRange = 0;
+		bulletSteps = bulletSteps2nd = bulletsInRange = 0;
 		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 full-cells / second;
 
 		// steps after which bullets move 3 times their size:
@@ -123,7 +123,7 @@ public class PlayerAITank implements Tank {
 
 	public void resetBulletShots(int bulletsStepsDistance){
 		int currentNextBulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
-		if(bulletsStepsDistance < currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps) {
+		if(bulletsStepsDistance < currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps){
 			bulletSteps = nextBulletMinimumSteps;
 		}
 	}
@@ -201,6 +201,28 @@ public class PlayerAITank implements Tank {
 			return MapCell.IMMORTALITY_2;
 	}
 
+	public void makeFreezed(){
+		if(immortalStepper > 0)
+			return;
+
+		MapCell[] newIcons = new MapCell[currentIcons.length + 2];
+		int i;
+		newIcons[0] = currentIcons[0];
+		for(i = newIcons.length - 1; i > 0; i--)
+			newIcons[i] = null;
+
+		i = newIcons.length - 2;// last one will be empty;
+		int j = currentIcons.length - 1;
+		for(; j > 0; j--, i--){
+			newIcons[i] = currentIcons[j];
+		}
+		currentIcons = newIcons;
+
+		freezeStepper = stepsFor5Sec;
+		canKeepMoving = false;
+		tankDriver.blockUnblockController(true);
+	}
+
 	public void getShot(Bullet bullet){
 
 	}
@@ -222,15 +244,25 @@ public class PlayerAITank implements Tank {
 	}
 
 	@Override
-	public boolean move(int[] newXY){
+	public boolean move(int[] newXY) {
 		bulletSteps--;
 		//bulletSteps2nd--;
-		if(bulletSteps == 0)
-			bulletsInRange = (bulletsInRange - 1)&3;
+		if (bulletSteps == 0)
+			bulletsInRange = (bulletsInRange - 1) & 3;
 
-		freezeStepper--;
-		if(freezeStepper > 0)
+		if (freezeStepper > 0){
+			freezeStepper--;
+			if(freezeStepper == 0){
+				canKeepMoving = true;
+				currentIcons = icons.get(currentDirection);
+				currentIconInd = 0;
+				tankDriver.blockUnblockController(false);
+			} else {
+				currentIconInd++;
+				currentIconInd = currentIconInd %currentIcons.length;
+			}
 			return false;
+		}
 
 		if(immortalStepper > 0)
 			immortalStepper--;
@@ -274,7 +306,6 @@ public class PlayerAITank implements Tank {
 		if(currentIcons != null){
 			currentIconInd++;
 			currentIconInd = currentIconInd %currentIcons.length;
-			//cell.setMapCell(currentIcons[currentIconInd]);
 		}
 
 		newXY[0] = xPosNew;

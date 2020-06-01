@@ -260,14 +260,13 @@ public class GameDynamics implements Iterable<Cell> {
 			bullets[bulletIndex].setSmallExplode();
 	}
 
-	private int bulletsContact(int bulletIndex){
-		Cell bulletCell, bulletCheckCell;
+	private int bulletsContact(Cell bulletCell, int bulletIndex){
+		Cell bulletCheckCell;
 		int i;
 		boolean collide;
 
-		bulletCell = new Cell();
 		bulletCheckCell = new Cell();
-		bullets[bulletIndex].setUpCell(bulletCell);
+		//bullets[bulletIndex].setUpCell(bulletCell);
 
 		for(i = bulletIndex + 1; i < bulletsCount; i++){
 			if(bullets[i].isExploding() )
@@ -286,6 +285,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
 		int i = 0, bulletIndex;
+		Cell bulletCell = new Cell(), tankCell = new Cell();
 
 		while(i < bulletsCount){
 			keepMoving = bullets[i].move();
@@ -303,11 +303,32 @@ public class GameDynamics implements Iterable<Cell> {
 			}
 
 			if(bullets[i].belongsToPlayer() ){
-				bulletIndex = bulletsContact(i);
+				boolean explodeContinue = false;
+				bullets[i].setUpCell(bulletCell);
+
+				bulletIndex = bulletsContact(bulletCell, i);
 				if(bulletIndex >= 0){
-					bullets[i].setSmallExplode();
+					explodeContinue = true;
 					bullets[bulletIndex].resetBulletShooting();
 					removeBullet(bulletIndex);
+				}
+
+				if(bullets[i].belongsToPlayer(player1) && !explodeContinue){
+					player2.setUpCell(tankCell);
+					if(bulletCell.collide(tankCell, cellPrecisionUnitSize) ){
+						player2.makeFreezed();
+						explodeContinue = true;
+					}
+				} else if(!explodeContinue){
+					player1.setUpCell(tankCell);
+					if(bulletCell.collide(tankCell, cellPrecisionUnitSize) ){
+						player1.makeFreezed();
+						explodeContinue = true;
+					}
+				}
+
+				if(explodeContinue){
+					bullets[i].setSmallExplode();
 					continue;
 				}
 			}

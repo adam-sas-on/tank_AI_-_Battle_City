@@ -155,6 +155,11 @@ public class Bullet {
 		return player != null;
 	}
 
+	public boolean belongsToPlayer(PlayerAITank checkPlayer){
+		if(player == null || checkPlayer == null)
+			return false;
+		return checkPlayer.equals(player);
+	}
 
 	public void setUpCell(Cell cell){
 		cell.setMapCell(bulletMapCell);

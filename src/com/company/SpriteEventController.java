@@ -10,7 +10,7 @@ public class SpriteEventController {
 	private int currentAngle, currentShotPower;
 	private int turningAngle;
 	private boolean keepShooting, singleShoot;
-	private boolean isPlayer;
+	private boolean isPlayer, freezed;
 	private final int upAngle = 90;
 
 	public SpriteEventController(KeyCode up, KeyCode right, KeyCode down, KeyCode left,
@@ -29,6 +29,7 @@ public class SpriteEventController {
 		currentShotPower = 0;
 		isPlayer = true;
 		keepShooting = false;
+		freezed = false;
 	}
 
 	/**
@@ -81,8 +82,12 @@ public class SpriteEventController {
 		}
 	}
 
+	public void blockUnblockController(boolean freeze){
+		freezed = freeze;
+	}
+
 	public void setEvent(final KeyCode keyCode){
-		if(!isPlayer)
+		if(!isPlayer || freezed)
 			return;
 
 		if(keyCode == moveRight)
