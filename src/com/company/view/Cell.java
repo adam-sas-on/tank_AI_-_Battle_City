@@ -382,14 +382,19 @@ public class Cell {
 	}
 
 	private Cell setSideWalls(MapCell mapToSet, Cell cell1, Cell cell2, int length){
+		boolean isBlocking = !mapToSet.isAccessible();
 		int i = 0;
 		while(i < length && (cell1 != null || cell2 != null) ){
 			if(cell1 != null){
 				cell1.setMapCell(mapToSet);
+				if(isBlocking)
+					cell1.blockMovementsAround();
 				cell1 = cell1.getDownCell();
 			}
 			if(cell2 != null){
 				cell2.setMapCell(mapToSet);
+				if(isBlocking)
+					cell2.blockMovementsAround();
 				cell2 = cell2.getDownCell();
 			}
 			i++;
@@ -400,16 +405,22 @@ public class Cell {
 	public void encircleByMapCell(MapCell mapToSet){
 		Cell cellToSet, rightCellToStart;
 		int width = mapCell.getSize()/MapCell.getUnitSize() + 2, i;
+		boolean isBlocking = !mapToSet.isAccessible();
 
 		if(upCell != null){
 			// - - - set  mapToSet  on upper wall;
 			cellToSet = upCell.getLeftCell();
-			if(cellToSet != null)
+			if(cellToSet != null){
 				cellToSet.setMapCell(mapToSet);
+				if(isBlocking)
+					cellToSet.blockMovementsAround();
+			}
 
 			cellToSet = upCell;
 			for(i = 1; i < width && cellToSet != null; i++){
 				cellToSet.setMapCell(mapToSet);
+				if(isBlocking)
+					cellToSet.blockMovementsAround();
 				cellToSet = cellToSet.getRightCell();
 			}
 		}
@@ -427,6 +438,8 @@ public class Cell {
 
 		for(i = 1; i < width && cellToSet != null; i++){
 			cellToSet.setMapCell(mapToSet);
+			if(isBlocking)
+				cellToSet.blockMovementsAround();
 			cellToSet = cellToSet.getRightCell();
 		}
 	}
