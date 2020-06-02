@@ -381,6 +381,56 @@ public class Cell {
 		}
 	}
 
+	private Cell setSideWalls(MapCell mapToSet, Cell cell1, Cell cell2, int length){
+		int i = 0;
+		while(i < length && (cell1 != null || cell2 != null) ){
+			if(cell1 != null){
+				cell1.setMapCell(mapToSet);
+				cell1 = cell1.getDownCell();
+			}
+			if(cell2 != null){
+				cell2.setMapCell(mapToSet);
+				cell2 = cell2.getDownCell();
+			}
+			i++;
+		}
+		return cell1;
+	}
+
+	public void encircleByMapCell(MapCell mapToSet){
+		Cell cellToSet, rightCellToStart;
+		int width = mapCell.getSize()/MapCell.getUnitSize() + 2, i;
+
+		if(upCell != null){
+			// - - - set  mapToSet  on upper wall;
+			cellToSet = upCell.getLeftCell();
+			if(cellToSet != null)
+				cellToSet.setMapCell(mapToSet);
+
+			cellToSet = upCell;
+			for(i = 1; i < width && cellToSet != null; i++){
+				cellToSet.setMapCell(mapToSet);
+				cellToSet = cellToSet.getRightCell();
+			}
+		}
+
+		for(i = width - 1, rightCellToStart = rightCell; i < width && rightCellToStart != null; i++){
+			rightCellToStart = rightCellToStart.getRightCell();
+		}
+
+		// - - - Set mapToSet  on side walls;
+		cellToSet = leftCell;
+		cellToSet = setSideWalls(mapToSet, cellToSet, rightCellToStart, width - 1);
+
+		if(cellToSet != null)
+			cellToSet = cellToSet.getRightCell();
+
+		for(i = 1; i < width && cellToSet != null; i++){
+			cellToSet.setMapCell(mapToSet);
+			cellToSet = cellToSet.getRightCell();
+		}
+	}
+
 	public void setByOtherCell(Cell cell){
 		if(cell == null)
 			return;

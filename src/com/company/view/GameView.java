@@ -58,7 +58,7 @@ public class GameView {
 		return cellDefaultSize;
 	}
 
-	public int getRowColCells(){
+	public int getRowCells(){
 		return rowCells;
 	}
 	public int getSizePixels(){
