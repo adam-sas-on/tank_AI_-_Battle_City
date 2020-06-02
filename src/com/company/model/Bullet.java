@@ -14,7 +14,7 @@ public class Bullet {
 	private int x_pos, y_pos;
 	private int leftColDiff, leftRowDiff;
 	private int rightColDiff, rightRowDiff;
-	private int flightSteps;
+	private int flightSteps, stepsLimits;
 	private final int bulletSize;
 
 	private PlayerAITank player;
@@ -43,6 +43,7 @@ public class Bullet {
 		xDirection = 0;
 		yDirection = 0;
 		flightSteps = 0;
+		stepsLimits = player.getBulletSteps();
 		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 
 		cell = new Cell();
@@ -180,7 +181,10 @@ public class Bullet {
 
 		y_pos += pixelSpeed* yDirection;
 		x_pos += pixelSpeed* xDirection;
+
 		flightSteps++;
+		if(flightSteps == stepsLimits)
+			resetBulletShooting();
 
 		cell.setPos(x_pos, y_pos);
 		return true;
