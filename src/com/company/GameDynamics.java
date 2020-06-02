@@ -156,6 +156,7 @@ public class GameDynamics implements Iterable<Cell> {
 		player2.setDefaultPlayerPosition();
 
 		mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
+		rowCells = view.getRowCells();
 		setEagleIndex();
 		player1.revive();
 		player2.revive();
@@ -164,6 +165,8 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void setEagleIndex(){
+		bulletOnEagleIndex = -1;
+
 		int i = 0, indexLimit = rowCells*colCells, mapIndex;
 		for(eagleIndex = -1; i < indexLimit; i++){
 			mapIndex = i/colCells*(maxCols - colCells) + i;// i + remaining cols;
@@ -172,7 +175,6 @@ public class GameDynamics implements Iterable<Cell> {
 				return;
 			}
 		}
-		bulletOnEagleIndex = -1;
 	}
 
 	public void setFirstPlayer(PlayerAITank player){
@@ -246,10 +248,17 @@ public class GameDynamics implements Iterable<Cell> {
 				break;
 			case SPADE:
 				collectibleTimer = stepsPerSecond*30;
-				// todo: create steel around eagle;
+				encircleEagle(MapCell.STEEL);
 				break;
 		}
 		collectibles.setMapCell(null);
+	}
+
+	private void encircleEagle(MapCell cellType){
+		if(eagleIndex < 0)
+			return;
+
+		cells[eagleIndex].encircleByMapCell(cellType);
 	}
 
 	private boolean cellCollideEagle(Cell cell){
@@ -401,6 +410,12 @@ public class GameDynamics implements Iterable<Cell> {
 
 		boolean eagleExists = true;
 		eagleExists = moveBullets();
+
+		if(collectibleTimer > 0){
+			collectibleTimer--;
+			if(collectibleTimer == 0)
+				encircleEagle(MapCell.BRICK);
+		}
 
 		// temporary creating collectible for testing;
 		int tensSeconds = steps/(stepsPerSecond*10);
