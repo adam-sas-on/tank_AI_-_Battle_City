@@ -232,6 +232,9 @@ public class GameDynamics implements Iterable<Cell> {
 
 	private void collect(PlayerAITank player){
 		MapCell collectibleType = collectibles.getMapCell();
+		if(collectibleType == null)
+			return;
+
 		switch(collectibleType){
 			case TIMER:
 				collectibleTimer = stepsPerSecond*30;
@@ -322,7 +325,7 @@ public class GameDynamics implements Iterable<Cell> {
 			keepMoving = bullets[i].move();
 			if(!keepMoving){// explosion sprite finished;
 				removeBullet(i);
-				if(i == bulletOnEagleIndex)
+				if(i == bulletOnEagleIndex || cells[eagleIndex].getMapCell() == MapCell.EAGLE_DESTROYED)
 					eagleExists = false;
 				continue;
 			}
@@ -403,6 +406,7 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	public boolean nextStep(){
+		int tensSeconds;
 
 		movePlayer(player1);
 
@@ -418,7 +422,7 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		// temporary creating collectible for testing;
-		int tensSeconds = steps/(stepsPerSecond*10);
+		tensSeconds = steps/(stepsPerSecond*10);
 		if(tensSeconds%2 == 1 && collectibles.getMapCell() == null){
 			createCollectible();
 		} else if(tensSeconds%2 == 0)

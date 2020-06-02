@@ -131,7 +131,7 @@ public class PlayerAITank implements Tank {
 	public void resetBulletShots(int bulletsStepsDistance){
 		int currentNextBulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
 		if(bulletsStepsDistance <= currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps){
-			bulletSteps=0;//bulletSteps2nd = bulletSteps - nextBulletMinimumSteps;
+			bulletSteps = 0;
 
 			bulletsInRange--;
 			bulletSteps2nd = (bulletsInRange > 1)?nextBulletMinimumSteps:currentNextBulletSteps - nextBulletMinimumSteps;
@@ -279,7 +279,6 @@ public class PlayerAITank implements Tank {
 		KeyCode directionCode = tankDriver.getKeyCode(currentDirection);
 		x_pos = cell.checkModifyCol(directionCode, x);
 		y_pos = cell.checkModifyRow(directionCode, y);
-		//canKeepMoving = cell.canMove(directionCode);
 	}
 
 	@Override
