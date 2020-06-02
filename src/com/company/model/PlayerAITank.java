@@ -11,7 +11,7 @@ import java.util.Map;
 public class PlayerAITank implements Tank {
 	private SpriteEventController tankDriver;
 	private int cellSpeed;
-	private int bulletSpeed;
+	private final int bulletSpeed;
 	private int lastBulletPower;
 	private int x_pos, y_pos, xStart, yStart;
 	private boolean canKeepMoving;
@@ -287,6 +287,10 @@ public class PlayerAITank implements Tank {
 
 		if(bulletSteps == 0 && bulletsInRange > 0)
 			bulletsInRange--;
+		else if(bulletSteps < -2*nextBulletSteps){
+			bulletSteps = bulletSteps2nd = 0;
+			bulletsInRange = 0;
+		}
 
 
 		if (freezeStepper > 0){
