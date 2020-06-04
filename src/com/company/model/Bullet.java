@@ -19,6 +19,7 @@ public class Bullet {
 
 	private PlayerAITank player;
 	//private Enemy tank;
+	private boolean shotReseted;
 	private boolean canDestroySteel;
 	private Cell cell;
 	private int explodeIndex;
@@ -191,9 +192,12 @@ public class Bullet {
 	}
 
 	public void resetBulletShooting(){
+		if(shotReseted)
+			return;
+
+		shotReseted = true;
 		if(player != null) {
 			player.resetBulletShots(flightSteps);
-			player = null;
 		}/*else if(tank != null)
 			;*/
 	}
