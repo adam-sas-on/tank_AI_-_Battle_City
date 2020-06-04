@@ -526,7 +526,7 @@ public class Cell {
 	}
 
 	public void drawCell(GraphicsContext context, Image tile, double zoomMultiplier){
-		if(mapCell == null)
+		if(mapCell == null || mapCell == MapCell.NULL_BLOCKADE)
 			return;
 		int mapCellSize = mapCell.getSize();
 		double zoomedSize = zoomMultiplier*mapCellSize;

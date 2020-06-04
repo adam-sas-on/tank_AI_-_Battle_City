@@ -238,7 +238,7 @@ public class PlayerAITank implements Tank {
 		MapCell[] newIcons = new MapCell[6];
 		int i;
 		for(i = newIcons.length - 1; i >= 0; i--)
-			newIcons[i] = null;
+			newIcons[i] = MapCell.NULL_BLOCKADE;
 
 		newIcons[0] = currentIcons[currentIconInd];
 		newIcons[1] = currentIcons[currentIconInd];
