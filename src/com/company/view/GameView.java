@@ -2,9 +2,12 @@ package com.company.view;
 
 import com.company.GameDynamics;
 import com.company.model.Bullet;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -21,10 +24,13 @@ public class GameView {
 	private Canvas canvas;
 	private GraphicsContext gContext;
 	private static Image tiles;
+	private Button startPause;
+	private Label[] playersLives;
 	private Cell[] cells;
 	private int[] positions;
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels;
+	private int rightMenuWidth;
 	private int framesPerSecond;
 	private boolean pause;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
@@ -39,6 +45,11 @@ public class GameView {
 
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
+		startPause = new Button("Pause");
+		playersLives = new Label[2];
+		playersLives[0] = new Label();
+		playersLives[1] = new Label();
+		rightMenuWidth = 150;
 
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
@@ -69,6 +80,10 @@ public class GameView {
 		return framesPerSecond;
 	}
 
+	public Button getStartPauseButton(){
+		return startPause;
+	}
+
 	public void setFramesPerSeconds(int timeFrameInMilliseconds){
 		framesPerSecond = 1000/timeFrameInMilliseconds;
 		if(framesPerSecond < 2)
@@ -84,14 +99,16 @@ public class GameView {
 
 	public void pauseDrawing(){
 		pause = true;
+		startPause.setText("Play");
 	}
 	public void keepDrawing(){
 		pause = false;
+		startPause.setText("Pause");
 	}
 
 	public void modifyCellSize(int stageWidth, int stageHeight){
-		int widthSizePixels = stageWidth/colCells;
-		sizePixels = stageHeight/rowCells;
+		int widthSizePixels = (stageWidth - rightMenuWidth)/colCells;
+		sizePixels = (stageHeight - MapCell.getUnitSize() - 1)/rowCells;
 		if(sizePixels > widthSizePixels)
 			sizePixels = widthSizePixels;
 
@@ -206,11 +223,24 @@ public class GameView {
 	}*/
 
 
+	private void setRightMenu(GridPane ui){
+		ui.setPadding(new Insets(10));
+
+		ui.add(startPause, 0, 1);
+		ui.setHgap(10);
+		ui.add(playersLives[0], 0, 3);
+		ui.setHgap(10);
+		ui.add(playersLives[1], 0, 50);
+	}
+
 	public Scene drawStart(){
 		GridPane gridPane = new GridPane();
 		BorderPane borderP = new BorderPane();
 
-		borderP.setCenter(canvas);
+		gridPane.setPrefWidth(rightMenuWidth);
+		setRightMenu(gridPane);
+
+		borderP.setLeft(canvas);
 		borderP.setRight(gridPane);
 
 		//StackPane layout = new StackPane();
@@ -236,6 +266,14 @@ public class GameView {
 
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+		int lifes = dynamics.get1stPlayerLifes();
+		if(lifes > 0)
+			playersLives[0].setText("Player 1: " + lifes + " lifes");
+
+		lifes = dynamics.get2ndPlayerLifes();
+		if(lifes > 0)
+			playersLives[1].setText("Player 2: " + lifes + " lifes");
 
 		dynamics.setCellSize(sizePixels);
 
