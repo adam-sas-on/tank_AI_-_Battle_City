@@ -164,6 +164,17 @@ public class GameDynamics implements Iterable<Cell> {
 		ports.activatePort();
 	}
 
+	public int get1stPlayerLifes(){
+		if(player1 == null)
+			return 0;
+		return player1.getLifes();
+	}
+	public int get2ndPlayerLifes(){
+		if(player2 == null)
+			return 0;
+		return player2.getLifes();
+	}
+
 	private void setEagleIndex(){
 		bulletOnEagleIndex = -1;
 

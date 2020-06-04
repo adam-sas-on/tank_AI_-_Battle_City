@@ -128,6 +128,10 @@ public class PlayerAITank implements Tank {
 		return lastBulletPower > 1;
 	}
 
+	public int getLifes(){
+		return lifes;
+	}
+
 	public void resetBulletShots(int bulletsStepsDistance){
 		int currentNextBulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
 		if(bulletsStepsDistance <= currentNextBulletSteps && currentNextBulletSteps > nextBulletMinimumSteps){
