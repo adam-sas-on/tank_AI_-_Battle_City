@@ -532,4 +532,50 @@ public class Cell {
 		double zoomedSize = zoomMultiplier*mapCellSize;
 		context.drawImage(tile, mapCell.getRow(), mapCell.getCol(), mapCellSize, mapCellSize, col, row, zoomedSize, zoomedSize);
 	}
+
+	private boolean caseAppend(StringBuilder sb, boolean appendCase, String appendString, boolean previousAppend){
+		if(appendCase){
+			if(previousAppend)
+				sb.append(", ");
+			sb.append(appendString);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(23);
+		sb.append("Cell (id:").append(id).append(") {").append(mapCell)
+			.append("; position: (").append(col).append(", ").append(row)
+			.append("; size = ").append(size);
+		if(!accessible){
+			sb.append("; access-denied; neighbors: {");
+		} else
+			sb.append("; neighbors: {");
+
+		boolean hasElement;
+		hasElement = caseAppend(sb, upCell != null, "UP", false);
+		hasElement = caseAppend(sb, rightCell != null, "RIGHT", hasElement);
+		hasElement = caseAppend(sb, downCell != null, "DOWN", hasElement);
+		hasElement = caseAppend(sb, leftCell != null, "LEFT", hasElement);
+
+		if(hasElement)
+			sb.append("}; ");
+		else
+			sb.append("NONE}; ");
+
+		sb.append("allowed movements: {");
+		hasElement = caseAppend(sb, canMoveUp,"UP", false);
+		hasElement = caseAppend(sb, canMoveRight, "RIGHT", hasElement);
+		hasElement = caseAppend(sb, canMoveDown, "DOWN", hasElement);
+		hasElement = caseAppend(sb, canMoveLeft, "LEFT", hasElement);
+
+		if(hasElement)
+			sb.append("};");
+		else
+			sb.append("NONE};");
+
+		return sb.toString();
+	}
 }
