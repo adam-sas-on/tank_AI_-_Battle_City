@@ -548,7 +548,7 @@ public class Cell {
 		StringBuilder sb = new StringBuilder(23);
 		sb.append("Cell (id:").append(id).append(") {").append(mapCell)
 			.append("; position: (").append(col).append(", ").append(row)
-			.append("; size = ").append(size);
+			.append("); size = ").append(size);
 		if(!accessible){
 			sb.append("; access-denied; neighbors: {");
 		} else

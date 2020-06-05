@@ -226,6 +226,10 @@ public class GameDynamics implements Iterable<Cell> {
 		player2.setUpCell(player2Cell);
 
 		int randomRow;
+		MapCell[] mapCells = new MapCell[]{MapCell.TIMER, MapCell.BOMB, MapCell.STAR, MapCell.TANK_LIVE, MapCell.HELMET, MapCell.SPADE};
+		randomRow = rand.randRange(0, mapCells.length);
+		collectibles.setMapCell(mapCells[randomRow]);
+
 		boolean collide = true;
 		while(collide){
 			randomRow = rand.randomOdd(rowCells - 1)*cellPrecisionUnitSize;
@@ -234,11 +238,9 @@ public class GameDynamics implements Iterable<Cell> {
 			collide = player1Cell.collide(collectibles, cellPrecisionUnitSize);
 			if(!collide)
 				collide = player2Cell.collide(collectibles, cellPrecisionUnitSize);
+			if(!collide && eagleIndex >= 0)
+				collide = cellCollideEagle(collectibles);
 		}
-
-		MapCell[] mapCells = new MapCell[]{MapCell.TIMER, MapCell.BOMB, MapCell.STAR, MapCell.TANK_LIVE, MapCell.HELMET, MapCell.SPADE};
-		randomRow = rand.randRange(0, mapCells.length);
-		collectibles.setMapCell(mapCells[randomRow]);
 	}
 
 	private void collect(PlayerAITank player){
@@ -248,7 +250,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		switch(collectibleType){
 			case TIMER:
-				collectibleTimer = stepsPerSecond*30;
+				collectibleTimer = stepsPerSecond*10;
 				break;
 			case BOMB:
 				// todo: perform explosions for all enemy tanks;
@@ -261,7 +263,7 @@ public class GameDynamics implements Iterable<Cell> {
 					collectibleTimer = stepsPerSecond*30;
 				break;
 			case SPADE:
-				collectibleTimer = stepsPerSecond*30;
+				collectibleTimer = stepsPerSecond*20;
 				encircleEagle(MapCell.STEEL);
 				break;
 		}
@@ -399,9 +401,17 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void movePlayer(PlayerAITank player){
+		Cell tankNewPositionCell, checkCell;
 		boolean moved = player.move(xyPos);
-		Cell checkCell = cellByPosition(xyPos[0], xyPos[1]);
+
+		checkCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
+		tankNewPositionCell = new Cell();
+
 		if(moved){
+			player.setUpCell(tankNewPositionCell);// players tank cell before movement;
+			tankNewPositionCell.setPos(xyPos[0], xyPos[1]);// cell on new position of tank;
+			// todo: check conditions between tanks; use direction as a hint where to search other tanks;
+
 			player.blockMovement(checkCell, xyPos[0], xyPos[1]);
 		}
 
@@ -410,9 +420,8 @@ public class GameDynamics implements Iterable<Cell> {
 			addBullet(bullet);
 		}
 
-		checkCell = new Cell();
-		player.setUpCell(checkCell);
-		if(checkCell.collide(collectibles, cellPrecisionUnitSize) )
+		player.setUpCell(tankNewPositionCell);
+		if(tankNewPositionCell.collide(collectibles, cellPrecisionUnitSize) )
 			collect(player);
 	}
 
