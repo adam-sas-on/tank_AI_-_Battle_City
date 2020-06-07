@@ -276,7 +276,7 @@ public class PlayerAITank implements Tank {
 		immortalStepper = stepsFor5Sec;
 	}
 
-	public void blockMovement(Cell cell, int x, int y){
+	public void moveOrBlock(Cell cell, int x, int y){
 		if(cell == null)
 			return;
 
@@ -286,7 +286,7 @@ public class PlayerAITank implements Tank {
 	}
 
 	@Override
-	public boolean move(int[] newXY) {
+	public boolean requestedPosition(int[] newXY) {
 		bulletSteps--;
 
 		if(bulletSteps == 0 && bulletsInRange > 0)

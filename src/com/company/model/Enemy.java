@@ -64,7 +64,7 @@ public abstract class Enemy {
 		icons.put(code, cells);
 	}
 
-	public void move(GameView view){
+	/*public void requestedPosition(GameView view){
 		if(!ride)
 			return;
 
@@ -104,7 +104,7 @@ public abstract class Enemy {
 			x_pos = col;
 			y_pos = row;
 		}
-	}
+	}*/
 
 	public abstract Bullet fireBullet(int msInterval, int cellSize, DamageClass damages);
 

@@ -402,7 +402,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 	private void movePlayer(PlayerAITank player){
 		Cell tankNewPositionCell, checkCell;
-		boolean moved = player.move(xyPos);
+		boolean moved = player.requestedPosition(xyPos);
 
 		checkCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
 		tankNewPositionCell = new Cell();
@@ -412,7 +412,7 @@ public class GameDynamics implements Iterable<Cell> {
 			tankNewPositionCell.setPos(xyPos[0], xyPos[1]);// cell on new position of tank;
 			// todo: check conditions between tanks; use direction as a hint where to search other tanks;
 
-			player.blockMovement(checkCell, xyPos[0], xyPos[1]);
+			player.moveOrBlock(checkCell, xyPos[0], xyPos[1]);
 		}
 
 		if(player.fireBullet() ){
