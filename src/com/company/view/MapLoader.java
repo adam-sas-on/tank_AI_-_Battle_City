@@ -237,6 +237,7 @@ public class MapLoader {
 		while(iter.hasNext() ){
 			stepCell = iter.next();
 			stepCell.blockMovementsAround();
+			stepCell.setMapCell(MapCell.NULL_UNIT_BLOCKADE);
 			iter.remove();
 		}
 	}

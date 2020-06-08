@@ -88,6 +88,7 @@ public enum MapCell {
 	FOREST(544, 102, 32, false, true),
 	WATER(544, 136, 32, false, false),
 	NULL_BLOCKADE(578, 136, 32, false, false),
+	NULL_UNIT_BLOCKADE(578, 118, 16, false, false),
 
 	TIMER(68, 136, 32, false, true),
 	BOMB(102, 136, 32, false, true),

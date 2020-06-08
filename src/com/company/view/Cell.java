@@ -526,12 +526,13 @@ public class Cell {
 	}
 
 	public void drawCell(GraphicsContext context, Image tile, double zoomMultiplier){
-		if(mapCell == null || mapCell == MapCell.NULL_BLOCKADE)
+		if(mapCell == null || mapCell == MapCell.NULL_BLOCKADE || mapCell == MapCell.NULL_UNIT_BLOCKADE)
 			return;
 		int mapCellSize = mapCell.getSize();
 		double zoomedSize = zoomMultiplier*mapCellSize;
 		context.drawImage(tile, mapCell.getRow(), mapCell.getCol(), mapCellSize, mapCellSize, col, row, zoomedSize, zoomedSize);
 	}
+
 
 	private boolean caseAppend(StringBuilder sb, boolean appendCase, String appendString, boolean previousAppend){
 		if(appendCase){
