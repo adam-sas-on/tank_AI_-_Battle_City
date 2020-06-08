@@ -52,6 +52,28 @@ class CellTest {
 		return rowsCols;
 	}
 
+	static Stream<Arguments> waterEnvelop(){
+		Stream.Builder<Arguments> sBuild = Stream.builder();
+		int waterRow = rows/2, waterCol = cols/2;
+
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.UP, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.UP, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.UP, 1) );
+
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.RIGHT, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.RIGHT, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.RIGHT, 1) );
+
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.DOWN, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.DOWN, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.DOWN, 1) );
+
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.LEFT, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.LEFT, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.LEFT, 1) );
+		return sBuild.build();
+	}
+
 	private void clearCellStructure(){
 		int row, col, i = 0, count = cells.length;
 
@@ -105,6 +127,65 @@ class CellTest {
 		}
 
 		return result;
+	}
+
+	/**
+	 *
+	 * @param waterCol column to place a water cell;
+	 * @param waterRow row to place a water cell;
+	 * @param direction direction from of moving cell after removing brick cell standing next to water;
+	 * @param brickRowColDiff change column or row from water position depending on direction;
+	 * @return index of cell with brick;
+	 */
+	private int setWaterBlockade1Brick(int waterCol, int waterRow, KeyCode direction, int brickRowColDiff){
+		clearCellStructure();
+		if(waterCol < 0 || waterRow < 0)
+			return -1;
+
+		int index, brickRow = -1, brickCol = -1;
+
+		if(direction == KeyCode.UP || direction == KeyCode.DOWN)
+			brickCol = waterCol + brickRowColDiff;
+		else if(direction == KeyCode.RIGHT || direction == KeyCode.LEFT)
+			brickRow = waterRow + brickRowColDiff;
+
+		switch(direction){
+			case UP:
+				brickRow = waterRow + 2;
+				break;
+			case RIGHT:
+				brickCol = waterCol - 1;
+				break;
+			case DOWN:
+				brickRow = waterRow - 1;
+				break;
+			case LEFT:
+				brickCol = waterCol + 2;
+				break;
+		}
+
+		if(brickCol < 0 || brickRow < 0 || brickCol >= cols - 1 || brickRow >= rows -1)
+			return -1;
+
+		index = brickRow*cols + brickCol;
+
+		int waterIndex = waterRow*cols + waterCol;
+		if(waterIndex + cols + 1 >= cells.length)
+			return -1;
+
+		cells[waterIndex].setMapCell(MapCell.WATER);
+		cells[waterIndex].blockMovementsAround();
+		cells[waterIndex + 1].setMapCell(MapCell.NULL_UNIT_BLOCKADE);
+		cells[waterIndex + 1].blockMovementsAround();
+		cells[waterIndex + cols].setMapCell(MapCell.NULL_UNIT_BLOCKADE);
+		cells[waterIndex + cols].blockMovementsAround();
+		cells[waterIndex + cols + 1].setMapCell(MapCell.NULL_UNIT_BLOCKADE);
+		cells[waterIndex + cols + 1].blockMovementsAround();
+
+		cells[index].setMapCell(MapCell.BRICK);
+		cells[index].blockMovementsAround();
+
+		return index;
 	}
 
 	private int cellIndexForPosition(int xPos, int yPos){
@@ -557,6 +638,62 @@ class CellTest {
 
 		System.out.println("row = " + row + "; result: " + Arrays.toString(resultCols) );
 		assertArrayEquals(expectedCols, resultCols);
+	}
+
+	// todo: 2 neighbour cells test series;
+
+	@ParameterizedTest
+	@MethodSource("waterEnvelop")
+	void unblock1neighbourCellToWater(int col, int row, KeyCode direction, int rowOrColDifferenceForBrick){
+		int waterCellSize = MapCell.WATER.getSize() / MapCell.getUnitSize();
+
+		if(waterCellSize + 2 >= rows || waterCellSize + 2 >= cols){
+			fail("unblock1neighbourCellToWater: too small map to test blocking of water.");
+		}
+
+		int brickIndex = setWaterBlockade1Brick(col, row, direction, rowOrColDifferenceForBrick);
+		if(brickIndex < 0)
+			fail("unblock1neighbourCellToWater: bad configuration of map cells!");
+
+		cells[brickIndex].setMapCell(null);
+		cells[brickIndex].unblockMovementsAround();
+
+		Cell cell = null;
+		int expectedCol, expectedRow, resultRow = -1, resultCol = -1;
+
+		switch(direction){
+			case UP:
+				cell = cells[brickIndex];
+				resultCol = cell.getCol();
+				resultRow = cell.checkModifyRow(direction, cell.getRow() - pixelsInCell/2);
+				break;
+			case LEFT:
+				cell = cells[brickIndex];
+				resultRow = cell.getRow();
+				resultCol = cell.checkModifyCol(direction, cell.getCol() - pixelsInCell/2);
+				break;
+			case RIGHT:
+				cell = cells[brickIndex].getLeftCell();
+				resultRow = cell.getRow();
+				resultCol = cell.checkModifyCol(direction, cell.getCol() + pixelsInCell/2);
+				break;
+			case DOWN:
+				cell = cells[brickIndex].getUpCell();
+				resultCol = cell.getCol();
+				resultRow = cell.checkModifyRow(direction, cell.getRow() + pixelsInCell/2);
+				break;
+		}
+
+		if(cell == null || resultRow == -1){
+			fail("unblock1neighbourCellToWater: can not get proper cell!");
+			return;
+		} else {
+			expectedRow = cell.getRow();
+			expectedCol = cell.getCol();
+		}
+
+		assertEquals(expectedRow, resultRow);
+		assertEquals(expectedCol, resultCol);
 	}
 
 }
