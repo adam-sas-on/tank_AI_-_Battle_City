@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class Game {
 
 	private MapLoader mapLoader;
 	private List<String> maps;
+	private int mapNumber;
 
 	private SpriteEventController player1driver, player2driver;
 	private PlayerAITank player1;
@@ -39,6 +41,7 @@ public class Game {
 		mapLoader = MapLoader.getInstance();
 		maps = new ArrayList<>();
 		mapLoader.getFileList(maps);
+		this.view.addMaps(maps);
 
 		runGame = Executors.newSingleThreadScheduledExecutor();
 		dynamics = new GameDynamics(mapLoader, view);
@@ -56,7 +59,9 @@ public class Game {
 		dynamics.setFirstPlayer(player1);
 		dynamics.setSecondPlayer(player2);
 
-		dynamics.loadMap(maps.get(14), mapLoader, view);
+		mapNumber = 14;
+		dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
+		this.view.selectMap(maps.get(mapNumber));
 
 		// Cannot assign a value to final variable 'timeline'
 		timeline = new Timeline(
@@ -67,7 +72,7 @@ public class Game {
 					}
 				}),
 				new KeyFrame(Duration.millis(20))
-			);
+		);
 	}
 
 	private void setControllers(){
@@ -85,7 +90,34 @@ public class Game {
 		player2.setIcons();
 	}
 
+	private void startPauseGame(){
+		pause = !pause;
+
+		if(pause)
+			view.pauseDrawing();
+		else
+			view.keepDrawing();
+	}
+	private void startPauseGameByMouse(MouseEvent mouseEvent){
+		startPauseGame();
+	}
+
+	private void loadMapFromList(MouseEvent mouseEvent){
+		String map = view.getSelectedMap();
+		int mapIndex = maps.indexOf(map);
+		if(mapIndex < 0)
+			System.out.println("Can not get map called  " + map);
+		else {
+			mapNumber = mapIndex;
+			dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
+		}
+	}
+
 	public void start(){
+		view.getStartPauseButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startPauseGameByMouse);
+
+		view.getLoadingMapButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::loadMapFromList);
+
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
 		runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
@@ -95,12 +127,7 @@ public class Game {
 	public void listen(KeyEvent keyEvent){
 		KeyCode keyCode = keyEvent.getCode();
 		if(keyCode == KeyCode.C){
-			pause = !pause;
-
-			if(pause)
-				view.pauseDrawing();
-			else
-				view.keepDrawing();
+			startPauseGame();
 
 			return;
 		} else if(pause)
