@@ -73,9 +73,7 @@ public class MapLoader {
 	public void loadMap(Cell rootCell, String fileName,
 						PlayerAITank player1, PlayerAITank player2,
 						EnemyPorts ports, List<Integer> trees,
-						GameView view){
-		trees.clear();
-
+						GameView view) throws IOException {
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
 		int cols = 0, rows = 0;
@@ -83,6 +81,9 @@ public class MapLoader {
 			cols = scan.nextInt();
 		if(scan.hasNextInt() )
 			rows = scan.nextInt();
+
+		if(rows == 0 || cols == 0)
+			throw new IOException("loadMap: error in reading map size!");
 
 		view.setColsRows(cols, rows);
 
@@ -103,6 +104,7 @@ public class MapLoader {
 			ports.clear();
 
 		List<Cell> nextCellToBlock = new LinkedList<>();
+		trees.clear();
 
 		for(row = 0; row < rows && rowCellBegin != null; row++){
 			line = scan.nextLine();

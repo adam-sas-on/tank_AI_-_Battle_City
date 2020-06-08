@@ -7,6 +7,7 @@ import com.company.view.GameView;
 import com.company.view.MapCell;
 import com.company.view.MapLoader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -155,13 +156,22 @@ public class GameDynamics implements Iterable<Cell> {
 		player1.setDefaultPlayerPosition();
 		player2.setDefaultPlayerPosition();
 
-		mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
-		rowCells = view.getRowCells();
-		setEagleIndex();
-		player1.revive();
-		player2.revive();
-		ports.levelUpPorts();
-		ports.activatePort();
+		boolean loaded = true;
+		try {
+			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
+		} catch(IOException | NullPointerException e){
+			System.out.println("Loading map  " + mapFileName + "  failed!");
+			loaded = false;
+		}
+
+		if(loaded) {
+			rowCells = view.getRowCells();
+			setEagleIndex();
+			player1.revive();
+			player2.revive();
+			ports.levelUpPorts();
+			ports.activatePort();
+		}
 	}
 
 	public int get1stPlayerLifes(){
