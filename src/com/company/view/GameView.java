@@ -8,6 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -25,7 +26,9 @@ public class GameView {
 	private GraphicsContext gContext;
 	private static Image tiles;
 	private Button startPause;
-	private Label[] playersLives;
+	private Button mapSelectButton;
+	private Label[] playersLives, playersPoints;
+	private ListView<String> mapList;
 	private Cell[] cells;
 	private int[] positions;
 	private int rowCells = 26, colCells = 26;
@@ -45,10 +48,7 @@ public class GameView {
 
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
-		startPause = new Button("Pause");
-		playersLives = new Label[2];
-		playersLives[0] = new Label();
-		playersLives[1] = new Label();
+		setRightMenu();
 		rightMenuWidth = 150;
 
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
@@ -63,6 +63,20 @@ public class GameView {
 		trees = new ArrayList<>();
 		tanks = new ArrayList<>();
 		bullets = new LinkedList<>();
+	}
+
+	private void setRightMenu(){
+		startPause = new Button("Pause");
+		playersLives = new Label[2];
+		playersLives[0] = new Label();
+		playersLives[1] = new Label();
+
+		playersPoints = new Label[2];
+		playersPoints[0] = new Label();
+		playersPoints[1] = new Label();
+
+		mapList = new ListView<>();
+		mapSelectButton = new Button("Load map");
 	}
 
 	public int getDefaultCellSize(){
@@ -82,6 +96,44 @@ public class GameView {
 
 	public Button getStartPauseButton(){
 		return startPause;
+	}
+
+	public ListView<String> getMapList(){
+		return mapList;
+	}
+
+	public Button getLoadingMapButton(){
+		return mapSelectButton;
+	}
+
+	public String getSelectedMap(){
+		String map = "";
+		map = mapList.getSelectionModel().getSelectedItem();
+		return map;
+	}
+
+	public void addMaps(List<String> maps){
+		if(maps.size() > 0){
+			mapList.getItems().clear();
+			mapList.getItems().addAll(maps);
+		}
+	}
+
+	public void selectMap(String map){
+		if(mapList.getItems().size() == 0)
+			return;
+
+		int mapIndex = mapList.getItems().indexOf(map);
+		if(mapIndex >= 0)
+			mapList.getSelectionModel().clearAndSelect(mapIndex);
+	}
+
+	public void selectNextMap(){
+		int selectedIndex = mapList.getSelectionModel().getSelectedIndex();
+		if(selectedIndex + 1 == mapList.getItems().size() )
+			mapList.getSelectionModel().selectFirst();
+		else
+			mapList.getSelectionModel().selectNext();
 	}
 
 	public void setFramesPerSeconds(int timeFrameInMilliseconds){
@@ -227,10 +279,23 @@ public class GameView {
 		ui.setPadding(new Insets(10));
 
 		ui.add(startPause, 0, 1);
-		ui.setHgap(10);
+		ui.setVgap(8);
+
+		//VBox box = new VBox(10);
+		//box.getChildren().addAll(playersLives[0], playersPoints[0], playersLives[1], playersPoints[1]);
 		ui.add(playersLives[0], 0, 3);
-		ui.setHgap(10);
-		ui.add(playersLives[1], 0, 50);
+		ui.setHgap(2);
+		ui.add(playersPoints[0], 0, 5);
+		ui.setHgap(8);
+		ui.add(playersLives[1], 0, 7);
+		ui.setHgap(2);
+		ui.add(playersPoints[1], 0, 9);
+
+		ui.setHgap(8);
+		mapList.setPrefHeight( 8*MapCell.getUnitSize() );
+		ui.add(mapList, 0, 11);
+		ui.setHgap(2);
+		ui.add(mapSelectButton, 0, 13);
 	}
 
 	public Scene drawStart(){
