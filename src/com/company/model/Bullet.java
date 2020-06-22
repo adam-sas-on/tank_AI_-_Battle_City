@@ -41,8 +41,9 @@ public class Bullet {
 
 		canDestroySteel = player.lastBulletCanDestroySteel();
 		this.player = player;
-		xDirection = 0;
-		yDirection = 0;
+		xDirection = direction.unitStepX();
+		yDirection = direction.unitStepY();
+
 		flightSteps = 0;
 		stepsLimits = player.getBulletSteps();
 		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
@@ -72,14 +73,12 @@ public class Bullet {
 		switch(direction){
 			case UP:
 				bulletMapCell = MapCell.BULLET_UP;
-				yDirection = -1;
 				x_pos += (tankSize - bulletSize)/2;
 
 				rightColDiff = bulletSize;
 				break;
 			case RIGHT:
 				bulletMapCell = MapCell.BULLET_RIGHT;
-				xDirection = 1;
 				x_pos += tankSize - bulletSize;
 				y_pos += (tankSize - bulletSize)/2;
 
@@ -88,14 +87,13 @@ public class Bullet {
 				break;
 			case LEFT:
 				bulletMapCell = MapCell.BULLET_LEFT;
-				xDirection = -1;
 				y_pos += (tankSize - bulletSize)/2;
 
 				leftRowDiff = bulletSize;
 				break;
 			default:
 				bulletMapCell = MapCell.BULLET_DOWN;
-				yDirection = 1;
+				//yDirection = 1;
 				x_pos += (tankSize - bulletSize)/2;
 				y_pos += tankSize - bulletSize;
 

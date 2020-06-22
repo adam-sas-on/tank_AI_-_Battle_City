@@ -40,4 +40,26 @@ public enum Direction {
 	public int getDirection(){
 		return degAngleOrm1;
 	}
+
+	public int unitStepX(){// cos(radAngleOrm1);
+		switch(degAngleOrm1){
+			case 0:
+				return 1;
+			case 180:
+				return -1;
+			default:
+				return 0;
+		}
+	}
+
+	public int unitStepY(){// -sin(radAngleOrm1);
+		switch(degAngleOrm1){
+			case 90:
+				return -1;
+			case 270:
+				return 1;
+			default:
+				return 0;
+		}
+	}
 }
