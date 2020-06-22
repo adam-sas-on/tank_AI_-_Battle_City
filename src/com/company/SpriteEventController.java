@@ -52,36 +52,12 @@ public class SpriteEventController {
 	}
 
 	public Direction getDirection(){
-		return getDirection(turningAngle);
+		return Direction.directionByAngle(turningAngle);
 	}
 
 	public Direction getDirection(int directionAngle){
-		switch(directionAngle){
-			case 0:
-				return Direction.RIGHT;
-			case upAngle:
-				return Direction.UP;
-			case 180:
-				return Direction.LEFT;
-			case 270:
-				return Direction.DOWN;
-			default:
-				return null;
-		}
+		return Direction.directionByAngle(directionAngle);
 	}
-
-	/*public int directionByKeyCodeOrUp(final KeyCode keyCode){
-		switch(keyCode){
-			case RIGHT:
-				return  0;
-			case DOWN:
-				return 270;
-			case LEFT:
-				return 180;
-			default:
-				return upAngle;
-		}
-	}*/
 
 	public void blockUnblockController(boolean freeze){
 		freezed = freeze;

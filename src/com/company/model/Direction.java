@@ -100,4 +100,19 @@ public enum Direction {
 				return 0;
 		}
 	}
+
+	public static Direction directionByAngle(int degAngle){
+		switch(degAngle){
+			case 0:
+				return RIGHT;
+			case 90:
+				return UP;
+			case 180:
+				return LEFT;
+			case 270:
+				return DOWN;
+			default:
+				return IN_PLACE;
+		}
+	}
 }
