@@ -68,37 +68,29 @@ public class Bullet {
 		x_pos = tankX;
 		y_pos = tankY;
 
-		leftColDiff = leftRowDiff = rightColDiff = rightRowDiff = 0;
-		// todo: direction enum with differs;
+		rightColDiff = direction.rightCornerDx(bulletSize);
+		rightRowDiff = direction.rightCornerDy(bulletSize);
+		leftColDiff = direction.leftCornerDx(bulletSize);
+		leftRowDiff = direction.leftCornerDy(bulletSize);
+
 		switch(direction){
 			case UP:
 				bulletMapCell = MapCell.BULLET_UP;
 				x_pos += (tankSize - bulletSize)/2;
-
-				rightColDiff = bulletSize;
 				break;
 			case RIGHT:
 				bulletMapCell = MapCell.BULLET_RIGHT;
 				x_pos += tankSize - bulletSize;
 				y_pos += (tankSize - bulletSize)/2;
-
-				leftColDiff = bulletSize;
-				rightColDiff = rightRowDiff = bulletSize;
 				break;
 			case LEFT:
 				bulletMapCell = MapCell.BULLET_LEFT;
 				y_pos += (tankSize - bulletSize)/2;
-
-				leftRowDiff = bulletSize;
 				break;
 			default:
 				bulletMapCell = MapCell.BULLET_DOWN;
-				//yDirection = 1;
 				x_pos += (tankSize - bulletSize)/2;
 				y_pos += tankSize - bulletSize;
-
-				rightRowDiff = bulletSize;
-				leftColDiff = leftRowDiff = bulletSize;
 		}
 	}
 

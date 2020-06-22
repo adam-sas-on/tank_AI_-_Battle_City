@@ -62,4 +62,42 @@ public enum Direction {
 				return 0;
 		}
 	}
+
+	public int rightCornerDx(int shift){
+		switch(this){
+			case UP:
+			case RIGHT:
+				return shift;
+			default:
+				return 0;
+		}
+	}
+	public int rightCornerDy(int shift){
+		switch(this){
+			case RIGHT:
+			case DOWN:
+				return shift;
+			default:
+				return 0;
+		}
+	}
+
+	public int leftCornerDx(int shift){
+		switch(this){
+			case RIGHT:
+			case DOWN:
+				return shift;
+			default:
+				return 0;
+		}
+	}
+	public int leftCornerDy(int shift){
+		switch(this){
+			case DOWN:
+			case LEFT:
+				return shift;
+			default:
+				return 0;
+		}
+	}
 }
