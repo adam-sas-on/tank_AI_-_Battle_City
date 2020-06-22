@@ -1,8 +1,8 @@
 package com.company.view;
 
+import com.company.model.Direction;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 
 
 public class Cell {
@@ -70,7 +70,7 @@ public class Cell {
 		return destructible;
 	}
 
-	public int checkModifyRow(KeyCode direction, int rowToCheck){
+	public int checkModifyRow(Direction direction, int rowToCheck){
 		int modifiedRow = rowToCheck;
 		switch(direction){
 			case UP:
@@ -93,7 +93,7 @@ public class Cell {
 		return modifiedRow;
 	}
 
-	public int checkModifyCol(KeyCode direction, int colToCheck){
+	public int checkModifyCol(Direction direction, int colToCheck){
 		int modifiedCol = colToCheck;
 		switch(direction){
 			case UP:
@@ -161,7 +161,7 @@ public class Cell {
 
 	public void resetMovement(final int col, final int row, final int maxCols, final int maxRows){
 		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = true;
-		Cell stepper = leftCell;
+		Cell stepper;
 		//* rounding down position case makes it is not necessary to set movement to upCell and leftCell;
 
 		stepper = rightCell;
@@ -182,7 +182,7 @@ public class Cell {
 				canMoveDown = false;
 		}
 	}
-
+// todo: make one method;
 	public void blockUnblockMoveToUp(boolean unsetBlockade){
 		canMoveUp = unsetBlockade;
 	}
@@ -381,6 +381,7 @@ public class Cell {
 		}
 	}
 
+	// todo: what if mapToSet == null? change names cell1, cell2
 	private Cell setSideWalls(MapCell mapToSet, Cell cell1, Cell cell2, int length){
 		boolean isBlocking = !mapToSet.isAccessible();
 		int i = 0;

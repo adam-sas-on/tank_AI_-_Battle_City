@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.model.Direction;
 import javafx.scene.input.KeyCode;
 
 public class SpriteEventController {
@@ -50,26 +51,26 @@ public class SpriteEventController {
 		throw new IllegalArgumentException("Key angles does not correspond to values of angle!");
 	}
 
-	public KeyCode getKeyCode(){
-		return getKeyCode(turningAngle);
+	public Direction getDirection(){
+		return getDirection(turningAngle);
 	}
 
-	public KeyCode getKeyCode(int directionAngle){
+	public Direction getDirection(int directionAngle){
 		switch(directionAngle){
 			case 0:
-				return KeyCode.RIGHT;
+				return Direction.RIGHT;
 			case upAngle:
-				return KeyCode.UP;
+				return Direction.UP;
 			case 180:
-				return KeyCode.LEFT;
+				return Direction.LEFT;
 			case 270:
-				return KeyCode.DOWN;
+				return Direction.DOWN;
 			default:
 				return null;
 		}
 	}
 
-	public int directionByKeyCodeOrUp(final KeyCode keyCode){
+	/*public int directionByKeyCodeOrUp(final KeyCode keyCode){
 		switch(keyCode){
 			case RIGHT:
 				return  0;
@@ -80,7 +81,7 @@ public class SpriteEventController {
 			default:
 				return upAngle;
 		}
-	}
+	}*/
 
 	public void blockUnblockController(boolean freeze){
 		freezed = freeze;

@@ -31,7 +31,7 @@ public class Bullet {
 
 	public Bullet(PlayerAITank player, DamageClass damages){
 		int[] xyPos = new int[2];
-		KeyCode direction;
+		Direction direction;
 		int tankSize;
 
 		player.getPos(xyPos);
@@ -63,12 +63,12 @@ public class Bullet {
 			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
 	}
 
-	private void setMapCellAndPosition(int tankSize, KeyCode direction, int tankX, int tankY){
+	private void setMapCellAndPosition(int tankSize, Direction direction, int tankX, int tankY){
 		x_pos = tankX;
 		y_pos = tankY;
 
 		leftColDiff = leftRowDiff = rightColDiff = rightRowDiff = 0;
-
+		// todo: direction enum with differs;
 		switch(direction){
 			case UP:
 				bulletMapCell = MapCell.BULLET_UP;

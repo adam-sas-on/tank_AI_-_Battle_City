@@ -3,7 +3,6 @@ package com.company.model;
 import com.company.SpriteEventController;
 import com.company.view.Cell;
 import com.company.view.MapCell;
-import javafx.scene.input.KeyCode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class PlayerAITank implements Tank {
 		stepsFor5Sec = 5000/msInterval;
 		freezeStepper = immortalStepper = 0;
 
-		currentDirection = driver.directionByKeyCodeOrUp(KeyCode.UP);
+		currentDirection = Direction.UP.getDirection();
 
 		level = 1;
 		lifes = 3;
@@ -109,8 +108,8 @@ public class PlayerAITank implements Tank {
 		return size;
 	}
 
-	public KeyCode getDirectionCode(){
-		return tankDriver.getKeyCode();
+	public Direction getDirectionCode(){
+		return tankDriver.getDirection();
 	}
 
 	public int getBulletSpeed(){
@@ -150,7 +149,7 @@ public class PlayerAITank implements Tank {
 
 	public void setIcons(){
 		MapCell[] cells;
-		int direction = tankDriver.directionByKeyCodeOrUp(KeyCode.UP);
+		int direction = Direction.UP.getDirection();
 
 		if(playerNumber < 2)
 			cells = MapCell.player1UpState(level);
@@ -161,7 +160,7 @@ public class PlayerAITank implements Tank {
 			currentIcons = cells;
 		icons.put(direction, cells);
 
-		direction = tankDriver.directionByKeyCodeOrUp(KeyCode.RIGHT);
+		direction = Direction.RIGHT.getDirection();
 		if(playerNumber < 2){
 			cells = MapCell.player1RightState(level);
 		} else
@@ -169,17 +168,17 @@ public class PlayerAITank implements Tank {
 		icons.put(direction, cells);
 
 		if(playerNumber < 2){
-			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.DOWN);
+			direction = Direction.DOWN.getDirection();
 			icons.put(direction, MapCell.player1DownState(level) );
 
-			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.LEFT);
+			direction = Direction.LEFT.getDirection();
 			icons.put(direction, MapCell.player1LeftState(level) );
 		} else {
-			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.DOWN);
+			direction = Direction.DOWN.getDirection();
 			cells = MapCell.player2DownState(level);
 			icons.put(direction, cells);
 
-			direction = tankDriver.directionByKeyCodeOrUp(KeyCode.LEFT);
+			direction = Direction.LEFT.getDirection();
 			cells = MapCell.player2LeftState(level);
 			icons.put(direction, cells);
 		}
@@ -270,7 +269,7 @@ public class PlayerAITank implements Tank {
 		x_pos = xStart;
 		y_pos = yStart;
 		canKeepMoving = true;
-		//currentDirection = tankDriver.directionByKeyCodeOrUp(KeyCode.UP);
+		//currentDirection = Direction.UP.getDirection();
 		currentIconInd = 0;
 		currentIcons = icons.get(currentDirection);
 		immortalStepper = stepsFor5Sec;
@@ -280,9 +279,9 @@ public class PlayerAITank implements Tank {
 		if(cell == null)
 			return;
 
-		KeyCode directionCode = tankDriver.getKeyCode(currentDirection);
-		x_pos = cell.checkModifyCol(directionCode, x);
-		y_pos = cell.checkModifyRow(directionCode, y);
+		Direction direction = tankDriver.getDirection(currentDirection);
+		x_pos = cell.checkModifyCol(direction, x);
+		y_pos = cell.checkModifyRow(direction, y);
 	}
 
 	@Override
@@ -319,7 +318,6 @@ public class PlayerAITank implements Tank {
 			return false;
 
 		int xPosNew = x_pos, yPosNew = y_pos;
-		KeyCode directionCode = tankDriver.getKeyCode();
 
 		if(newDirection != currentDirection){
 			xPosNew = roundInRange(x_pos, cellPrecisionSize);
@@ -330,7 +328,9 @@ public class PlayerAITank implements Tank {
 			currentIcons = icons.get(newDirection);
 			currentDirection = newDirection;
 		} else if(canKeepMoving){
-			switch (directionCode){
+			Direction direction = tankDriver.getDirection();
+
+			switch (direction){
 				case UP:
 					yPosNew -= cellSpeed;
 					if (yPosNew < 0)
