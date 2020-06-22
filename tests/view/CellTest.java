@@ -1,8 +1,8 @@
 package view;
 
+import com.company.model.Direction;
 import com.company.view.Cell;
 import com.company.view.MapCell;
-import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -56,21 +56,21 @@ class CellTest {
 		Stream.Builder<Arguments> sBuild = Stream.builder();
 		int waterRow = rows/2, waterCol = cols/2;
 
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.UP, -1) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.UP, 0) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.UP, 1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.UP, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.UP, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.UP, 1) );
 
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.RIGHT, -1) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.RIGHT, 0) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.RIGHT, 1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.RIGHT, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.RIGHT, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.RIGHT, 1) );
 
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.DOWN, -1) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.DOWN, 0) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.DOWN, 1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.DOWN, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.DOWN, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.DOWN, 1) );
 
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.LEFT, -1) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.LEFT, 0) );
-		sBuild.add( Arguments.of(waterCol, waterRow, KeyCode.LEFT, 1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.LEFT, -1) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.LEFT, 0) );
+		sBuild.add( Arguments.of(waterCol, waterRow, Direction.LEFT, 1) );
 		return sBuild.build();
 	}
 
@@ -137,16 +137,16 @@ class CellTest {
 	 * @param brickRowColDiff change column or row from water position depending on direction;
 	 * @return index of cell with brick;
 	 */
-	private int setWaterBlockade1Brick(int waterCol, int waterRow, KeyCode direction, int brickRowColDiff){
+	private int setWaterBlockade1Brick(int waterCol, int waterRow, Direction direction, int brickRowColDiff){
 		clearCellStructure();
 		if(waterCol < 0 || waterRow < 0)
 			return -1;
 
 		int index, brickRow = -1, brickCol = -1;
 
-		if(direction == KeyCode.UP || direction == KeyCode.DOWN)
+		if(direction == Direction.UP || direction == Direction.DOWN)
 			brickCol = waterCol + brickRowColDiff;
-		else if(direction == KeyCode.RIGHT || direction == KeyCode.LEFT)
+		else if(direction == Direction.RIGHT || direction == Direction.LEFT)
 			brickRow = waterRow + brickRowColDiff;
 
 		switch(direction){
@@ -233,8 +233,8 @@ class CellTest {
 		int expectedCol = rowCell.getCol(),
 			resultRow, resultCol;
 
-		resultRow = rowCell.checkModifyRow(KeyCode.DOWN, i);
-		resultCol = rowCell.checkModifyCol(KeyCode.DOWN, expectedCol);
+		resultRow = rowCell.checkModifyRow(Direction.DOWN, i);
+		resultCol = rowCell.checkModifyCol(Direction.DOWN, expectedCol);
 
 		assertEquals(expectedRow, resultRow);
 		assertEquals(expectedCol, resultCol);
@@ -267,8 +267,8 @@ class CellTest {
 
 		int expectedCol = rowCell.getCol(), resultRow, resultCol;
 
-		resultRow = rowCell.checkModifyRow(KeyCode.UP, i);
-		resultCol = rowCell.checkModifyCol(KeyCode.UP, expectedCol);
+		resultRow = rowCell.checkModifyRow(Direction.UP, i);
+		resultCol = rowCell.checkModifyCol(Direction.UP, expectedCol);
 
 		assertEquals(expectedRow, resultRow);
 		assertEquals(expectedCol, resultCol);
@@ -292,8 +292,8 @@ class CellTest {
 
 		int expectedRow = colCell.getRow(), resultRow, resultCol;
 
-		resultRow = colCell.checkModifyRow(KeyCode.RIGHT, expectedRow);
-		resultCol = colCell.checkModifyCol(KeyCode.RIGHT, i);
+		resultRow = colCell.checkModifyRow(Direction.RIGHT, expectedRow);
+		resultCol = colCell.checkModifyCol(Direction.RIGHT, i);
 
 		assertEquals(expectedRow, resultRow);
 		assertEquals(expectedCol, resultCol);
@@ -317,8 +317,8 @@ class CellTest {
 
 		int expectedRow = colCell.getRow(), resultRow, resultCol;
 
-		resultRow = colCell.checkModifyRow(KeyCode.LEFT, expectedRow);
-		resultCol = colCell.checkModifyCol(KeyCode.LEFT, i);
+		resultRow = colCell.checkModifyRow(Direction.LEFT, expectedRow);
+		resultCol = colCell.checkModifyCol(Direction.LEFT, i);
 
 		assertEquals(expectedRow, resultRow);
 		assertEquals(expectedCol, resultCol);
@@ -337,8 +337,8 @@ class CellTest {
 
 		if(rowCell != null){
 			expectedCol = rowCell.getCol();
-			resultRow = rowCell.checkModifyRow(KeyCode.DOWN, i);
-			resultCol = rowCell.checkModifyCol(KeyCode.DOWN, expectedCol);
+			resultRow = rowCell.checkModifyRow(Direction.DOWN, i);
+			resultCol = rowCell.checkModifyCol(Direction.DOWN, expectedCol);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -348,8 +348,8 @@ class CellTest {
 		rowCell = cellByPosition(col*pixelsInCell, i);
 		if(rowCell != null){
 			expectedCol = rowCell.getCol();
-			resultRow = rowCell.checkModifyRow(KeyCode.DOWN, i);
-			resultCol = rowCell.checkModifyCol(KeyCode.DOWN, expectedCol);
+			resultRow = rowCell.checkModifyRow(Direction.DOWN, i);
+			resultCol = rowCell.checkModifyCol(Direction.DOWN, expectedCol);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -374,8 +374,8 @@ class CellTest {
 
 		if(rowCell != null){
 			expectedCol = rowCell.getCol();
-			resultRow = rowCell.checkModifyRow(KeyCode.UP, i);
-			resultCol = rowCell.checkModifyCol(KeyCode.UP, expectedCol);
+			resultRow = rowCell.checkModifyRow(Direction.UP, i);
+			resultCol = rowCell.checkModifyCol(Direction.UP, expectedCol);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -385,8 +385,8 @@ class CellTest {
 		rowCell = cellByPosition(col*pixelsInCell, i);
 		if(rowCell != null){
 			expectedCol = rowCell.getCol();
-			resultRow = rowCell.checkModifyRow(KeyCode.UP, i);
-			resultCol = rowCell.checkModifyCol(KeyCode.UP, expectedCol);
+			resultRow = rowCell.checkModifyRow(Direction.UP, i);
+			resultCol = rowCell.checkModifyCol(Direction.UP, expectedCol);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -411,8 +411,8 @@ class CellTest {
 
 		if(colCell != null) {
 			expectedRow = colCell.getRow();
-			resultRow = colCell.checkModifyRow(KeyCode.RIGHT, expectedRow);
-			resultCol = colCell.checkModifyCol(KeyCode.RIGHT, i);
+			resultRow = colCell.checkModifyRow(Direction.RIGHT, expectedRow);
+			resultCol = colCell.checkModifyCol(Direction.RIGHT, i);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -422,8 +422,8 @@ class CellTest {
 		colCell = cellByPosition(i, row*pixelsInCell);
 		if(colCell != null){
 			expectedRow = colCell.getRow();
-			resultRow = colCell.checkModifyRow(KeyCode.RIGHT, expectedRow);
-			resultCol = colCell.checkModifyCol(KeyCode.RIGHT, i);
+			resultRow = colCell.checkModifyRow(Direction.RIGHT, expectedRow);
+			resultCol = colCell.checkModifyCol(Direction.RIGHT, i);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -448,8 +448,8 @@ class CellTest {
 
 		if(colCell != null) {
 			expectedRow = colCell.getRow();
-			resultRow = colCell.checkModifyRow(KeyCode.LEFT, expectedRow);
-			resultCol = colCell.checkModifyCol(KeyCode.LEFT, i);
+			resultRow = colCell.checkModifyRow(Direction.LEFT, expectedRow);
+			resultCol = colCell.checkModifyCol(Direction.LEFT, i);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -459,8 +459,8 @@ class CellTest {
 		colCell = cellByPosition(i, row*pixelsInCell);
 		if(colCell != null){
 			expectedRow = colCell.getRow();
-			resultRow = colCell.checkModifyRow(KeyCode.LEFT, expectedRow);
-			resultCol = colCell.checkModifyCol(KeyCode.LEFT, i);
+			resultRow = colCell.checkModifyRow(Direction.LEFT, expectedRow);
+			resultCol = colCell.checkModifyCol(Direction.LEFT, i);
 
 			assertEquals(expectedRow, resultRow);
 			assertEquals(expectedCol, resultCol);
@@ -507,7 +507,7 @@ class CellTest {
 				continue;
 
 			expectedRows[i + 2] = expectedRow;
-			resultRows[i + 2] = cell.checkModifyRow(KeyCode.DOWN, cellIndex);
+			resultRows[i + 2] = cell.checkModifyRow(Direction.DOWN, cellIndex);
 		}
 
 		System.out.println("col = " + col + "; result: " + Arrays.toString(resultRows));
@@ -544,7 +544,7 @@ class CellTest {
 				continue;
 
 			expectedRows[i + 2] = expectedRow;
-			resultRows[i + 2] = cell.checkModifyRow(KeyCode.UP, cellIndex);
+			resultRows[i + 2] = cell.checkModifyRow(Direction.UP, cellIndex);
 		}
 
 		if(expectedRows[0] < 0 && expectedRows[1] < 0 && expectedRows[2] < 0 && expectedRows[3] < 0)
@@ -590,7 +590,7 @@ class CellTest {
 				continue;
 
 			expectedCols[i + 2] = expectedCol;
-			resultCols[i + 2] = cell.checkModifyCol(KeyCode.RIGHT, cellIndex);
+			resultCols[i + 2] = cell.checkModifyCol(Direction.RIGHT, cellIndex);
 		}
 
 		if(expectedCols[0] < 0 && expectedCols[1] < 0 && expectedCols[2] < 0 && expectedCols[3] < 0)
@@ -630,7 +630,7 @@ class CellTest {
 				continue;
 
 			expectedCols[i + 2] = expectedCol;
-			resultCols[i + 2] = cell.checkModifyCol(KeyCode.LEFT, cellIndex);
+			resultCols[i + 2] = cell.checkModifyCol(Direction.LEFT, cellIndex);
 		}
 
 		if(expectedCols[0] < 0 && expectedCols[1] < 0 && expectedCols[2] < 0 && expectedCols[3] < 0)
@@ -644,7 +644,7 @@ class CellTest {
 
 	@ParameterizedTest
 	@MethodSource("waterEnvelop")
-	void unblock1neighbourCellToWater(int col, int row, KeyCode direction, int rowOrColDifferenceForBrick){
+	void unblock1neighbourCellToWater(int col, int row, Direction direction, int rowOrColDifferenceForBrick){
 		int waterCellSize = MapCell.WATER.getSize() / MapCell.getUnitSize();
 
 		if(waterCellSize + 2 >= rows || waterCellSize + 2 >= cols){
