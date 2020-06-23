@@ -1,5 +1,6 @@
 package com.company.view;
 
+import com.company.model.Enemy;
 import com.company.model.EnemyPorts;
 import com.company.model.PlayerAITank;
 
@@ -72,7 +73,7 @@ public class MapLoader {
 
 	public void loadMap(Cell rootCell, String fileName,
 						PlayerAITank player1, PlayerAITank player2,
-						EnemyPorts ports, List<Integer> trees,
+						EnemyPorts ports, Queue<Enemy> tanks, List<Integer> trees,
 						GameView view) throws IOException {
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
@@ -107,7 +108,14 @@ public class MapLoader {
 		trees.clear();
 
 		for(row = 0; row < rows && rowCellBegin != null; row++){
-			line = scan.nextLine();
+			try {
+				line = scan.nextLine();
+			} catch(NoSuchElementException e){
+				System.out.println("\tloadMap: loading map rows failed in  \"" + fileName + "\"! No line found!");
+				view.setColsRows(cols, row);
+				throw new IOException("loadMap: error in reading map rows!");
+			}
+
 			stepCell = rowCellBegin;
 
 
@@ -242,7 +250,31 @@ public class MapLoader {
 			stepCell.setMapCell(MapCell.NULL_UNIT_BLOCKADE);
 			iter.remove();
 		}
+
+		line = "";
+		try {
+			line = scan.nextLine();
+		} catch(NoSuchElementException e){
+			System.out.println("\tloadMap: can not read the last row with enemy tanks in  \"" + fileName + "\"! \n" + e);
+		}
+		scan.close();
+
+		readEnemyTanks(tanks, line);
 	}
+
+	private void readEnemyTanks(Queue<Enemy> tanks, String tanksSymbolsLine){
+		tanks.clear();
+		if(tanksSymbolsLine.length() < 1)
+			return;
+
+		Enemy tank;
+		String[] elements = tanksSymbolsLine.split("[^\\w]+");
+		int i, count = elements.length;
+		for(i = 0; i < count; i++){
+			//tanks.add(tank);
+		}
+	}
+
 
 	public int getMaxRows(){
 		return maxRows;

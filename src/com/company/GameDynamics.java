@@ -144,7 +144,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		boolean loaded = true;
 		try {
-			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, treesIds, view);
+			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, tanksList, treesIds, view);
 		} catch(IOException | NullPointerException e){
 			System.out.println("Loading map  " + mapFileName + "  failed!");
 			loaded = false;
