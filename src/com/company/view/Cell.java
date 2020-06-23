@@ -519,6 +519,19 @@ public class Cell {
 		return row2nd + size2nd > row && col2nd + size2nd > col && row + sizeOfThis > row2nd && col + sizeOfThis > col2nd;
 	}
 
+	public int collisionArea(Cell cell, final int unitSizeOfCells){
+		int overlapWidth, overlapHeight,
+			size2nd = (cell.getCellSize()*unitSizeOfCells )/MapCell.getUnitSize(),
+			sizeOfThis = (size*unitSizeOfCells )/MapCell.getUnitSize(), colRow;
+
+		colRow = cell.getCol();
+		overlapWidth = Math.min(col + sizeOfThis, colRow + size2nd) - Math.max(col, colRow);
+		colRow = cell.getRow();
+		overlapHeight = Math.min(row + sizeOfThis, colRow + size2nd) - Math.max(row, colRow);
+
+		return (overlapWidth > 0 && overlapHeight > 0)?overlapWidth*overlapHeight:0;
+	}
+
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){
 		upCell = up;
 		rightCell = right;
