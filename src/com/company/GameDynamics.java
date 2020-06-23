@@ -324,7 +324,7 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private boolean moveBullets(){
-		boolean keepMoving, eagleExists = true;
+		boolean keepMoving, eagleExists = true, isPlayers;
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
 		int i = 0, bulletIndex;
@@ -359,7 +359,8 @@ public class GameDynamics implements Iterable<Cell> {
 				bulletOnEagleIndex = i;
 			}
 
-			if(bullets[i].belongsToPlayer() ){
+			isPlayers = bullets[i].belongsToPlayer();
+			if(isPlayers){
 				boolean explodeContinue = false;
 				bullets[i].setUpCell(bulletCell);
 
@@ -391,23 +392,37 @@ public class GameDynamics implements Iterable<Cell> {
 			}
 
 			performEnvironmentExplosion(i);
+
+			// if after all environment interactions bullet still runs;
+			// check its interactions with ports if it is the players one;
+			if(isPlayers && !bullets[i].isExploding() ){
+				bullets[i].setUpCell(bulletCell);
+				ports.blockBlinking(bulletCell, cellPrecisionUnitSize);
+			}
+
 			i++;
 		}
 		return eagleExists;
 	}
 
 	private void movePlayer(PlayerAITank player){
-		Cell tankNewPositionCell, environmentCell;
+		Cell tankNewPositionCell, tankCurrentCell, environmentCell;
 		boolean moved = player.requestedPosition(xyPos);
 
 		environmentCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
 		tankNewPositionCell = new Cell();
+		tankCurrentCell = new Cell();
 
 		if(moved){
+			player.setUpCell(tankCurrentCell);
 			player.setUpCell(tankNewPositionCell);// players tank cell before movement;
 			tankNewPositionCell.setPos(xyPos[0], xyPos[1]);// cell on new position of tank;
 			// todo: check conditions between tanks; use direction as a hint where to search other tanks;
 
+			moved = ports.canMove(tankCurrentCell, tankNewPositionCell, cellPrecisionUnitSize);
+		}
+
+		if(moved){
 			player.moveOrBlock(environmentCell, xyPos[0], xyPos[1]);
 		}
 

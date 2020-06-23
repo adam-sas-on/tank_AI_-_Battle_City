@@ -7,13 +7,14 @@ public class EnemyPorts {
 	private Cell[] portCells;
 	private int[] currentIconIndices, waitingSteps;
 	private boolean[] portsCollide;
-	private int portsCount;
+	private int portsCount, activePortsCounter;
 	private MapCell[] icons;
 	private int currentPort, iterIndex;
-	private int currentStepsForNewTank, buildingSteps;
+	private int currentStepsForNewTank;
 	//private int currentAmountOfTanks;
 	private final double countMultiplier = 1.4;
 	private final int minimumStepsForNewTank;// game-steps after which new tank can appear;
+	private final int buildingSteps, minimumWaitingSteps;
 
 	public EnemyPorts(int stepsPerSecond){
 		int sizeBegin = 10;
@@ -22,7 +23,7 @@ public class EnemyPorts {
 		waitingSteps = new int[sizeBegin];
 		portsCollide = new boolean[sizeBegin];
 		resetPorts(sizeBegin);
-		portsCount = 0;
+		portsCount = activePortsCounter = 0;
 		currentPort = 0;
 		iterIndex = 0;
 
@@ -32,7 +33,8 @@ public class EnemyPorts {
 
 		minimumStepsForNewTank = (stepsPerSecond*3)/2;// assumption that new tank appears after minimum 1.5s;
 		currentStepsForNewTank = (stepsPerSecond*7)/2;// according to original game it was ~3.5 s;
-		buildingSteps = currentStepsForNewTank;
+		buildingSteps = (stepsPerSecond*3)/2;
+		minimumWaitingSteps = Math.max(stepsPerSecond/ 25, 1);
 	}
 
 
@@ -57,6 +59,7 @@ public class EnemyPorts {
 			currentIconIndices[i] = waitingSteps[i] = -1;
 			portsCollide[i] = false;
 		}
+		activePortsCounter = 0;
 	}
 
 	public void add(int col, int row){
@@ -111,7 +114,9 @@ public class EnemyPorts {
 	public void activatePort(){
 		if(portsCount > 0 && waitingSteps[currentPort] < 0){
 
-			waitingSteps[currentPort++] = currentStepsForNewTank;
+			portsCollide[currentPort] = false;
+			waitingSteps[currentPort++] = (activePortsCounter > 0)?currentStepsForNewTank:minimumWaitingSteps;
+			activePortsCounter++;
 			if(currentPort == portsCount)
 				currentPort = 0;
 		}
@@ -135,14 +140,17 @@ public class EnemyPorts {
 			} else {// currentIconIndices[i] >= 0 && waitingSteps[i] > 0 -> blinking and waiting to create tank (building);
 				if( !portsCollide[i] )// if not collide with any tank and players bullets;
 					waitingSteps[i]--;
-				if(waitingSteps[i] == -1)
+				if(waitingSteps[i] == -1) {
 					currentIconIndices[i] = -1;// add enemy tank into map;
+					activePortsCounter--;
+				}
 			}
+			portsCollide[i] = false;
 		}
 	}
 
 	public boolean collide(Cell cell, final int unitSizeOfCells){
-		if(cell == null)
+		if(cell == null || activePortsCounter > 0)
 			return false;
 
 		boolean collision = false;
@@ -157,9 +165,40 @@ public class EnemyPorts {
 	}
 
 	public boolean canMove(Cell spritePosition, Cell spriteRequestedPos, final int unitSizeOfCells){
+		if(spritePosition == null || spriteRequestedPos == null)
+			return true;// like: empty cell can collide;
+
 		boolean moveAccepted = true;
+		int currentArea, areaOfRequested;
+
+		for(int i = 0; i < portsCount; i++){
+			if(currentIconIndices[i] < 0)
+				continue;
+
+			areaOfRequested = portCells[i].collisionArea(spriteRequestedPos, unitSizeOfCells);
+			currentArea = portCells[i].collisionArea(spritePosition, unitSizeOfCells);
+
+			if(areaOfRequested > currentArea) {
+				moveAccepted = false;
+			}
+			if(currentArea > 0)
+				portsCollide[i] = true;
+		}
 
 		return moveAccepted;
+	}
+
+	public void blockBlinking(Cell bulletCell, final int unitSizeOfCells){
+		if(bulletCell == null)
+			return;// no bullets: nothing is blocking;
+
+		int i;
+		for(i = 0; i < portsCount; i++){
+			if(currentIconIndices[i] < 0 || portsCollide[i])
+				continue;
+
+			portsCollide[i] = portCells[i].collide(bulletCell, unitSizeOfCells);
+		}
 	}
 
 	public void createTank(){
