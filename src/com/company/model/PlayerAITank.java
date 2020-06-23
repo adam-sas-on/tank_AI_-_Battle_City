@@ -234,15 +234,17 @@ public class PlayerAITank implements Tank {
 		if(immortalStepper > 0)
 			return;
 
-		MapCell[] newIcons = new MapCell[6];
-		int i;
-		for(i = newIcons.length - 1; i >= 0; i--)
-			newIcons[i] = MapCell.NULL_BLOCKADE;
+		if(freezeStepper < 2){
+			MapCell[] newIcons = new MapCell[6];
+			int i;
+			for(i = newIcons.length - 1; i >= 0; i--)
+				newIcons[i] = MapCell.NULL_BLOCKADE;
 
-		newIcons[0] = currentIcons[currentIconInd];
-		newIcons[1] = currentIcons[currentIconInd];
-		newIcons[2] = currentIcons[currentIconInd];
-		currentIcons = newIcons;
+			newIcons[0] = currentIcons[currentIconInd];
+			newIcons[1] = currentIcons[currentIconInd];
+			newIcons[2] = currentIcons[currentIconInd];
+			currentIcons = newIcons;
+		}
 		currentIconInd = 0;
 
 		freezeStepper = stepsFor5Sec;
