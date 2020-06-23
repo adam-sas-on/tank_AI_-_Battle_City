@@ -8,18 +8,15 @@ import com.company.view.MapCell;
 import com.company.view.MapLoader;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class GameDynamics implements Iterable<Cell> {
 	private PlayerAITank player1;
 	private PlayerAITank player2;
 
-	private List<Enemy> tanks;
+	private Queue<Enemy> tanksList;
+	private Enemy[] activeTanks;
 	private EnemyPorts ports;
-	private int newTankSteps;
 
 	private Bullet[] bullets;
 	private int bulletsCount;
@@ -49,14 +46,17 @@ public class GameDynamics implements Iterable<Cell> {
 
 		cellPrecisionUnitSize = view.getDefaultCellSize();
 		stepsPerSecond = view.getFramesPerSecond();
-		steps = newTankSteps = 0;
+		steps = 0;
 
-		tanks = new LinkedList<>();
+		int sizeBegin = 10;// any beginning size;
+
+		tanksList = new LinkedList<>();
+		activeTanks = new Enemy[sizeBegin];
 		ports = new EnemyPorts(stepsPerSecond);
 		treesIds = new ArrayList<>();
 
 		bulletsCount = 0;
-		bullets = new Bullet[10];// any beginning size;
+		bullets = new Bullet[sizeBegin];
 		eagleIndex = bulletOnEagleIndex = -1;
 
 		setCellsStructure(maxCols, mapLoader.getMaxRows() );
@@ -66,20 +66,6 @@ public class GameDynamics implements Iterable<Cell> {
 
 		rand = new BattleRandom();
 	}
-
-	/*private void setUpperRowCells(int maxCols){
-		cells[0].linkNeighborCells(null, cells[1], cells[maxCols], null);
-		cells[0].setPos(0, 0);
-
-		int i, rowLimit = maxCols - 1;
-		for(i = 1; i < rowLimit; i++){
-			cells[i].linkNeighborCells(null, cells[i+1], cells[i+maxCols], cells[i-1]);
-			cells[i].setPos(i*cellPrecisionUnitSize, 0);
-		}
-
-		cells[i].linkNeighborCells(null, null, cells[i+maxCols], cells[i-1]);
-		cells[i].setPos(i*cellPrecisionUnitSize, 0);
-	}*/
 
 	private Cell cellByPosition(int newCol, int newRow){
 		int col = newCol/cellPrecisionUnitSize, row = newRow/cellPrecisionUnitSize;
@@ -102,7 +88,7 @@ public class GameDynamics implements Iterable<Cell> {
 		cells[0].setCellStructure(cells, maxCols, maxRows, cellPrecisionUnitSize);
 	}
 
-	private boolean isPosAccessible(double newCol, double newRow){
+	/*private boolean isPosAccessible(double newCol, double newRow){
 		int col = (int) Math.floor(newCol), row = (int) Math.floor(newRow);
 		if(col < 0 || row < 0)
 			return false;
@@ -146,7 +132,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private void changeCellPositionToClosest(Cell cell, double x, double y){
 		int col = (int) Math.round(x), row = (int) Math.round(y);
 		cell.setPos(col, row);
-	}
+	}*/
 
 	public void loadMap(String mapFileName, MapLoader mapLoader, GameView view){
 		bulletsCount = 0;
@@ -411,10 +397,10 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void movePlayer(PlayerAITank player){
-		Cell tankNewPositionCell, checkCell;
+		Cell tankNewPositionCell, environmentCell;
 		boolean moved = player.requestedPosition(xyPos);
 
-		checkCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
+		environmentCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
 		tankNewPositionCell = new Cell();
 
 		if(moved){
@@ -422,7 +408,7 @@ public class GameDynamics implements Iterable<Cell> {
 			tankNewPositionCell.setPos(xyPos[0], xyPos[1]);// cell on new position of tank;
 			// todo: check conditions between tanks; use direction as a hint where to search other tanks;
 
-			player.moveOrBlock(checkCell, xyPos[0], xyPos[1]);
+			player.moveOrBlock(environmentCell, xyPos[0], xyPos[1]);
 		}
 
 		if(player.fireBullet() ){
@@ -455,8 +441,11 @@ public class GameDynamics implements Iterable<Cell> {
 		tensSeconds = steps/(stepsPerSecond*10);
 		if(tensSeconds%2 == 1 && collectibles.getMapCell() == null){
 			createCollectible();
+			ports.activatePort();// testing ports;
 		} else if(tensSeconds%2 == 0)
 			collectibles.setMapCell(null);
+
+		ports.nextStep();
 
 		steps++;
 		return eagleExists;
@@ -481,7 +470,7 @@ public class GameDynamics implements Iterable<Cell> {
 			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
 			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
-			private Iterator<Enemy> tankIter = tanks.iterator();
+			private Iterator<Enemy> tankIter = tanksList.iterator();
 			private final int treesCount = treesIds.size();
 
 			@Override
