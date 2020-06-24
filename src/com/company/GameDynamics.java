@@ -42,7 +42,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private final int stepsPerSecond;
 
 
-	public GameDynamics(MapLoader mapLoader, GameView view){
+	public GameDynamics(MapLoader mapLoader, GameView view, BattleRandom random){
 		rowCells = colCells = 26;// default Battle City map size;
 		this.maxCols = mapLoader.getMaxCols();
 
@@ -68,7 +68,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		damages = DamageClass.getInstance();
 
-		rand = new BattleRandom();
+		rand = random;
 	}
 
 	private Cell cellByPosition(int newCol, int newRow){
@@ -145,6 +145,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		player1.setDefaultPlayerPosition();
 		player2.setDefaultPlayerPosition();
+		activeTanksCount = 0;
 
 		boolean loaded = true;
 		try {
@@ -653,7 +654,6 @@ public class GameDynamics implements Iterable<Cell> {
 			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
 			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
-			private Iterator<Enemy> tankIter = tanksList.iterator();
 			private final int treesCount = treesIds.size();
 
 			@Override
@@ -697,6 +697,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 				} else if(iterateTanks){
 					activeTanks[iterateIndex++].setUpCell(iterCell);
+					doRound = true;
 
 					if(iterateIndex >= activeTanksCount){
 						iterateTanks = false;
