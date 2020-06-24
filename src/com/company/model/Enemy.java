@@ -1,111 +1,121 @@
 package com.company.model;
 
+import com.company.SpriteEventController;
+import com.company.logic.BattleRandom;
 import com.company.view.Cell;
-import com.company.view.GameView;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Enemy {
-	private double pixelSpeed;
-	private double bulletSpeed;
-	protected double x_pos, y_pos;
-	private double x_limit, y_limit;
-	protected Cell cell;
-	protected int level;
-	protected KeyCode currentDirection;
-	private Map<KeyCode, MapCell[]> icons;
+public abstract class Enemy implements Tank {
+	private BattleRandom randomEngine;
+	private int cellSpeed;
+	private int bulletSpeed;
+	protected int x_pos, y_pos;
+	private int level;
+	private int currentDirection;
+	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
-	private boolean ride;
 	private int currentIconInd;
+	private int bulletSteps, bulletsInRange;
+	private int freezeStepper;
+	private final int stepsFor5Sec;
+	private final int size;
+	private final int cellPrecisionSize;
+	protected final int nextBulletSteps, nextBulletMinimumSteps;
 
-	public Enemy(int msInterval, int cellSize){
-		pixelSpeed = (12*cellSize*msInterval*2)/5000.0;// speed: 12 cells / 5000 ms;
-		if(pixelSpeed < 1.0)
-			pixelSpeed = 1;
+	public Enemy(BattleRandom rand, int msInterval, int cellUnitSize){
+		randomEngine = rand;
 
-		bulletSpeed = (6*cellSize*msInterval*2)/1000.0;// bullet speed: 6 cells / second;
-		if(bulletSpeed <= pixelSpeed)
-			bulletSpeed = pixelSpeed + 1.0;
+		cellPrecisionSize = cellUnitSize;
+		size = (cellUnitSize*MapCell.TANK_LIGHT_STATE_1_UP.getSize() )/MapCell.getUnitSize();
+		cellSpeed = (10*msInterval*cellUnitSize*2)/5000;// speed: 10 cells / 5000 ms;
 
-		x_limit = 12.0*cellSize;
-		y_limit = x_limit;
-		currentDirection = KeyCode.UP;
-		ride = false;
+		nextBulletSteps = 1000/msInterval;
+		bulletSteps = 0;
+		bulletsInRange = 0;
+		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 cells / second;
+
+		// steps after which bullets move 3 times their size:
+		int bulletUnitSize = (cellUnitSize*MapCell.BULLET_UP.getSize())/(MapCell.getUnitSize() );
+		nextBulletMinimumSteps = Math.max( ( 3*bulletUnitSize )/bulletSpeed, 2);
+
+		stepsFor5Sec = 5000/msInterval;
+		freezeStepper = 0;
+
+		currentDirection = Direction.DOWN.getDirection();
 
 		level = 1;
 		icons = new HashMap<>();
 		currentIconInd = 0;
-		cell = new Cell();
+		setIcons(false);
+	}
+	public Enemy(BattleRandom rand, int msInterval, int cellUnitSize, boolean powerApp){
+		this(rand, msInterval, cellUnitSize);
+		setIcons(powerApp);
 	}
 
-	public int getXpos(){
-		return (int)Math.round(x_pos);
-	}
-	public int getYpos(){
-		return (int)Math.round(y_pos);
-	}
-
-	public Cell getCell(){
-		return cell;
+	private int roundInRange(final int value, final int rangeSize){
+		int roundDown = (value/rangeSize)*rangeSize, diff;
+		diff = ( 2*(value - roundDown) > rangeSize)?rangeSize:0;
+		return diff + roundDown;
 	}
 
-	public void setPos(int row, int col, int cellSize){
-		x_pos = (double)col*cellSize;
-		y_pos = (double)row*cellSize;
-		cell.setPos(col*cellSize, row*cellSize);
+	public void getPos(int[] xyPos){
+		try {
+			xyPos[0] = x_pos;
+			xyPos[1] = y_pos;
+		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
-	public void addIcons(KeyCode code, MapCell[] cells){
-		if(icons.isEmpty() )
-			cell.setMapCell(cells[0]);
-		icons.put(code, cells);
+	public int getTankSize(){
+		return size;
 	}
 
-	/*public void requestedPosition(GameView view){
-		if(!ride)
+	public int getBulletSpeed(){
+		return bulletSpeed;
+	}
+
+	protected abstract void setIcons(boolean containsPowerUp);
+
+	@Override
+	public void setUpCell(Cell cell){
+		cell.setMapCell(currentIcons[currentIconInd]);
+		cell.setPos(x_pos, y_pos);
+	}
+
+	public void setPos(int x, int y){
+		if(x >= 0)
+			x_pos = x;
+		if(y >= 0)
+			y_pos = y;
+	}
+
+	public void moveOrBlock(Cell cell, int x, int y){
+		if(cell == null)
 			return;
 
-		double xPosNew = x_pos, yPosNew = y_pos;
-		switch(currentDirection){
-			case UP:
-				yPosNew -= pixelSpeed;
-				if (yPosNew < 0)
-					yPosNew = 0.0;
-				break;
-			case RIGHT:
-				xPosNew += pixelSpeed;
-				if (xPosNew > x_limit)
-					xPosNew = x_limit;
-				break;
-			case DOWN:
-				yPosNew += pixelSpeed;
-				if (yPosNew > y_limit)
-					yPosNew = y_limit;
-				break;
-			case LEFT:
-				xPosNew -= pixelSpeed;
-				if (xPosNew < 0.0)
-					xPosNew = 0.0;
-				break;
-		}
+		Direction direction = Direction.directionByAngle(currentDirection);
+		x_pos = cell.checkModifyCol(direction, x);
+		y_pos = cell.checkModifyRow(direction, y);
+	}
 
-		if(currentIcons != null){
-			currentIconInd++;
-			currentIconInd = currentIconInd %currentIcons.length;
-			cell.setMapCell(currentIcons[currentIconInd]);
-		}
+	@Override
+	public boolean requestedPosition(int[] newXY){
+		return false;
+	}
 
-		int col = (int)Math.round(xPosNew), row = (int)Math.round(yPosNew);
-		boolean accessible = view.setPosIfAccessible(cell, col, row, currentDirection);
-		if(accessible){
-			x_pos = col;
-			y_pos = row;
+	/*public boolean fireBullet(){
+		int bulletPower = 1/ *randomEngine.??* /;
+		if(bulletPower < 1 || bulletSteps > 0 || bulletsInRange > 0 || freezeStepper > 0){
+			return false;
 		}
+		bulletSteps = nextBulletSteps;//  (level > 1)?nextBulletSteps/2:nextBulletSteps;
+		bulletsInRange = 1;
+
+		return true;
 	}*/
-
-	public abstract Bullet fireBullet(int msInterval, int cellSize, DamageClass damages);
 
 }
