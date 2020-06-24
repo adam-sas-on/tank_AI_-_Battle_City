@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.logic.BattleRandom;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
 import com.company.view.MapLoader;
@@ -29,6 +30,7 @@ public class Game {
 	private MapLoader mapLoader;
 	private List<String> maps;
 	private int mapNumber;
+	BattleRandom rand;
 
 	private SpriteEventController player1driver, player2driver;
 	private PlayerAITank player1;
@@ -38,13 +40,15 @@ public class Game {
 		this.view = view;
 		this.view.setFramesPerSeconds(msInterval);
 
+		rand = new BattleRandom();
 		mapLoader = MapLoader.getInstance();
+		mapLoader.setRandom(rand);
 		maps = new ArrayList<>();
 		mapLoader.getFileList(maps);
 		this.view.addMaps(maps);
 
 		runGame = Executors.newSingleThreadScheduledExecutor();
-		dynamics = new GameDynamics(mapLoader, view);
+		dynamics = new GameDynamics(mapLoader, view, rand);
 		pause = false;
 
 		setControllers();

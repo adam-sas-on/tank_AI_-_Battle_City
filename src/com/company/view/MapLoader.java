@@ -1,7 +1,9 @@
 package com.company.view;
 
+import com.company.logic.BattleRandom;
 import com.company.model.Enemy;
 import com.company.model.EnemyPorts;
+import com.company.model.LightTank;
 import com.company.model.PlayerAITank;
 
 import java.io.BufferedReader;
@@ -13,6 +15,7 @@ import java.util.*;
 public class MapLoader {
 	private static MapLoader instance = null;
 	private int maxRows, maxCols;
+	private BattleRandom rand = null;
 
 	private MapLoader(){
 		maxRows = maxCols = 0;
@@ -69,6 +72,10 @@ public class MapLoader {
 			System.out.println("MapLoader can not load files:  " + e);
 		}
 		Collections.sort(mapFiles);
+	}
+
+	public void setRandom(BattleRandom rand){
+		this.rand = rand;
 	}
 
 	public void loadMap(Cell rootCell, String fileName,
@@ -259,19 +266,20 @@ public class MapLoader {
 		}
 		scan.close();
 
-		readEnemyTanks(tanks, line);
+		readEnemyTanks(tanks, line, view);
 	}
 
-	private void readEnemyTanks(Queue<Enemy> tanks, String tanksSymbolsLine){
+	private void readEnemyTanks(Queue<Enemy> tanks, String tanksSymbolsLine, GameView view){
 		tanks.clear();
-		if(tanksSymbolsLine.length() < 1)
+		if(tanksSymbolsLine.length() < 1 || rand == null)
 			return;
 
 		Enemy tank;
 		String[] elements = tanksSymbolsLine.split("[^\\w]+");
-		int i, count = elements.length;
+		int i, count = 1;//elements.length;
 		for(i = 0; i < count; i++){
-			//tanks.add(tank);
+			tank = new LightTank(rand, view);
+			tanks.add(tank);
 		}
 	}
 

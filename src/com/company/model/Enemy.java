@@ -3,6 +3,7 @@ package com.company.model;
 import com.company.SpriteEventController;
 import com.company.logic.BattleRandom;
 import com.company.view.Cell;
+import com.company.view.GameView;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 
@@ -16,8 +17,8 @@ public abstract class Enemy implements Tank {
 	protected int x_pos, y_pos;
 	private int level;
 	private int currentDirection;
-	private Map<Integer, MapCell[]> icons;
-	private MapCell[] currentIcons;
+	protected Map<Integer, MapCell[]> icons;
+	protected MapCell[] currentIcons;
 	private int currentIconInd;
 	private int bulletSteps, bulletsInRange;
 	private int freezeStepper;
@@ -26,8 +27,9 @@ public abstract class Enemy implements Tank {
 	private final int cellPrecisionSize;
 	protected final int nextBulletSteps, nextBulletMinimumSteps;
 
-	public Enemy(BattleRandom rand, int msInterval, int cellUnitSize){
+	public Enemy(BattleRandom rand, GameView view){
 		randomEngine = rand;
+		int msInterval = view.getIntervalInMilliseconds(), cellUnitSize = view.getDefaultCellSize();
 
 		cellPrecisionSize = cellUnitSize;
 		size = (cellUnitSize*MapCell.TANK_LIGHT_STATE_1_UP.getSize() )/MapCell.getUnitSize();
@@ -52,8 +54,8 @@ public abstract class Enemy implements Tank {
 		currentIconInd = 0;
 		setIcons(false);
 	}
-	public Enemy(BattleRandom rand, int msInterval, int cellUnitSize, boolean powerApp){
-		this(rand, msInterval, cellUnitSize);
+	public Enemy(BattleRandom rand, GameView view, boolean powerApp){
+		this(rand, view);
 		setIcons(powerApp);
 	}
 
