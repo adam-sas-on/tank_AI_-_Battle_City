@@ -1,5 +1,7 @@
 package com.company.view;
 
+import com.company.model.Direction;
+
 public enum MapCell {
 	TANK_1_LVL_1_STATE_1_UP(0, 0, 32),
 	TANK_1_LVL_1_STATE_2_UP(34, 0, 32),
@@ -114,7 +116,11 @@ public enum MapCell {
 	EXPLODE_2(442, 306, 32, false),
 	EXPLODE_3(476, 306, 32, false),
 	EXPLODE_4(510, 306, 32, false),
-	EXPLODE_5(544, 306, 32, false);
+	EXPLODE_5(544, 306, 32, false),
+
+	// - - - enemy tanks:
+	TANK_LIGHT_STATE_1_UP(0, 170, 32),
+	TANK_LIGHT_STATE_2_UP(34, 170, 32);
 
 	private int imageCol, imageRow;
 	private int width;
@@ -262,4 +268,14 @@ public enum MapCell {
 				return new MapCell[]{MapCell.TANK_2_LVL_1_STATE_1_LEFT, MapCell.TANK_2_LVL_1_STATE_2_LEFT};
 		}
 	}
+
+	// - - - - - Icons for Light Tank for several side of movements;
+	public static MapCell[] lightTank(Direction direction){
+		switch(direction){
+			case UP:
+				return new MapCell[]{MapCell.TANK_LIGHT_STATE_1_UP, MapCell.TANK_LIGHT_STATE_2_UP};
+		}
+		return new MapCell[]{MapCell.TANK_LIGHT_STATE_1_UP, MapCell.TANK_LIGHT_STATE_2_UP};
+	}
+
 }
