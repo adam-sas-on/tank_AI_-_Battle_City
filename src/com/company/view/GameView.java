@@ -34,7 +34,7 @@ public class GameView {
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels;
 	private int rightMenuWidth;
-	private int framesPerSecond;
+	private int framesPerSecond, timeFrameInMilliseconds;
 	private boolean pause;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
@@ -45,6 +45,7 @@ public class GameView {
 	public GameView(int cellPrecisionUnitSize){
 		sizePixels = unitSize;
 		framesPerSecond = 2;
+		timeFrameInMilliseconds = 500;
 
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
@@ -94,12 +95,12 @@ public class GameView {
 		return framesPerSecond;
 	}
 
-	public Button getStartPauseButton(){
-		return startPause;
+	public int getIntervalInMilliseconds(){
+		return timeFrameInMilliseconds;
 	}
 
-	public ListView<String> getMapList(){
-		return mapList;
+	public Button getStartPauseButton(){
+		return startPause;
 	}
 
 	public Button getLoadingMapButton(){
@@ -137,6 +138,7 @@ public class GameView {
 	}
 
 	public void setFramesPerSeconds(int timeFrameInMilliseconds){
+		this.timeFrameInMilliseconds = timeFrameInMilliseconds;
 		framesPerSecond = 1000/timeFrameInMilliseconds;
 		if(framesPerSecond < 2)
 			framesPerSecond = 2;

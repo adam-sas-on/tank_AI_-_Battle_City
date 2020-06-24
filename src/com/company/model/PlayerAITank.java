@@ -2,6 +2,7 @@ package com.company.model;
 
 import com.company.SpriteEventController;
 import com.company.view.Cell;
+import com.company.view.GameView;
 import com.company.view.MapCell;
 
 import java.util.HashMap;
@@ -28,8 +29,10 @@ public class PlayerAITank implements Tank {
 	private final int playerNumber;
 	private static int numberStepper;
 
-	public PlayerAITank(SpriteEventController driver, int msInterval, int cellUnitSize) {
+	public PlayerAITank(SpriteEventController driver, GameView view){
 		tankDriver = driver;
+
+		int msInterval = view.getIntervalInMilliseconds(), cellUnitSize = view.getDefaultCellSize();
 
 		cellPrecisionSize = cellUnitSize;
 		size = (cellUnitSize*MapCell.TANK_1_LVL_1_STATE_1_UP.getSize())/(MapCell.getUnitSize() );
@@ -72,29 +75,6 @@ public class PlayerAITank implements Tank {
 		} else {
 			setPos(8 * cellPrecisionSize, 12 * cellPrecisionSize);
 		}
-	}
-
-	public boolean fireBullet(){
-		int bulletPower = tankDriver.takeTheShootPower(), bulletLimit = (level > 2)?1:0;
-		if (bulletPower < 1 || bulletSteps > bulletSteps2nd || bulletsInRange > bulletLimit || freezeStepper > 0){
-			return false;
-		}
-
-		bulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
-
-		bulletsInRange++;
-		bulletSteps2nd = (bulletsInRange > 1)?0:bulletSteps - nextBulletMinimumSteps;
-
-		lastBulletPower = bulletPower;
-		if(level < 4)
-			lastBulletPower = 1;
-
-		return true;
-	}
-
-	@Override
-	public Cell getCell() {
-		return null;
 	}
 
 	public void getPos(int[] xyPos){
@@ -256,8 +236,7 @@ public class PlayerAITank implements Tank {
 
 	}
 
-	@Override
-	public void setPos(int x, int y){
+	private void setPos(int x, int y){
 		x_pos = x;
 		y_pos = y;
 	}
@@ -363,5 +342,22 @@ public class PlayerAITank implements Tank {
 		return true;
 	}
 
+	public boolean fireBullet(){
+		int bulletPower = tankDriver.takeTheShootPower(), bulletLimit = (level > 2)?1:0;
+		if (bulletPower < 1 || bulletSteps > bulletSteps2nd || bulletsInRange > bulletLimit || freezeStepper > 0){
+			return false;
+		}
+
+		bulletSteps = (level > 1)?nextBulletSteps/2:nextBulletSteps;
+
+		bulletsInRange++;
+		bulletSteps2nd = (bulletsInRange > 1)?0:bulletSteps - nextBulletMinimumSteps;
+
+		lastBulletPower = bulletPower;
+		if(level < 4)
+			lastBulletPower = 1;
+
+		return true;
+	}
 
 }

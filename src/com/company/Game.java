@@ -50,10 +50,10 @@ public class Game {
 		setControllers();
 
 		int cellPrecisionUnitSize = this.view.getDefaultCellSize();
-		player1 = new PlayerAITank(player1driver, 20, cellPrecisionUnitSize);
+		player1 = new PlayerAITank(player1driver, this.view);
 		player1.setDefaultPlayerPosition();
 
-		player2 = new PlayerAITank(player2driver, 20, cellPrecisionUnitSize);
+		player2 = new PlayerAITank(player2driver, this.view);
 		player2.setDefaultPlayerPosition();
 		setPlayerIcons();
 		dynamics.setFirstPlayer(player1);
@@ -153,6 +153,12 @@ public class Game {
 		if(!keepRunning){
 			pause = true;
 			view.typeText("Game Over!");
+			//view.pauseDrawing();
+			mapNumber++;
+			if(mapNumber == maps.size() )
+				mapNumber = 0;
+			dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
+			view.selectNextMap();
 		}
 	}
 
