@@ -122,10 +122,18 @@ public class EnemyPorts {
 		}
 	}
 
-	public void nextStep(){
-		if(portsCount < 1)
-			return;
+	private void portPosition(int portIndex, int[] colRow){
+		try {
+			colRow[0] = portCells[portIndex].getCol();
+			colRow[1] = portCells[portIndex].getRow();
+		} catch(ArrayIndexOutOfBoundsException ignore){}
+	}
 
+	public boolean nextStep(int[] newTankPos){
+		if(portsCount < 1)
+			return false;
+
+		boolean newEnemyTank = false;
 		int i = 0;
 		for(; i < portsCount; i++){
 			if(waitingSteps[i] < 0)
@@ -141,12 +149,16 @@ public class EnemyPorts {
 				if( !portsCollide[i] )// if not collide with any tank and players bullets;
 					waitingSteps[i]--;
 				if(waitingSteps[i] == -1) {
-					currentIconIndices[i] = -1;// add enemy tank into map;
+					currentIconIndices[i] = -1;
 					activePortsCounter--;
+
+					newEnemyTank = true;// add enemy tank into map;
+					portPosition(i, newTankPos);
 				}
 			}
 			portsCollide[i] = false;
 		}
+		return newEnemyTank;
 	}
 
 	public boolean collide(Cell cell, final int unitSizeOfCells){
