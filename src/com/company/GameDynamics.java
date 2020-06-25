@@ -34,7 +34,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private List<Integer> treesIds;
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
-	private final int intervalInMs;
+	//private final int intervalInMs;
 
 	private BattleRandom rand;
 	private int[] xyPos = new int[2];
@@ -48,7 +48,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		cellPrecisionUnitSize = view.getDefaultCellSize();
 		stepsPerSecond = view.getFramesPerSecond();
-		intervalInMs = view.getIntervalInMilliseconds();
+		//intervalInMs = view.getIntervalInMilliseconds();
 		steps = 0;
 
 		int sizeBegin = 10;// any beginning size;
@@ -351,7 +351,7 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private boolean moveBullets(){
-		boolean keepMoving, eagleExists = true, isPlayers;
+		boolean keepMoving, eagleExists = true, isPlayers/*, contactedWithTank*/;
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
 		int i = 0, bulletIndex;
@@ -433,33 +433,31 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private boolean playerCanMove(PlayerAITank player, Cell currentPositionCell, Cell newPositionCell, int[] position){
-		boolean moved;
+		boolean moved, portsDoNotBlock = false;
 
 		moved = player.requestedPosition(position);
 		player.setUpCell(currentPositionCell);
 
-		if(moved){
-			player.setUpCell(newPositionCell);
-			newPositionCell.setPos(position[0], position[1]);
+		player.setUpCell(newPositionCell);
+		newPositionCell.setPos(position[0], position[1]);
 
-			moved = ports.canMove(currentPositionCell, newPositionCell, cellPrecisionUnitSize);
-		}
+		portsDoNotBlock = ports.canMove(currentPositionCell, newPositionCell, cellPrecisionUnitSize);
 
-		return moved;
+
+		return moved&&portsDoNotBlock;
 	}
 
 	private boolean tankCanMove(Enemy tank, Cell currentPositionCell, Cell newPositionCell, int[] position){
-		boolean moved = tank.requestedPosition(position);
+		boolean moved = tank.requestedPosition(position), portsDoNotBlock;
 
 		tank.setUpCell(currentPositionCell);
-		if(moved){
-			tank.setUpCell(newPositionCell);
-			newPositionCell.setPos(position[0], position[1]);
 
-			moved = ports.canMove(currentPositionCell, newPositionCell, cellPrecisionUnitSize);
-		}
+		tank.setUpCell(newPositionCell);
+		newPositionCell.setPos(position[0], position[1]);
 
-		return moved;
+		portsDoNotBlock = ports.canMove(currentPositionCell, newPositionCell, cellPrecisionUnitSize);
+
+		return moved&&portsDoNotBlock;
 	}
 
 	private void playersAction(PlayerAITank player, Cell positionCell){
@@ -492,7 +490,64 @@ public class GameDynamics implements Iterable<Cell> {
 		playersAction(player, tankNewPositionCell);
 	}
 
-	void moveTanks(){
+	private boolean setTwoCells(int tankIndex, int xRequestedPos, int yRequestedPos, Cell current, Cell requested){
+		if(xRequestedPos < 0 || yRequestedPos < 0 || tankIndex >= activeTanksCount + 2)// 2 players
+			return false;
+
+		switch(tankIndex){
+			case 0:
+				player1.setUpCell(current);
+				player1.setUpCell(requested);
+				break;
+			case 1:
+				player2.setUpCell(current);
+				player2.setUpCell(requested);
+				break;
+			default:
+				activeTanks[tankIndex - 2].setUpCell(current);
+				activeTanks[tankIndex - 2].setUpCell(requested);
+		}
+		requested.setPos(xRequestedPos, yRequestedPos);
+
+		return true;
+	}
+
+	private void tanksToTanksMovement(boolean[] acceptance, int[] xy2Dpoints, Cell current, Cell requested){
+		final int count = 2 + activeTanksCount;
+
+		if(count < acceptance.length || count*2 < xy2Dpoints.length)
+			return;// throw new...
+
+		Cell currentB = new Cell();
+		int i, j, i2, currentArea, requestedArea;
+		boolean accepted;
+
+		for(i = 0; i < count; i++){
+			i2 = i*2;
+			accepted = setTwoCells(i, xy2Dpoints[i2], xy2Dpoints[i2 + 1], current, requested);
+			if( !accepted ){
+				acceptance[i] = false;
+				continue;
+			}
+
+			for(j = 0; j < count; j++){
+				if(i == j)
+					continue;
+				i2 = j*2;
+				accepted = setTwoCells(j, xy2Dpoints[i2], xy2Dpoints[i2 + 1], currentB, requested);
+				if( !accepted ){
+					acceptance[j] = false;
+					continue;
+				}
+
+				accepted = currentB.newPositionAcceptance(requested, current, cellPrecisionUnitSize);
+				if( !accepted)
+					acceptance[j] = false;
+			}
+		}
+	}
+
+	private void moveTanks(){
 		Cell tankNewPositionCell, tankCurrentCell, environmentCell;
 		int[] xyPosAll;
 		boolean[] movementAccepted;
@@ -546,32 +601,7 @@ public class GameDynamics implements Iterable<Cell> {
 			xyPosAll[i2 + 1] = xyPos[1];
 		}
 
-		tankCurrentCell.setMapCell(MapCell.TANK_1_LVL_1_STATE_1_UP);// just any of tanks to keep the same size of pixels;
-		tankNewPositionCell.setMapCell(MapCell.TANK_LIGHT_STATE_1_UP);
-
-		int j;
-		for(i = 0; i < allTanksCount; i++){
-			i2 = i*2;
-			if(xyPosAll[i2] < 0 || xyPosAll[i2 + 1] < 0){
-				movementAccepted[i] = false;
-				continue;
-			}
-
-			tankNewPositionCell.setPos(xyPosAll[i2], xyPosAll[i2 + 1]);
-			for(j = i + 1; j < allTanksCount; j++){
-				i2 = j*2;
-				if(xyPosAll[i2] < 0 || xyPosAll[i2 + 1] < 0){
-					movementAccepted[i] = false;
-					continue;
-				}
-
-				tankCurrentCell.setPos(xyPosAll[i2], xyPosAll[i2 + 1]);
-				if(tankCurrentCell.collide(tankNewPositionCell, cellPrecisionUnitSize) ){
-					// tanks i and j collide on new positions;
-					movementAccepted[i] = movementAccepted[j] = false;
-				}
-			}
-		}
+		tanksToTanksMovement(movementAccepted, xyPosAll, tankCurrentCell, tankNewPositionCell);
 
 		for(i = 0; i < allTanksCount; i++){
 			if( (i == 0 && !player1playing) || (i == 1 && !player2playing) )
@@ -605,7 +635,7 @@ public class GameDynamics implements Iterable<Cell> {
 		movePlayer(player2);*/
 		moveTanks();
 
-		boolean eagleExists = true;
+		boolean eagleExists;
 		eagleExists = moveBullets();
 
 		if(collectibleTimer > 0){
