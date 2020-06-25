@@ -3,6 +3,8 @@ package com.company.model;
 import com.company.view.Cell;
 import com.company.view.MapCell;
 
+import java.util.Queue;
+
 public class EnemyPorts {
 	private Cell[] portCells;
 	private int[] currentIconIndices, waitingSteps;
@@ -11,9 +13,9 @@ public class EnemyPorts {
 	private MapCell[] icons;
 	private int currentPort, iterIndex;
 	private int currentStepsForNewTank;
-	//private int currentAmountOfTanks;
+	private int currentAmountOfTanks;
 	private final double countMultiplier = 1.4;
-	private final int minimumStepsForNewTank;// game-steps after which new tank can appear;
+	private final int minimumStepsForNewTank, decreaseStepper;// game-steps after which new tank can appear;
 	private final int buildingSteps, minimumWaitingSteps;
 
 	public EnemyPorts(int stepsPerSecond){
@@ -31,10 +33,13 @@ public class EnemyPorts {
 				MapCell.CREATE_3, MapCell.CREATE_3, MapCell.CREATE_4, MapCell.CREATE_4,
 				MapCell.CREATE_5, MapCell.CREATE_5, MapCell.CREATE_6, MapCell.CREATE_6};
 
-		minimumStepsForNewTank = (stepsPerSecond*3)/2;// assumption that new tank appears after minimum 1.5s;
+		minimumStepsForNewTank = stepsPerSecond;// assumption that new tank appears after minimum 1s;
+		decreaseStepper = Math.max( (stepsPerSecond*7)/100, 1);
 		currentStepsForNewTank = (stepsPerSecond*7)/2;// according to original game it was ~3.5 s;
 		buildingSteps = (stepsPerSecond*3)/2;
+		// minimum steps to activate new port when more tanks have to be created:
 		minimumWaitingSteps = Math.max(stepsPerSecond/ 25, 1);
+		currentAmountOfTanks = 20;// default in original game;
 	}
 
 
@@ -88,8 +93,17 @@ public class EnemyPorts {
 		return portsCount;
 	}
 
+	public void setAmountOfTanks(Queue<Enemy> tanks){
+		if(tanks == null) {
+			currentAmountOfTanks = 20;
+			return;
+		}
+
+		currentAmountOfTanks = ( tanks.isEmpty() )?20:tanks.size();
+	}
+
 	public void levelUpPorts(){
-		currentStepsForNewTank--;
+		currentStepsForNewTank -= decreaseStepper;
 		if(currentStepsForNewTank < minimumStepsForNewTank)
 			currentStepsForNewTank = minimumStepsForNewTank;
 	}
@@ -112,7 +126,7 @@ public class EnemyPorts {
 	}
 
 	public void activatePort(){
-		if(portsCount > 0 && waitingSteps[currentPort] < 0){
+		if(portsCount > 0 && waitingSteps[currentPort] < 0 && currentAmountOfTanks > 0){
 
 			portsCollide[currentPort] = false;
 			waitingSteps[currentPort++] = (activePortsCounter > 0)?currentStepsForNewTank:minimumWaitingSteps;
@@ -154,6 +168,7 @@ public class EnemyPorts {
 
 					newEnemyTank = true;// add enemy tank into map;
 					portPosition(i, newTankPos);
+					currentAmountOfTanks--;
 				}
 			}
 			portsCollide[i] = false;
