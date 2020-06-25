@@ -532,6 +532,35 @@ public class Cell {
 		return (overlapWidth > 0 && overlapHeight > 0)?overlapWidth*overlapHeight:0;
 	}
 
+	private int signOfDifference(int current, int next){
+		int sign = 0;
+		if(next > current)
+			sign = 1;
+		else if(next < current)
+			sign = -1;
+		return sign;
+	}
+
+	public boolean newPositionAcceptance(Cell newPosition, Cell obstacle, final int unitSizeOfCells){
+		boolean valid = newPosition.collide(obstacle, unitSizeOfCells);
+		if(!valid)
+			return true;
+
+		int signOfThisDirectionCol, signOfThisDirectionRow;
+		signOfThisDirectionCol = signOfDifference(col, newPosition.getCol() );
+		signOfThisDirectionRow = signOfDifference(row, newPosition.getRow() );
+
+		if(signOfThisDirectionCol == 0 && signOfThisDirectionRow == 0)// no movement is allowed;
+			return true;
+
+		int signOfDirectionCol, signOfDirectionRow;
+		signOfDirectionCol = signOfDifference(col, obstacle.getCol() );
+		signOfDirectionRow = signOfDifference(row, obstacle.getRow() );
+
+		valid = signOfDirectionCol*signOfThisDirectionCol <= 0;
+		return valid && (signOfDirectionRow*signOfThisDirectionRow <= 0);
+	}
+
 	public void linkNeighborCells(Cell up, Cell right, Cell down, Cell left){
 		upCell = up;
 		rightCell = right;
