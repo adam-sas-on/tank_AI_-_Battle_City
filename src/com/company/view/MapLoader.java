@@ -1,10 +1,7 @@
 package com.company.view;
 
 import com.company.logic.BattleRandom;
-import com.company.model.Enemy;
-import com.company.model.EnemyPorts;
-import com.company.model.LightTank;
-import com.company.model.PlayerAITank;
+import com.company.model.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -271,16 +268,60 @@ public class MapLoader {
 
 	private void readEnemyTanks(Queue<Enemy> tanks, String tanksSymbolsLine, GameView view){
 		tanks.clear();
-		if(tanksSymbolsLine.length() < 1 || rand == null)
+		if(rand == null)
 			return;
+		else if(tanksSymbolsLine.length() < 1){
+			addDefaultEnemyTanksSet(tanks, view);
+			return;
+		}
 
 		Enemy tank;
 		String[] elements = tanksSymbolsLine.split("[^\\w]+");
-		int i, count = 1;//elements.length;
+		boolean powerUp;
+		int i, count = elements.length;
+
 		for(i = 0; i < count; i++){
-			tank = new LightTank(rand, view);
+			tank = null;
+			powerUp = i == 3 || i == 10 || i == 17;
+
+			if(elements[i].equalsIgnoreCase("l") || elements[i].equalsIgnoreCase("t") || elements[i].equalsIgnoreCase("light") )
+				tank = new LightTank(rand, view, powerUp);
+			else if(elements[i].equalsIgnoreCase("s") || elements[i].equalsIgnoreCase("speeder") )
+				tank = new Speeder(rand, view, powerUp);
+			else if(elements[i].equalsIgnoreCase("r") || elements[i].equalsIgnoreCase("rapid") )
+				tank = new RapidShooter(rand, view, powerUp);
+			else if(elements[i].equalsIgnoreCase("m") || elements[i].equalsIgnoreCase("mammoth") ||
+					elements[i].equalsIgnoreCase("h") || elements[i].equalsIgnoreCase("heavy") )
+				tank = new MammothTank(rand, view, powerUp);
+
+			if(tank != null)
+				tanks.add(tank);
+		}
+	}
+
+	/**
+	 * Fill the list of enemy tanks according to default set from original game;
+	 * 18 light tanks and 2 speeders;
+	 * @param tanks list of enemy tanks to fill;
+	 * @param view game view object with parameters like cell precision of time step;
+	 */
+	private void addDefaultEnemyTanksSet(Queue<Enemy> tanks, GameView view){
+		Enemy tank;
+		int i;
+
+		for(i = 0; i < 18; i++){
+			if(i == 3 || i == 10 || i == 17)
+				tank = new LightTank(rand, view, true);
+			else
+				tank = new LightTank(rand, view);
+
 			tanks.add(tank);
 		}
+
+		tank = new Speeder(rand, view);
+		tanks.add(tank);
+		tank = new Speeder(rand, view);
+		tanks.add(tank);
 	}
 
 
