@@ -12,10 +12,11 @@ import java.util.Map;
 
 public abstract class Enemy implements Tank {
 	private BattleRandom randomEngine;
-	private int cellSpeed;
+	protected int cellSpeed;
 	private int bulletSpeed;
 	protected int x_pos, y_pos;
-	private int level;
+	private int eagleX, eagleY;
+	protected int level;
 	private int currentDirection;
 	protected Map<Integer, MapCell[]> icons;
 	protected MapCell[] currentIcons;
@@ -25,7 +26,7 @@ public abstract class Enemy implements Tank {
 	private final int stepsFor5Sec;
 	private final int size;
 	private final int cellPrecisionSize;
-	protected final int nextBulletSteps, nextBulletMinimumSteps;
+	protected int nextBulletSteps;
 
 	public Enemy(BattleRandom rand, GameView view){
 		randomEngine = rand;
@@ -40,10 +41,7 @@ public abstract class Enemy implements Tank {
 		bulletsInRange = 0;
 		bulletSpeed = (6*msInterval*cellUnitSize*2)/1000;// bullet speed: 6 cells / second;
 
-		// steps after which bullets move 3 times their size:
-		int bulletUnitSize = (cellUnitSize*MapCell.BULLET_UP.getSize())/(MapCell.getUnitSize() );
-		nextBulletMinimumSteps = Math.max( ( 3*bulletUnitSize )/bulletSpeed, 2);
-
+		eagleX = eagleY = -1;
 		stepsFor5Sec = 5000/msInterval;
 		freezeStepper = 0;
 
@@ -88,6 +86,20 @@ public abstract class Enemy implements Tank {
 		cell.setPos(x_pos, y_pos);
 	}
 
+	public void makeFreezed(){
+		freezeStepper = stepsFor5Sec;
+	}
+
+	public void setEaglePosition(Cell eagleCell){
+		if(eagleCell == null)
+			return;
+		if(eagleCell.getMapCell() != MapCell.EAGLE)
+			return;
+
+		eagleX = eagleCell.getCol();
+		eagleY = eagleCell.getRow();
+	}
+
 	public void setPos(int x, int y){
 		if(x >= 0)
 			x_pos = x;
@@ -106,7 +118,44 @@ public abstract class Enemy implements Tank {
 
 	@Override
 	public boolean requestedPosition(int[] newXY){
-		return false;
+		bulletSteps--;
+
+		if(bulletSteps == 0 && bulletsInRange > 0)
+			bulletsInRange--;
+
+		if(freezeStepper > 0){
+			freezeStepper--;
+			return false;
+		}
+
+		int newDirection, eagleDx = eagleX - x_pos;
+		newDirection = randomEngine.randomDirectionAngleOrStop(eagleDx, eagleY - y_pos, currentDirection);
+		if(newDirection < 0)
+			return false;
+
+		int xPosNew = x_pos, yPosNew = y_pos;
+
+		if(newDirection != currentDirection){
+			xPosNew = roundInRange(x_pos, cellPrecisionSize);
+			yPosNew = roundInRange(y_pos, cellPrecisionSize);
+			newXY[0] = x_pos = xPosNew;
+			newXY[1] = y_pos = yPosNew;
+
+			currentIcons = icons.get(newDirection);
+			currentDirection = newDirection;
+		} else {
+			Direction direction = Direction.directionByAngle(currentDirection);
+			newXY[0] = xPosNew;
+			newXY[1] = yPosNew;
+			direction.changePositionBySteps(newXY, cellSpeed);
+		}
+
+		if(currentIcons != null){
+			currentIconInd++;
+			currentIconInd = currentIconInd % currentIcons.length;
+		}
+
+		return true;
 	}
 
 	/*public boolean fireBullet(){

@@ -101,6 +101,27 @@ public enum Direction {
 		}
 	}
 
+	public void changePositionBySteps(int[] horizontalVertical, int steps){
+		switch(this){
+			case UP:
+				horizontalVertical[1] -= steps;
+				if(horizontalVertical[1] < 0)
+					horizontalVertical[1] = 0;
+				break;
+			case RIGHT:
+				horizontalVertical[0] += steps;
+				break;
+			case DOWN:
+				horizontalVertical[1] += steps;
+				break;
+			case LEFT:
+				horizontalVertical[0] -= steps;
+				if(horizontalVertical[0] < 0)
+					horizontalVertical[0] = 0;
+				break;
+		}
+	}
+
 	public static Direction directionByAngle(int degAngle){
 		switch(degAngle){
 			case 0:

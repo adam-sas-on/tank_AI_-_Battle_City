@@ -260,7 +260,7 @@ public class PlayerAITank implements Tank {
 		if(cell == null)
 			return;
 
-		Direction direction = tankDriver.getDirection(currentDirection);
+		Direction direction = Direction.directionByAngle(currentDirection);
 		x_pos = cell.checkModifyCol(direction, x);
 		y_pos = cell.checkModifyRow(direction, y);
 	}
@@ -303,41 +303,22 @@ public class PlayerAITank implements Tank {
 		if(newDirection != currentDirection){
 			xPosNew = roundInRange(x_pos, cellPrecisionSize);
 			yPosNew = roundInRange(y_pos, cellPrecisionSize);
-			x_pos = xPosNew;
-			y_pos = yPosNew;
+			newXY[0] = x_pos = xPosNew;
+			newXY[1] = y_pos = yPosNew;
 
 			currentIcons = icons.get(newDirection);
 			currentDirection = newDirection;
 		} else if(canKeepMoving){
 			Direction direction = tankDriver.getDirection();
-
-			switch (direction){
-				case UP:
-					yPosNew -= cellSpeed;
-					if (yPosNew < 0)
-						yPosNew = 0;
-					break;
-				case RIGHT:
-					xPosNew += cellSpeed;
-					break;
-				case DOWN:
-					yPosNew += cellSpeed;
-					break;
-				case LEFT:
-					xPosNew -= cellSpeed;
-					if (xPosNew < 0)
-						xPosNew = 0;
-					break;
-			}
+			newXY[0] = xPosNew;
+			newXY[1] = yPosNew;
+			direction.changePositionBySteps(newXY, cellSpeed);
 		}
 
 		if(currentIcons != null){
 			currentIconInd++;
 			currentIconInd = currentIconInd %currentIcons.length;
 		}
-
-		newXY[0] = xPosNew;
-		newXY[1] = yPosNew;
 
 		return true;
 	}
