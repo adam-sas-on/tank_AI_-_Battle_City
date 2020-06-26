@@ -136,4 +136,17 @@ public enum Direction {
 				return IN_PLACE;
 		}
 	}
+
+	public static Direction stepVectorToDirection(final double dx, final double dy){
+		if(Math.abs(dy) > Math.abs(dx) ){
+			if(dy >= 0.0)
+				return DOWN;
+			else
+				return UP;
+		} else {
+			if(dx > 0.0)
+				return RIGHT;
+			else return LEFT;
+		}
+	}
 }
