@@ -1,7 +1,6 @@
 package com.company.logic;
 
-import com.company.view.Cell;
-
+import com.company.model.Direction;
 import java.util.Random;
 
 public class BattleRandom {
@@ -14,12 +13,49 @@ public class BattleRandom {
 		rand = new Random();
 		cellPrecisionSize = cellPrecisionUnitSize;
 		viewDistance = 3.0;// tanks will see the eagle 3 cell further (visibility range);
-		preferenceToMaintainDirection = 0.8;// = 0 - will surely change direction; 1.0 - will keep direction;
+		preferenceToMaintainDirection = 0.96;// = 0 - will surely change direction; 1.0 - will keep direction;
 	}
 
 	public int randomDirectionAngleOrStop(int tankToEagleDx, int tankToEagleDy, int currentDirection){
-		double angle = rand.nextDouble()*360.0;
-		/*	public Directions randMove(int playerToActorDx, int playerToActorDy, double distance, double viewDistance){
+		if(preferenceToMaintainDirection == 1.0)
+			return currentDirection;
+
+		double randAngle = rand.nextDouble();
+		final double unitLengthForOtherDirections = (1.0 - preferenceToMaintainDirection)/4.0;// 5 direction options, 4 without preferred one;
+		if(randAngle < unitLengthForOtherDirections)
+			return -1;
+
+		double rightAngle = 90.0, distance;
+		if(randAngle < (1.0 + 3.0*preferenceToMaintainDirection)/4.0){
+			distance = (1.0 - 1.0/preferenceToMaintainDirection)/4.0;
+			randAngle = rightAngle/preferenceToMaintainDirection * randAngle + rightAngle*distance;
+		} else {
+			distance = preferenceToMaintainDirection*4.0/(preferenceToMaintainDirection - 1.0);
+			randAngle = rightAngle*randAngle/unitLengthForOtherDirections + rightAngle*distance;
+		}
+
+		double dx = (double)tankToEagleDx/(double)cellPrecisionSize, dy;
+		dy = (double)tankToEagleDy/(double)cellPrecisionSize;
+
+		distance = Math.sqrt(dx*dx + dy*dy);
+
+		dx = dx/distance/distance * 0.5;// dx / distance^2; 0.5 - importance of "eagle direction";
+		dy = dy/distance/distance * 0.5;
+		double attackParam = Math.max( (viewDistance - distance)/3.0, 0.0);
+		attackParam = Math.min(attackParam, 1.0);
+
+		//randAngle = Math.floor(randAngle/rightAngle)*rightAngle;
+		randAngle  = Math.floor(randAngle/rightAngle)*rightAngle - (double)currentDirection;
+		randAngle = Math.toRadians(randAngle);
+
+		dx = attackParam*dx + (1.0 - attackParam)*Math.cos(randAngle);
+		dy = attackParam*dy + (1.0 - attackParam)*Math.sin(randAngle);
+		Direction direction = Direction.stepVectorToDirection(dx, dy);
+
+		return direction.getDirection();
+	}
+/*		Another source:
+	public Directions randMove(int playerToActorDx, int playerToActorDy, double distance, double viewDistance){
 		double angle = rand.nextDouble()*360.0, dy, dx, distanceSqr = 1.0, attackParam = 0.0;
 		angle = Math.toRadians(angle);
 
@@ -37,8 +73,6 @@ public class BattleRandom {
 		dy = attackParam*dy + (1.0 - attackParam)*Math.sin(angle);
 
 		return stepVectorToDirection(dx, dy);*/
-		return 0;
-	}
 
 	/**
 	 * Generate random odd number in range (0, range);
