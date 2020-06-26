@@ -6,14 +6,18 @@ import java.util.Random;
 
 public class BattleRandom {
 	private Random rand;
+	private double viewDistance;
+	private double preferenceToMaintainDirection;
+	private final int cellPrecisionSize;
 
-	public BattleRandom(){
+	public BattleRandom(int cellPrecisionUnitSize){
 		rand = new Random();
+		cellPrecisionSize = cellPrecisionUnitSize;
+		viewDistance = 3.0;// tanks will see the eagle 3 cell further (visibility range);
+		preferenceToMaintainDirection = 0.8;// = 0 - will surely change direction; 1.0 - will keep direction;
 	}
 
-	public int randomDirectionAngleOrStop(Cell tankCell, Cell eagleCell){
-		int tankToEagleDx = eagleCell.getCol() - tankCell.getCol(),
-			tankToEagleDy = eagleCell.getRow() - tankCell.getRow();
+	public int randomDirectionAngleOrStop(int tankToEagleDx, int tankToEagleDy, int currentDirection){
 		double angle = rand.nextDouble()*360.0;
 		/*	public Directions randMove(int playerToActorDx, int playerToActorDy, double distance, double viewDistance){
 		double angle = rand.nextDouble()*360.0, dy, dx, distanceSqr = 1.0, attackParam = 0.0;
@@ -47,5 +51,14 @@ public class BattleRandom {
 
 	public int randRange(int begin, int end){
 		return begin + rand.nextInt(end - begin);
+	}
+
+	public void setViewDistance(double viewDistance){
+		this.viewDistance = viewDistance;
+	}
+
+	public void setPreferenceToMaintainDirection(double maintainDirection){
+		if(maintainDirection >= 0.0 && maintainDirection <= 1.0)
+			preferenceToMaintainDirection = maintainDirection;
 	}
 }
