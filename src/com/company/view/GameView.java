@@ -29,8 +29,6 @@ public class GameView {
 	private Button mapSelectButton;
 	private Label[] playersLives, playersPoints;
 	private ListView<String> mapList;
-	private Cell[] cells;
-	private int[] positions;
 	private int rowCells = 26, colCells = 26;
 	private int sizePixels;
 	private int rightMenuWidth;
@@ -58,8 +56,6 @@ public class GameView {
 		cellDefaultSize = Math.max(MapCell.getUnitSize(), cellPrecisionUnitSize);
 
 		pause = false;
-		cells = new Cell[rowCells * rowCells];
-		positions = new int[rowCells];
 
 		trees = new ArrayList<>();
 		tanks = new ArrayList<>();
@@ -86,9 +82,6 @@ public class GameView {
 
 	public int getRowCells(){
 		return rowCells;
-	}
-	public int getSizePixels(){
-		return sizePixels;
 	}
 
 	public int getFramesPerSecond(){
@@ -168,45 +161,6 @@ public class GameView {
 
 		canvas.setWidth(colCells*sizePixels);
 		canvas.setHeight(rowCells*sizePixels);
-	}
-
-	private int binarySearchPos(int pos){
-		int j = positions.length - 1;
-
-		if(pos > positions[j] )
-			return positions[j];
-
-		int i = 0, mid;
-		while(i <= j){
-			mid = (i + j)/2;
-
-			if(pos < positions[mid])
-				j = mid - 1;
-			else if(pos > positions[mid])
-				i = mid + 1;
-			else
-				return positions[mid];
-		}
-
-		return ( (positions[i] - pos) <= (pos - positions[j]) )? positions[i] : positions[j];
-	}
-
-	public void changeCellPositionToClosest(Cell cell){
-		int row, col;
-
-		col = binarySearchPos(cell.getCol());
-		row = binarySearchPos(cell.getRow());
-
-		cell.setPos(col, row);
-	}
-
-
-	private void exampleCells(){
-		cells[0].setMapCell(MapCell.EAGLE);
-
-		Cell cell = cells[0].getDownCell();
-		cell = cell.getDownCell();
-		cell.setMapCell(MapCell.TANK_2_LVL_3_STATE_1_RIGHT);
 	}
 
 	/*private boolean cellNotCollideWithOthers(Cell cell){
