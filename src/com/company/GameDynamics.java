@@ -160,6 +160,7 @@ public class GameDynamics implements Iterable<Cell> {
 			setEagleIndex();
 			player1.revive();
 			player2.revive();
+			ports.setAmountOfTanks(tanksList);
 			ports.levelUpPorts();
 			ports.activatePort();
 		}
@@ -271,9 +272,11 @@ public class GameDynamics implements Iterable<Cell> {
 		if(collectibleType == null)
 			return;
 
+		int i;
 		switch(collectibleType){
 			case TIMER:
-				collectibleTimer = stepsPerSecond*10;
+				for(i = 0; i < activeTanksCount; i++)
+					activeTanks[i].makeFreezed();
 				break;
 			case BOMB:
 				// todo: perform explosions for all enemy tanks;
@@ -657,6 +660,8 @@ public class GameDynamics implements Iterable<Cell> {
 		if(createNewTank && !tanksList.isEmpty() ){
 			Enemy tank = tanksList.poll();
 			tank.setPos(xyPos[0], xyPos[1]);
+			if(eagleIndex >= 0)
+				tank.setEaglePosition(cells[eagleIndex]);
 			addTank(tank);
 		}
 
