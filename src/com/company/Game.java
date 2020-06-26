@@ -39,8 +39,9 @@ public class Game {
 	public Game(GameView view){
 		this.view = view;
 		this.view.setFramesPerSeconds(msInterval);
+		int cellPrecisionUnitSize = this.view.getDefaultCellSize();
 
-		rand = new BattleRandom();
+		rand = new BattleRandom(cellPrecisionUnitSize);
 		mapLoader = MapLoader.getInstance();
 		mapLoader.setRandom(rand);
 		maps = new ArrayList<>();
@@ -53,7 +54,6 @@ public class Game {
 
 		setControllers();
 
-		int cellPrecisionUnitSize = this.view.getDefaultCellSize();
 		player1 = new PlayerAITank(player1driver, this.view);
 		player1.setDefaultPlayerPosition();
 

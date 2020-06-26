@@ -58,6 +58,7 @@ public class Main extends Application {
 
 	private void onKeyReleased(KeyEvent event){
 		game.stopTanks(event);
+		event.consume();
 	}
 
 	private void handleResize(Stage stage, GameView view){
