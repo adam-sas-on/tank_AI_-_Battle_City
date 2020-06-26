@@ -435,7 +435,7 @@ public class GameDynamics implements Iterable<Cell> {
 		return eagleExists;
 	}
 
-	private boolean playerCanMove(PlayerAITank player, Cell currentPositionCell, Cell newPositionCell, int[] position){
+	/*private boolean playerCanMove(PlayerAITank player, Cell currentPositionCell, Cell newPositionCell, int[] position){
 		boolean moved, portsDoNotBlock = false;
 
 		moved = player.requestedPosition(position);
@@ -448,9 +448,9 @@ public class GameDynamics implements Iterable<Cell> {
 
 
 		return moved&&portsDoNotBlock;
-	}
+	}*/
 
-	private boolean tankCanMove(Enemy tank, Cell currentPositionCell, Cell newPositionCell, int[] position){
+	private <T extends Tank> boolean tankCanMove(T tank, Cell currentPositionCell, Cell newPositionCell, int[] position){
 		boolean moved = tank.requestedPosition(position), portsDoNotBlock;
 
 		tank.setUpCell(currentPositionCell);
@@ -476,13 +476,13 @@ public class GameDynamics implements Iterable<Cell> {
 			collect(player);
 	}
 
-	private void movePlayer(PlayerAITank player){
+	/*private void movePlayer(PlayerAITank player){
 		Cell tankNewPositionCell, tankCurrentCell, environmentCell;
 
 		tankNewPositionCell = new Cell();
 		tankCurrentCell = new Cell();
 
-		boolean moved = playerCanMove(player, tankCurrentCell, tankNewPositionCell, xyPos);
+		boolean moved = tankCanMove(player, tankCurrentCell, tankNewPositionCell, xyPos);
 
 		if(moved){
 			environmentCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
@@ -491,7 +491,7 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		playersAction(player, tankNewPositionCell);
-	}
+	}*/
 
 	private boolean setTwoCells(int tankIndex, int xRequestedPos, int yRequestedPos, Cell current, Cell requested){
 		if(xRequestedPos < 0 || yRequestedPos < 0 || tankIndex >= activeTanksCount + 2)// 2 players
@@ -571,7 +571,7 @@ public class GameDynamics implements Iterable<Cell> {
 		tankCurrentCell = new Cell();
 
 		if(player1playing){
-			movementAccepted[0] = playerCanMove(player1, tankCurrentCell, tankNewPositionCell, xyPos);
+			movementAccepted[0] = tankCanMove(player1, tankCurrentCell, tankNewPositionCell, xyPos);
 			if( !movementAccepted[0] ){
 				player1.getPos(xyPos);
 			}
@@ -581,7 +581,7 @@ public class GameDynamics implements Iterable<Cell> {
 			xyPosAll[0] = xyPosAll[1] = -1;
 
 		if(player2playing) {
-			movementAccepted[1] = playerCanMove(player2, tankCurrentCell, tankNewPositionCell, xyPos);
+			movementAccepted[1] = tankCanMove(player2, tankCurrentCell, tankNewPositionCell, xyPos);
 			if( !movementAccepted[1] ){
 				player2.getPos(xyPos);
 			}
