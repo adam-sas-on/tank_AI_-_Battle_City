@@ -3,20 +3,18 @@ package view;
 import com.company.view.Cell;
 import com.company.view.GameView;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameViewTest {
-	private static GameView view = new GameView();
-	private static final int rowColCellsView = view.getRowColCells();
+	private static GameView view = new GameView(10000);
+	private static final int rowColCellsView = view.getRowCells();
 	private static final int sizePixels = view.getSizePixels();
 	private Cell testCell = new Cell();
 	private static Supplier<Arguments> argsSupp;
