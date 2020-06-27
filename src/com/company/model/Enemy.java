@@ -1,11 +1,9 @@
 package com.company.model;
 
-import com.company.SpriteEventController;
 import com.company.logic.BattleRandom;
 import com.company.view.Cell;
 import com.company.view.GameView;
 import com.company.view.MapCell;
-import javafx.scene.input.KeyCode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +21,11 @@ public abstract class Enemy implements Tank {
 	private int currentIconInd;
 	private int bulletSteps, bulletsInRange;
 	private int freezeStepper;
+	protected int nextBulletSteps;
+	private boolean evenMove;
 	private final int stepsFor5Sec;
 	private final int size;
 	private final int cellPrecisionSize;
-	protected int nextBulletSteps;
 
 	public Enemy(BattleRandom rand, GameView view){
 		randomEngine = rand;
@@ -44,17 +43,16 @@ public abstract class Enemy implements Tank {
 		eagleX = eagleY = -1;
 		stepsFor5Sec = 5000/msInterval;
 		freezeStepper = 0;
+		evenMove = false;
 
 		currentDirection = Direction.DOWN.getDirection();
 
 		level = 1;
 		icons = new HashMap<>();
 		currentIconInd = 0;
-		setIcons(false);
 	}
 	public Enemy(BattleRandom rand, GameView view, boolean powerApp){
 		this(rand, view);
-		setIcons(powerApp);
 	}
 
 	private int roundInRange(final int value, final int rangeSize){
@@ -128,8 +126,10 @@ public abstract class Enemy implements Tank {
 			return false;
 		}
 
-		int newDirection, eagleDx = eagleX - x_pos;
-		newDirection = randomEngine.randomDirectionAngleOrStop(eagleDx, eagleY - y_pos, currentDirection);
+		int newDirection = currentDirection, eagleDx = eagleX - x_pos;
+		if(evenMove)
+			newDirection = randomEngine.randomDirectionAngleOrStop(eagleDx, eagleY - y_pos, currentDirection);
+		evenMove = !evenMove;
 		if(newDirection < 0)
 			return false;
 

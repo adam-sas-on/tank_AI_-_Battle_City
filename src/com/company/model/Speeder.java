@@ -10,6 +10,7 @@ public class Speeder extends Enemy {
 		int msInterval = view.getIntervalInMilliseconds(), cellUnitSize = view.getDefaultCellSize();
 
 		cellSpeed = (156*msInterval*cellUnitSize*2)/50000;// speed: 1.3 * players speed (12 full-cells / 5000 ms);
+		setIcons(false);
 	}
 
 	public Speeder(BattleRandom rand, GameView view, boolean powerApp){
@@ -17,6 +18,7 @@ public class Speeder extends Enemy {
 		int msInterval = view.getIntervalInMilliseconds(), cellUnitSize = view.getDefaultCellSize();
 
 		cellSpeed = (156*msInterval*cellUnitSize*2)/50000;// speed: 1.3 * players speed (12 full-cells / 5000 ms);
+		setIcons(powerApp);
 	}
 
 	@Override
