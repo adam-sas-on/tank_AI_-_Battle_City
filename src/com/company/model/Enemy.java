@@ -11,10 +11,11 @@ import java.util.Map;
 public abstract class Enemy implements Tank {
 	private BattleRandom randomEngine;
 	protected int cellSpeed;
-	private int bulletSpeed;
+	protected int bulletSpeed;
 	protected int x_pos, y_pos;
 	private int eagleX, eagleY;
 	protected int level;
+	protected int points;
 	private int currentDirection;
 	protected Map<Integer, MapCell[]> icons;
 	protected MapCell[] currentIcons;
@@ -50,9 +51,7 @@ public abstract class Enemy implements Tank {
 		level = 1;
 		icons = new HashMap<>();
 		currentIconInd = 0;
-	}
-	public Enemy(BattleRandom rand, GameView view, boolean powerApp){
-		this(rand, view);
+
 	}
 
 	private int roundInRange(final int value, final int rangeSize){
@@ -76,7 +75,18 @@ public abstract class Enemy implements Tank {
 		return bulletSpeed;
 	}
 
-	protected abstract void setIcons(boolean containsPowerUp);
+	public int getBulletSteps(){
+		return bulletSteps;
+	}
+
+	public void resetBulletShots(){
+		bulletSteps = nextBulletSteps/2;
+		bulletsInRange = 0;
+	}
+
+	public Direction getDirectionCode(){
+		return Direction.directionByAngle(currentDirection);
+	}
 
 	@Override
 	public void setUpCell(Cell cell){
@@ -84,8 +94,10 @@ public abstract class Enemy implements Tank {
 		cell.setPos(x_pos, y_pos);
 	}
 
+	protected abstract void setIcons(boolean containsPowerUp);
+
 	public void makeFreezed(){
-		freezeStepper = stepsFor5Sec;
+		freezeStepper = stepsFor5Sec*2;
 	}
 
 	public void setEaglePosition(Cell eagleCell){
@@ -158,15 +170,16 @@ public abstract class Enemy implements Tank {
 		return true;
 	}
 
-	/*public boolean fireBullet(){
-		int bulletPower = 1/ *randomEngine.??* /;
-		if(bulletPower < 1 || bulletSteps > 0 || bulletsInRange > 0 || freezeStepper > 0){
+	public boolean fireBullet(){
+		boolean shootTheBullet = randomEngine.performTask(bulletSteps, nextBulletSteps);
+		if(!shootTheBullet || bulletSteps > 0 || bulletsInRange > 0 || freezeStepper > 0){
 			return false;
 		}
-		bulletSteps = nextBulletSteps;//  (level > 1)?nextBulletSteps/2:nextBulletSteps;
+
+		bulletSteps = nextBulletSteps;
 		bulletsInRange = 1;
 
 		return true;
-	}*/
+	}
 
 }

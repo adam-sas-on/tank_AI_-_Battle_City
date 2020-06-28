@@ -8,11 +8,13 @@ public class LightTank extends Enemy {
 
 	public LightTank(BattleRandom rand, GameView view){
 		super(rand, view);
+		points = 100;
 		setIcons(false);
 	}
 
 	public LightTank(BattleRandom rand, GameView view, boolean powerApp){
-		super(rand, view, powerApp);
+		super(rand, view);
+		points = 100;
 		setIcons(powerApp);
 	}
 

@@ -8,13 +8,15 @@ public class RapidShooter extends Enemy {
 	public RapidShooter(BattleRandom rand, GameView view){
 		super(rand, view);
 		int msInterval = view.getIntervalInMilliseconds();
+		bulletSpeed *= 2;
 		nextBulletSteps = 500/msInterval;
 		setIcons(false);
 	}
 
 	public RapidShooter(BattleRandom rand, GameView view, boolean powerApp){
-		super(rand, view, powerApp);
+		super(rand, view);
 		int msInterval = view.getIntervalInMilliseconds();
+		bulletSpeed *= 2;
 		nextBulletSteps = 500/msInterval;
 		setIcons(powerApp);
 	}
