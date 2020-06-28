@@ -25,3 +25,4 @@ FF........BB....##........
 ..BB.......BBBB...BB..BB..
 ..BB..BB...BE.B...BBBBBB..
 ..BB..BB...B..B...BBBBBB..
+m, m, s, s, s, s, l, l, l, l, l, l, l, l, l, l, l, l, l, l

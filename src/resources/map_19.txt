@@ -25,3 +25,4 @@ BB..BB..BB......BB..BB..BB
 ..BB..BB...BBBB...BB..BB..
 ..BB..BB1..BE.B.2.BB..BB..
 ...........B..B...........
+s, s, s, s, m, m, m, m, m, m, m, m, l, l, l, l, r, r, r, r
