@@ -18,7 +18,7 @@ public class Bullet {
 	private final int bulletSize;
 
 	private PlayerAITank player;
-	//private Enemy tank;
+	private Enemy tank;
 	private boolean shotReseted;
 	private boolean canDestroySteel;
 	private Cell cell;
@@ -36,23 +36,26 @@ public class Bullet {
 
 		player.getPos(xyPos);
 		direction = player.getDirectionCode();
-		tankSize = player.getTankSize();
 		pixelSpeed = player.getBulletSpeed();// default: speed: 6 cells / 1000 ms;
+		stepsLimits = player.getBulletSteps();
+		tankSize = player.getTankSize();
 
 		canDestroySteel = player.lastBulletCanDestroySteel();
 		this.player = player;
+		tank = null;
+
+		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
+
+		setMapCellAndPosition(tankSize, direction, xyPos[0], xyPos[1]);
+
+		setExplodeAttributes(direction, damages);
+		/*flightSteps = 0;
 		xDirection = direction.unitStepX();
 		yDirection = direction.unitStepY();
-
-		flightSteps = 0;
-		stepsLimits = player.getBulletSteps();
-		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
 
 		cell = new Cell();
 		rightSideDestruction = new HashMap<>(14);
 		leftSideDestruction = new HashMap<>(14);
-
-		setMapCellAndPosition(tankSize, direction, xyPos[0], xyPos[1]);
 
 		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
 				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
@@ -61,7 +64,45 @@ public class Bullet {
 		if(canDestroySteel)
 			damages.setFullDamages(rightSideDestruction, leftSideDestruction, direction);
 		else
-			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
+			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);*/
+	}
+
+	public Bullet(Enemy tank, DamageClass damages){
+		int[] xyPos = new int[2];
+		Direction direction;
+		int tankSize;
+
+		tank.getPos(xyPos);
+		direction = tank.getDirectionCode();
+		pixelSpeed = tank.getBulletSpeed();// default: speed: 6 cells / 1000 ms;
+		stepsLimits = tank.getBulletSteps();
+		tankSize = tank.getTankSize();
+		canDestroySteel = false;
+
+		this.tank = tank;
+		player = null;
+		bulletSize = (tankSize * MapCell.BULLET_UP.getSize() )/MapCell.TANK_1_LVL_1_STATE_1_UP.getSize();
+
+		setMapCellAndPosition(tankSize, direction, xyPos[0], xyPos[1]);
+
+		setExplodeAttributes(direction, damages);
+
+		/*flightSteps = 0;
+		xDirection = direction.unitStepX();
+		yDirection = direction.unitStepY();
+
+		cell = new Cell();
+		rightSideDestruction = new HashMap<>(14);
+		leftSideDestruction = new HashMap<>(14);
+
+		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
+				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
+		explodeIndex = -1;
+
+		if(canDestroySteel)
+			damages.setFullDamages(rightSideDestruction, leftSideDestruction, direction);
+		else
+			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);*/
 	}
 
 	private void setMapCellAndPosition(int tankSize, Direction direction, int tankX, int tankY){
@@ -92,6 +133,25 @@ public class Bullet {
 				x_pos += (tankSize - bulletSize)/2;
 				y_pos += tankSize - bulletSize;
 		}
+	}
+
+	private void setExplodeAttributes(Direction direction, DamageClass damages){
+		flightSteps = 0;
+		xDirection = direction.unitStepX();
+		yDirection = direction.unitStepY();
+
+		cell = new Cell();
+		rightSideDestruction = new HashMap<>(14);
+		leftSideDestruction = new HashMap<>(14);
+
+		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
+				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
+		explodeIndex = -1;
+
+		if(canDestroySteel)
+			damages.setFullDamages(rightSideDestruction, leftSideDestruction, direction);
+		else
+			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);
 	}
 
 	public void getBulletPos(int[] colRowPos){
@@ -139,10 +199,6 @@ public class Bullet {
 		} catch(ArrayIndexOutOfBoundsException ignore){}
 	}
 
-	public boolean canDestroySteel(){
-		return canDestroySteel;
-	}
-
 	public boolean belongsToPlayer(){
 		return player != null;
 	}
@@ -188,8 +244,8 @@ public class Bullet {
 		shotReseted = true;
 		if(player != null) {
 			player.resetBulletShots(flightSteps);
-		}/*else if(tank != null)
-			;*/
+		} else if(tank != null)
+			tank.resetBulletShots();
 	}
 
 	private void setDefaultPositionOfExplodes(){
