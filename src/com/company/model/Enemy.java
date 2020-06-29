@@ -123,10 +123,12 @@ public abstract class Enemy implements Tank {
 		}
 		return isExploding;
 	}
+	@Override
 	public boolean exists(){
-		if(!isExploding)
-			return true;
-		return currentIconInd >= 0;
+		return !isExploding;
+	}
+	public boolean doRemove(){
+		return isExploding && currentIconInd < 0;
 	}
 
 	public void setEaglePosition(Cell eagleCell){

@@ -14,7 +14,7 @@ public class PlayerAITank implements Tank {
 	private final int bulletSpeed;
 	private int lastBulletPower;
 	private int x_pos, y_pos, xStart, yStart;
-	private boolean canKeepMoving;
+	private boolean isExploding;
 	private int level, lifes;
 	private int currentDirection;
 	private Map<Integer, MapCell[]> icons;
@@ -56,7 +56,7 @@ public class PlayerAITank implements Tank {
 		lifes = 3;
 		icons = new HashMap<>();
 		currentIconInd = 0;
-		canKeepMoving = true;
+		isExploding = false;
 
 		setPos(4*cellUnitSize, 12*cellUnitSize);
 		numberStepper++;
@@ -164,18 +164,19 @@ public class PlayerAITank implements Tank {
 		}
 	}
 
-	public void promoteDegrade(boolean doPromote){
+	private void promoteDegrade(boolean doPromote){
 		if(doPromote){
 			level++;
 		} else {
 			level--;
 			if(level <= 0){
-				canKeepMoving = false;
+				//canKeepMoving = false;
 				lifes--;
 				if(lifes > 0){
 					level = 1;
 					revive();
-				}
+				} else
+					isExploding = true;
 			}
 		}
 
@@ -228,12 +229,15 @@ public class PlayerAITank implements Tank {
 		currentIconInd = 0;
 
 		freezeStepper = stepsFor5Sec;
-		canKeepMoving = false;
 		tankDriver.blockUnblockController(true);
 	}
 
-	public void getShot(Bullet bullet){
-
+	public void getHit(){
+		promoteDegrade(false);
+	}
+	@Override
+	public boolean exists(){
+		return !isExploding;
 	}
 
 	private void setPos(int x, int y){
@@ -249,9 +253,9 @@ public class PlayerAITank implements Tank {
 	public void revive(){
 		x_pos = xStart;
 		y_pos = yStart;
-		canKeepMoving = true;
 		//currentDirection = Direction.UP.getDirection();
 		currentIconInd = 0;
+		isExploding = false;
 		currentIcons = icons.get(currentDirection);
 		immortalStepper = stepsFor5Sec;
 	}
@@ -269,6 +273,9 @@ public class PlayerAITank implements Tank {
 	public boolean requestedPosition(int[] newXY) {
 		bulletSteps--;
 
+		if(isExploding)
+			return false;
+
 		if(bulletSteps == 0 && bulletsInRange > 0)
 			bulletsInRange--;
 		else if(bulletSteps < -2*nextBulletSteps){
@@ -280,7 +287,6 @@ public class PlayerAITank implements Tank {
 		if (freezeStepper > 0){
 			freezeStepper--;
 			if(freezeStepper == 0){
-				canKeepMoving = true;
 				currentIcons = icons.get(currentDirection);
 				currentIconInd = 0;
 				tankDriver.blockUnblockController(false);
@@ -308,7 +314,7 @@ public class PlayerAITank implements Tank {
 
 			currentIcons = icons.get(newDirection);
 			currentDirection = newDirection;
-		} else if(canKeepMoving){
+		} else {
 			Direction direction = tankDriver.getDirection();
 			newXY[0] = xPosNew;
 			newXY[1] = yPosNew;
