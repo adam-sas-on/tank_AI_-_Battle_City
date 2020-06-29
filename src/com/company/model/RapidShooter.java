@@ -10,6 +10,7 @@ public class RapidShooter extends Enemy {
 		int msInterval = view.getIntervalInMilliseconds();
 		bulletSpeed *= 2;
 		nextBulletSteps = 500/msInterval;
+		points = 300;
 		setIcons(false);
 	}
 
@@ -18,6 +19,7 @@ public class RapidShooter extends Enemy {
 		int msInterval = view.getIntervalInMilliseconds();
 		bulletSpeed *= 2;
 		nextBulletSteps = 500/msInterval;
+		points = 300;
 		setIcons(powerApp);
 	}
 

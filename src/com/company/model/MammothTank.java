@@ -8,12 +8,14 @@ public class MammothTank extends Enemy {
 	public MammothTank(BattleRandom rand, GameView view){
 		super(rand, view);
 		level = 4;
+		points = 400;
 		setIcons(false);
 	}
 
 	public MammothTank(BattleRandom rand, GameView view, boolean powerApp){
 		super(rand, view);
 		level = 4;
+		points = 400;
 		setIcons(powerApp);
 	}
 
