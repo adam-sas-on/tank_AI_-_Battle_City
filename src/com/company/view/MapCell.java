@@ -570,4 +570,12 @@ public enum MapCell {
 		}
 	}
 
+	// - - - - - Explosion animation;
+	public static MapCell[] bigExplosionMapCells(){
+		return new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_1,
+				MapCell.EXPLODE_2, MapCell.EXPLODE_2, MapCell.EXPLODE_2,
+				MapCell.EXPLODE_3, MapCell.EXPLODE_3, MapCell.EXPLODE_3, MapCell.EXPLODE_3,
+				MapCell.EXPLODE_4, MapCell.EXPLODE_4, MapCell.EXPLODE_4,
+				MapCell.EXPLODE_5, MapCell.EXPLODE_5};
+	}
 }

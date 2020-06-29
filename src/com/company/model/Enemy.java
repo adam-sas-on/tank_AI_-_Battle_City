@@ -15,6 +15,7 @@ public abstract class Enemy implements Tank {
 	protected int x_pos, y_pos;
 	private int eagleX, eagleY;
 	protected int level;
+	private boolean isExploding;
 	protected int points;
 	private int currentDirection;
 	protected Map<Integer, MapCell[]> icons;
@@ -45,6 +46,7 @@ public abstract class Enemy implements Tank {
 		stepsFor5Sec = 5000/msInterval;
 		freezeStepper = 0;
 		evenMove = false;
+		isExploding = false;
 
 		currentDirection = Direction.DOWN.getDirection();
 
@@ -90,14 +92,41 @@ public abstract class Enemy implements Tank {
 
 	@Override
 	public void setUpCell(Cell cell){
-		cell.setMapCell(currentIcons[currentIconInd]);
-		cell.setPos(x_pos, y_pos);
+		if(isExploding && (currentIconInd >= currentIcons.length || currentIconInd < 0) ){
+			cell.setMapCell(null);
+			currentIconInd = -1;
+		} else {
+			cell.setMapCell(currentIcons[currentIconInd]);
+			cell.setPos(x_pos, y_pos);
+		}
 	}
 
 	protected abstract void setIcons(boolean containsPowerUp);
 
 	public void makeFreezed(){
 		freezeStepper = stepsFor5Sec*2;
+	}
+
+	public boolean getHit(Cell bulletCell, Cell tankBufferCell){
+		if(bulletCell == null || tankBufferCell == null || isExploding)
+			return false;
+
+		tankBufferCell.setMapCell(currentIcons[currentIconInd]);
+		tankBufferCell.setPos(x_pos, y_pos);
+
+		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) ) {
+			isExploding = true;
+			currentIcons = MapCell.bigExplosionMapCells();
+			currentIconInd = 0;
+			x_pos -= cellPrecisionSize;
+			y_pos -= cellPrecisionSize;
+		}
+		return isExploding;
+	}
+	public boolean exists(){
+		if(!isExploding)
+			return true;
+		return currentIconInd >= 0;
 	}
 
 	public void setEaglePosition(Cell eagleCell){
@@ -118,7 +147,7 @@ public abstract class Enemy implements Tank {
 	}
 
 	public void moveOrBlock(Cell cell, int x, int y){
-		if(cell == null)
+		if(cell == null || isExploding)
 			return;
 
 		Direction direction = Direction.directionByAngle(currentDirection);
@@ -132,6 +161,11 @@ public abstract class Enemy implements Tank {
 
 		if(bulletSteps == 0 && bulletsInRange > 0)
 			bulletsInRange--;
+
+		if(isExploding){
+			currentIconInd++;
+			return false;
+		}
 
 		if(freezeStepper > 0){
 			freezeStepper--;

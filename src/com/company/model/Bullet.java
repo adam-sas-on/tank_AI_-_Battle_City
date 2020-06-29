@@ -258,11 +258,7 @@ public class Bullet {
 	public void setExplode(Cell cellOfExplodingObject){
 		if(explodeIndex < 0) {
 			explodeIndex = 0;
-			explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_1,
-					MapCell.EXPLODE_2, MapCell.EXPLODE_2, MapCell.EXPLODE_2,
-					MapCell.EXPLODE_3, MapCell.EXPLODE_3, MapCell.EXPLODE_3, MapCell.EXPLODE_3,
-					MapCell.EXPLODE_4, MapCell.EXPLODE_4, MapCell.EXPLODE_4,
-					MapCell.EXPLODE_5, MapCell.EXPLODE_5};
+			explodes = MapCell.bigExplosionMapCells();
 
 			if(cellOfExplodingObject != null){
 				x_pos = cellOfExplodingObject.getCol();
