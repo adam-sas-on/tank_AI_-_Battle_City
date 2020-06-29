@@ -77,7 +77,7 @@ public class MapLoader {
 
 	public void loadMap(Cell rootCell, String fileName,
 						PlayerAITank player1, PlayerAITank player2,
-						EnemyPorts ports, Queue<Enemy> tanks, List<Integer> trees,
+						EnemyPorts ports, Queue<Enemy> tanks,
 						GameView view) throws IOException {
 		InputStream is = MapLoader.class.getResourceAsStream("/resources/" + fileName);
 		Scanner scan = new Scanner(is);
@@ -109,7 +109,7 @@ public class MapLoader {
 			ports.clear();
 
 		List<Cell> nextCellToBlock = new LinkedList<>();
-		trees.clear();
+		view.clearTrees();
 
 		for(row = 0; row < rows && rowCellBegin != null; row++){
 			try {
@@ -204,7 +204,7 @@ public class MapLoader {
 						break;
 					case 'F':
 						stepCell.setMapCell(MapCell.FOREST);
-						trees.add(stepCell.getId());
+						view.addTree(stepCell);
 						freeCells[currentRowIndex + col + 1] = false;
 						freeCells[futureRowIndex + col] = freeCells[futureRowIndex + col + 1] = false;
 						break;

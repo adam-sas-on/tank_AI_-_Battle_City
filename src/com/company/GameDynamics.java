@@ -31,7 +31,6 @@ public class GameDynamics implements Iterable<Cell> {
 	private int eagleIndex, bulletOnEagleIndex;
 	private Cell collectibles;
 	private int collectibleTimer;// timer how long tank can be suspended or how long player can be indestructible;
-	private List<Integer> treesIds;
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
 	//private final int intervalInMs;
@@ -57,7 +56,6 @@ public class GameDynamics implements Iterable<Cell> {
 		activeTanks = new Enemy[sizeBegin];
 		activeTanksCount = 0;
 		ports = new EnemyPorts(stepsPerSecond);
-		treesIds = new ArrayList<>();
 
 		bulletsCount = 0;
 		bullets = new Bullet[sizeBegin];
@@ -149,7 +147,7 @@ public class GameDynamics implements Iterable<Cell> {
 
 		boolean loaded = true;
 		try {
-			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, tanksList, treesIds, view);
+			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, tanksList, view);
 		} catch(IOException | NullPointerException e){
 			System.out.println("Loading map  " + mapFileName + "  failed!");
 			loaded = false;
@@ -339,10 +337,9 @@ public class GameDynamics implements Iterable<Cell> {
 		boolean collide;
 
 		bulletCheckCell = new Cell();
-		//bullets[bulletIndex].setUpCell(bulletCell);
 
-		for(i = bulletIndex + 1; i < bulletsCount; i++){
-			if(bullets[i].isExploding() )
+		for(i = 0; i < bulletsCount; i++){
+			if(bullets[i].isExploding() || i == bulletIndex)
 				continue;
 
 			bullets[i].setUpCell(bulletCheckCell);
@@ -476,6 +473,15 @@ public class GameDynamics implements Iterable<Cell> {
 			collect(player);
 	}
 
+
+	private void tanksAction(Enemy tank, Cell positionCell){
+		tank.setUpCell(positionCell);
+
+		if(tank.fireBullet() ){
+			Bullet bullet = new Bullet(tank, damages);
+			addBullet(bullet);
+		}
+	}
 	/*private void movePlayer(PlayerAITank player){
 		Cell tankNewPositionCell, tankCurrentCell, environmentCell;
 
@@ -624,7 +630,7 @@ public class GameDynamics implements Iterable<Cell> {
 						player2.moveOrBlock(environmentCell, xyPosAll[i2], xyPosAll[i2 + 1]);
 					break;
 				default:
-					//tanksAction(activeTanks[i - 2], tankCurrentCell);
+					tanksAction(activeTanks[i - 2], tankCurrentCell);
 					if(movementAccepted[i])
 						activeTanks[i - 2].moveOrBlock(environmentCell, xyPosAll[i2], xyPosAll[i2 + 1]);
 			}
@@ -670,6 +676,12 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 
+	public void setFromCollectible(Cell cellToSet){
+		if(cellToSet == null)
+			return;
+		cellToSet.setByOtherCell(collectibles);
+	}
+
 	public void setCellSize(int cellSize){
 		cellUnitSize = 16;
 		if(cellSize > 0)
@@ -686,15 +698,14 @@ public class GameDynamics implements Iterable<Cell> {
 			private boolean player1Immortality = iteratePlayer1 && player1.getImmortalityCell() != null;
 			private boolean iteratePlayer2 = player2 != null;
 			private boolean player2Immortality = iteratePlayer2 && player2.getImmortalityCell() != null;
-			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
+			private boolean drawCollectible = false/*collectibles.getMapCell() != null*/;
 			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
-			private final int treesCount = treesIds.size();
 
 			@Override
 			public boolean hasNext(){
 				return iterateEnvironment || iterateTanks || iterateBullets ||
-						iterateTrees || iteratePorts || drawCollectible;
+						iteratePorts || drawCollectible;
 			}
 
 			@Override
@@ -746,16 +757,6 @@ public class GameDynamics implements Iterable<Cell> {
 						iterateBullets = false;
 						iterateIndex = 0;
 					}
-				} else if(iterateTrees) {
-					int treeInd = treesIds.get(iterateIndex);
-					iterateIndex++;
-					cell = cells[treeInd];// be sure this is properly implemented;
-					iterCell.setByOtherCell(cell);
-					doRound = true;
-
-					iterateTrees = iterateIndex < treesCount;
-					if(!iterateTrees)
-						iterateIndex = 0;
 				} else if(iteratePorts){
 					ports.setNextCell(iterCell);
 					iterateIndex++;

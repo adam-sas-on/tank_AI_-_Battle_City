@@ -36,9 +36,12 @@ public class GameView {
 	private boolean pause;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
-	List<Integer> trees;
-	List<Cell> tanks;
-	List<Bullet> bullets;
+
+	private Cell powerUps;
+	private List<Cell> trees;
+	private int treesCount;
+	private List<Cell> explodes;
+	private int explodesCount;
 
 	public GameView(int cellPrecisionUnitSize){
 		sizePixels = unitSize;
@@ -57,9 +60,10 @@ public class GameView {
 
 		pause = false;
 
+		powerUps = new Cell();
 		trees = new ArrayList<>();
-		tanks = new ArrayList<>();
-		bullets = new LinkedList<>();
+		explodes = new ArrayList<>();
+		treesCount = explodesCount = 0;
 	}
 
 	private void setRightMenu(){
@@ -163,73 +167,36 @@ public class GameView {
 		canvas.setHeight(rowCells*sizePixels);
 	}
 
-	/*private boolean cellNotCollideWithOthers(Cell cell){
-		for(Cell sprite : tanks){
-			if(sprite.equals(cell) )
-				continue;
+	private void addExplode(Cell explodeCell){
+		Cell cell;
+		int count = explodes.size();
 
-			if(cell.collide(sprite) )
-				return false;
-		}
+		if(explodesCount >= count){
+			cell = new Cell();
+			cell.setByOtherCell(explodeCell);
+		} else
+			explodes.get(explodesCount).setByOtherCell(explodeCell);
 
-		return true;
+		explodesCount++;
 	}
 
-	public boolean setPosIfAccessible(Cell cell, int col, int row, KeyCode direction){
-		int size = cell.getCellSize(),
-			colCell = col/sizePixels, rowCell = row/sizePixels,
-			cellIndex = rowCell*rowColCells + colCell;
-		if(cellIndex >= cells.length)
-			return false;
+	public void addTree(Cell treeCell){
+		Cell cell;
+		int count = trees.size();
 
-		boolean accessible = cells[cellIndex].isAccessible();
-		if(size < sizePixels || !accessible)
-			return accessible;
+		if(treesCount >= count){
+			cell = new Cell();
+			cell.setByOtherCell(treeCell);
+			trees.add(cell);
+		} else
+			trees.get(treesCount).setByOtherCell(treeCell);
 
-		// - - - case when cell covers also neighbour cells:
-		Cell cellLeft = null, cellRight = null;
-		switch (direction) {
-			case UP:
-				cellLeft = cells[cellIndex];
-				cellRight = cellLeft.getRightCell();
-				break;
-			case RIGHT:
-				cellLeft = cells[cellIndex].getRightCell();
-				if(cellLeft != null) {
-					cellRight = cellLeft.getDownCell();
-					cellLeft = cellLeft.getRightCell();
-				}
-				if(cellRight != null)
-					cellRight = cellRight.getRightCell();
-				break;
-			case DOWN:
-				cellRight = cells[cellIndex].getDownCell();
-				if(cellRight != null){
-					cellLeft = cellRight.getRightCell();
-					cellRight = cellRight.getDownCell();
-				}
-				if(cellLeft != null)
-					cellLeft = cellLeft.getDownCell();
-				break;
-			case LEFT:
-				cellRight = cells[cellIndex];
-				cellLeft = cellRight.getDownCell();
-				break;
-		}
+		treesCount++;
+	}
 
-		if(cellLeft == null || cellRight == null)
-			return false;
-
-		accessible = cellLeft.isAccessible() && cellRight.isAccessible();
-		if(accessible)
-			accessible = cellNotCollideWithOthers(cell);
-
-		if(accessible)
-			cell.setPos(col, row);
-
-		return accessible;
-	}*/
-
+	public void clearTrees(){
+		treesCount = 0;
+	}
 
 	private void setRightMenu(GridPane ui){
 		ui.setPadding(new Insets(10));
@@ -297,17 +264,98 @@ public class GameView {
 			playersLives[1].setText("Player 2: " + lifes + " lifes");
 
 		dynamics.setCellSize(sizePixels);
+		dynamics.setFromCollectible(powerUps);
+		powerUps.roundPos(cellDefaultSize, sizePixels);
 
 		Cell cell;
 		final double multiplier = ( (double)sizePixels)/unitSize;
 
+		explodesCount = 0;
 		Iterator<Cell> iter = dynamics.iterator();
 		while(iter.hasNext() ){
 			cell = iter.next();
 			//cell.roundPos(cellDefaultSize, sizePixels);
+			if(cell.getMapCell() == MapCell.FOREST)
+				continue;
 
 			cell.drawCell(gContext, tiles, multiplier);
 		}
 
+		cell = new Cell();
+		for(int i = 0; i < treesCount; i++){
+			cell.setByOtherCell(trees.get(i) );
+			cell.roundPos(cellDefaultSize, sizePixels);
+			cell.drawCell(gContext, tiles, multiplier);
+		}
+
+		powerUps.drawCell(gContext, tiles, multiplier);
 	}
+
+	/*private boolean cellNotCollideWithOthers(Cell cell){
+		for(Cell sprite : tanks){
+			if(sprite.equals(cell) )
+				continue;
+
+			if(cell.collide(sprite) )
+				return false;
+		}
+
+		return true;
+	}
+
+	public boolean setPosIfAccessible(Cell cell, int col, int row, KeyCode direction){
+		int size = cell.getCellSize(),
+			colCell = col/sizePixels, rowCell = row/sizePixels,
+			cellIndex = rowCell*rowColCells + colCell;
+		if(cellIndex >= cells.length)
+			return false;
+
+		boolean accessible = cells[cellIndex].isAccessible();
+		if(size < sizePixels || !accessible)
+			return accessible;
+
+		// - - - case when cell covers also neighbour cells:
+		Cell cellLeft = null, cellRight = null;
+		switch (direction) {
+			case UP:
+				cellLeft = cells[cellIndex];
+				cellRight = cellLeft.getRightCell();
+				break;
+			case RIGHT:
+				cellLeft = cells[cellIndex].getRightCell();
+				if(cellLeft != null) {
+					cellRight = cellLeft.getDownCell();
+					cellLeft = cellLeft.getRightCell();
+				}
+				if(cellRight != null)
+					cellRight = cellRight.getRightCell();
+				break;
+			case DOWN:
+				cellRight = cells[cellIndex].getDownCell();
+				if(cellRight != null){
+					cellLeft = cellRight.getRightCell();
+					cellRight = cellRight.getDownCell();
+				}
+				if(cellLeft != null)
+					cellLeft = cellLeft.getDownCell();
+				break;
+			case LEFT:
+				cellRight = cells[cellIndex];
+				cellLeft = cellRight.getDownCell();
+				break;
+		}
+
+		if(cellLeft == null || cellRight == null)
+			return false;
+
+		accessible = cellLeft.isAccessible() && cellRight.isAccessible();
+		if(accessible)
+			accessible = cellNotCollideWithOthers(cell);
+
+		if(accessible)
+			cell.setPos(col, row);
+
+		return accessible;
+	}*/
+
 }
