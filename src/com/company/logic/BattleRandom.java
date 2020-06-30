@@ -87,6 +87,27 @@ public class BattleRandom {
 		return begin + rand.nextInt(end - begin);
 	}
 
+	/**
+	 * Binomial trial with probability dependent on the value of steps relative to rangeLimit.
+	 * @param steps
+	 * @param rangeLimit
+	 * @return true or false which can be interpreted as "is success" (isSuccess) or "is failure" (isFailure).
+	 */
+	public boolean performTask(int steps, int rangeLimit){
+		if(rangeLimit <= 0)
+			return false;
+
+		double interceptProbability = 0.1, slope;
+		if(steps > 0){
+			slope = (0.1 - interceptProbability)/rangeLimit;
+		} else {
+			slope = (interceptProbability - 0.999)/rangeLimit;
+		}
+
+		interceptProbability = slope*steps + interceptProbability;
+		return rand.nextDouble() < interceptProbability;
+	}
+
 	public void setViewDistance(double viewDistance){
 		this.viewDistance = viewDistance;
 	}
