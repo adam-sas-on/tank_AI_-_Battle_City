@@ -15,12 +15,13 @@ public abstract class Enemy implements Tank {
 	protected int x_pos, y_pos;
 	private int eagleX, eagleY;
 	protected int level;
-	private boolean isExploding;
+	protected boolean isExploding;
 	protected int points;
-	private int currentDirection;
+	protected boolean hasPowerUp;
+	protected int currentDirection;
 	protected Map<Integer, MapCell[]> icons;
 	protected MapCell[] currentIcons;
-	private int currentIconInd;
+	protected int currentIconInd;
 	private int bulletSteps, bulletsInRange;
 	private int freezeStepper;
 	protected int nextBulletSteps;
@@ -47,6 +48,7 @@ public abstract class Enemy implements Tank {
 		freezeStepper = 0;
 		evenMove = false;
 		isExploding = false;
+		hasPowerUp = false;
 
 		currentDirection = Direction.DOWN.getDirection();
 
@@ -107,22 +109,36 @@ public abstract class Enemy implements Tank {
 		freezeStepper = stepsFor5Sec*2;
 	}
 
-	public boolean getHit(Cell bulletCell, Cell tankBufferCell){
+
+	protected boolean isHit(Cell bulletCell, Cell tankBufferCell){
 		if(bulletCell == null || tankBufferCell == null || isExploding)
 			return false;
 
 		tankBufferCell.setMapCell(currentIcons[currentIconInd]);
 		tankBufferCell.setPos(x_pos, y_pos);
-
-		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) ) {
-			isExploding = true;
-			currentIcons = MapCell.bigExplosionMapCells();
-			currentIconInd = 0;
-			x_pos -= cellPrecisionSize;
-			y_pos -= cellPrecisionSize;
-		}
-		return isExploding;
+		return bulletCell.collide(tankBufferCell, cellPrecisionSize);
 	}
+
+	protected void setExplosion(){
+		isExploding = true;
+		currentIcons = MapCell.bigExplosionMapCells();
+		currentIconInd = 0;
+		x_pos -= cellPrecisionSize;
+		y_pos -= cellPrecisionSize;
+	}
+
+	public int getHit(Cell bulletCell, Cell tankBufferCell){
+		boolean hit = isHit(bulletCell, tankBufferCell);
+
+		if(hit) {
+			level--;
+			if(level < 1)
+				setExplosion();
+		}
+
+		return isExploding?points:0;
+	}
+
 	@Override
 	public boolean exists(){
 		return !isExploding;

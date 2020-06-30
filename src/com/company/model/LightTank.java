@@ -12,10 +12,11 @@ public class LightTank extends Enemy {
 		setIcons(false);
 	}
 
-	public LightTank(BattleRandom rand, GameView view, boolean powerApp){
+	public LightTank(BattleRandom rand, GameView view, boolean powerUp){
 		super(rand, view);
 		points = 100;
-		setIcons(powerApp);
+		hasPowerUp = powerUp;
+		setIcons(powerUp);
 	}
 
 	@Override

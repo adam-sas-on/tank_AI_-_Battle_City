@@ -14,13 +14,14 @@ public class RapidShooter extends Enemy {
 		setIcons(false);
 	}
 
-	public RapidShooter(BattleRandom rand, GameView view, boolean powerApp){
+	public RapidShooter(BattleRandom rand, GameView view, boolean powerUp){
 		super(rand, view);
 		int msInterval = view.getIntervalInMilliseconds();
 		bulletSpeed *= 2;
 		nextBulletSteps = 500/msInterval;
 		points = 300;
-		setIcons(powerApp);
+		hasPowerUp = powerUp;
+		setIcons(powerUp);
 	}
 
 	@Override

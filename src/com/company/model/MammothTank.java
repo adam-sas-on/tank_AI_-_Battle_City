@@ -1,6 +1,7 @@
 package com.company.model;
 
 import com.company.logic.BattleRandom;
+import com.company.view.Cell;
 import com.company.view.GameView;
 import com.company.view.MapCell;
 
@@ -12,11 +13,12 @@ public class MammothTank extends Enemy {
 		setIcons(false);
 	}
 
-	public MammothTank(BattleRandom rand, GameView view, boolean powerApp){
+	public MammothTank(BattleRandom rand, GameView view, boolean powerUp){
 		super(rand, view);
 		level = 4;
 		points = 400;
-		setIcons(powerApp);
+		hasPowerUp = powerUp;
+		setIcons(powerUp);
 	}
 
 	@Override
@@ -38,5 +40,23 @@ public class MammothTank extends Enemy {
 
 		direction = Direction.LEFT;
 		icons.put(direction.getDirection(), MapCell.mammothTankLeftState(level, containsPowerUp) );
+	}
+
+	@Override
+	public int getHit(Cell bulletCell, Cell tankBufferCell){
+		boolean hit = isHit(bulletCell, tankBufferCell);
+
+		if(hit)
+			level--;
+
+		if(level < 1)
+			setExplosion();
+		else {
+			setIcons(false);
+			currentIcons = icons.get(currentDirection);
+			currentIconInd = 0;
+		}
+
+		return isExploding?points:0;
 	}
 }
