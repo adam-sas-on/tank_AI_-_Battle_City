@@ -317,21 +317,75 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 
-	public int getExplodes(List<Cell> explodesCell){
+	private int addEnemyExplodesToList(List<Cell> explodesCell, int startIndex){
 		Cell cell;
-		int i, count = explodesCell.size();
+		int i, j = startIndex, count = explodesCell.size();
+
+		for(i = 0; i < activeTanksCount; i++){
+			if(activeTanks[i].exists() )
+				continue;
+
+			if(j < count){
+				cell = explodesCell.get(j);
+			} else
+				cell = new Cell();
+
+			activeTanks[i].setUpCell(cell);
+			cell.setUnsetDoubleSize(true);
+			if(j >= count)
+				explodesCell.add(cell);
+			j++;
+		}
+		return j;
+	}
+
+	private int addPlayerExplodesToList(List<Cell> explodesCell, PlayerAITank player, int startIndex){
+		Cell cell;
+		int j = startIndex, count = explodesCell.size();
+
+		if(player != null && player.exists() ){
+			if(j < count)
+				cell = explodesCell.get(j);
+			else
+				cell = new Cell();
+
+			player.setUpCell(cell);
+			cell.setUnsetDoubleSize(true);
+			if(j >= count)
+				explodesCell.add(cell);
+			j++;
+		}
+
+		return j;
+	}
+	private int addPlayersExplodesToList(List<Cell> explodesCell, int startIndex){
+		int j;
+
+		j = addPlayerExplodesToList(explodesCell, player1, startIndex);
+		j = addPlayerExplodesToList(explodesCell, player2, j);
+		return j;
+	}
+
+	public int getExplodes(List<Cell> explodesCells){
+		Cell cell;
+		int i, count = explodesCells.size(), newSize;
 
 		for(i = 0; i < explosionsCount; i++){
 			if(i < count){
-				explosions[i].setUpCell( explodesCell.get(i) );
-			} else {
+				cell = explodesCells.get(i);
+			} else
 				cell = new Cell();
-				explosions[i].setUpCell(cell);
-				explodesCell.add(cell);
-			}
+
+			explosions[i].setUpCell( cell );
+			cell.setUnsetDoubleSize(false);
+			if(i >= count)
+				explodesCells.add(cell);
 		}
 
-		return explosionsCount;
+		newSize = addEnemyExplodesToList(explodesCells, explosionsCount);
+		newSize = addPlayersExplodesToList(explodesCells, newSize);
+
+		return newSize;
 	}
 
 	private void explodeBullet(int bulletIndex, Cell destroyedCell){
