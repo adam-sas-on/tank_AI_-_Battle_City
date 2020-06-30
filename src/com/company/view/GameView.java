@@ -105,7 +105,7 @@ public class GameView {
 	}
 
 	public String getSelectedMap(){
-		String map = "";
+		String map;
 		map = mapList.getSelectionModel().getSelectedItem();
 		return map;
 	}
@@ -167,25 +167,30 @@ public class GameView {
 		canvas.setHeight(rowCells*sizePixels);
 	}
 
-	private void addExplode(Cell explodeCell){
-		Cell cell;
+	private boolean addExplode(Cell explodeCell){
+		MapCell mapCell = explodeCell.getMapCell();
+		if(mapCell != MapCell.EXPLODE_1 && mapCell != MapCell.EXPLODE_2 && mapCell != MapCell.EXPLODE_3 &&
+				mapCell != MapCell.EXPLODE_4 && mapCell != MapCell.EXPLODE_5)
+			return false;
+
 		int count = explodes.size();
 
 		if(explodesCount >= count){
-			cell = new Cell();
+			Cell cell = new Cell();
 			cell.setByOtherCell(explodeCell);
+			explodes.add(cell);
 		} else
 			explodes.get(explodesCount).setByOtherCell(explodeCell);
 
 		explodesCount++;
+		return true;
 	}
 
 	public void addTree(Cell treeCell){
-		Cell cell;
 		int count = trees.size();
 
 		if(treesCount >= count){
-			cell = new Cell();
+			Cell cell = new Cell();
 			cell.setByOtherCell(treeCell);
 			trees.add(cell);
 		} else
@@ -248,13 +253,7 @@ public class GameView {
 		pause = true;
 	}
 
-	public void drawMap(GameDynamics dynamics){
-		if(pause)
-			return;
-
-		gContext.setFill(Color.BLACK);
-		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
+	private void printPlayersProperties(GameDynamics dynamics){
 		int lifes = dynamics.get1stPlayerLifes();
 		if(lifes > 0)
 			playersLives[0].setText("Player 1: " + lifes + " lifes");
@@ -262,15 +261,27 @@ public class GameView {
 		lifes = dynamics.get2ndPlayerLifes();
 		if(lifes > 0)
 			playersLives[1].setText("Player 2: " + lifes + " lifes");
+	}
+
+	public void drawMap(GameDynamics dynamics){
+		if(pause)
+			return;
+
+		gContext.setFill(Color.BLACK);
+		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+		printPlayersProperties(dynamics);
 
 		dynamics.setCellSize(sizePixels);
 		dynamics.setFromCollectible(powerUps);
 		powerUps.roundPos(cellDefaultSize, sizePixels);
 
 		Cell cell;
+		boolean isExplosion;
 		final double multiplier = ( (double)sizePixels)/unitSize;
 
-		explodesCount = 0;
+		explodesCount = dynamics.getExplodes(explodes);
+
 		Iterator<Cell> iter = dynamics.iterator();
 		while(iter.hasNext() ){
 			cell = iter.next();
@@ -282,8 +293,15 @@ public class GameView {
 		}
 
 		cell = new Cell();
-		for(int i = 0; i < treesCount; i++){
+		int i = 0;
+		for(; i < treesCount; i++){
 			cell.setByOtherCell(trees.get(i) );
+			cell.roundPos(cellDefaultSize, sizePixels);
+			cell.drawCell(gContext, tiles, multiplier);
+		}
+
+		for(i = 0; i < explodesCount; i++){
+			cell.setByOtherCell(explodes.get(i) );
 			cell.roundPos(cellDefaultSize, sizePixels);
 			cell.drawCell(gContext, tiles, multiplier);
 		}

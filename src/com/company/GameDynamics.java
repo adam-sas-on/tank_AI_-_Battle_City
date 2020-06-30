@@ -316,6 +316,24 @@ public class GameDynamics implements Iterable<Cell> {
 		return cell.collide(cells[eagleIndex], cellPrecisionUnitSize);
 	}
 
+
+	public int getExplodes(List<Cell> explodesCell){
+		Cell cell;
+		int i, count = explodesCell.size();
+
+		for(i = 0; i < explosionsCount; i++){
+			if(i < count){
+				explosions[i].setUpCell( explodesCell.get(i) );
+			} else {
+				cell = new Cell();
+				explosions[i].setUpCell(cell);
+				explodesCell.add(cell);
+			}
+		}
+
+		return explosionsCount;
+	}
+
 	private void explodeBullet(int bulletIndex, Cell destroyedCell){
 		explosions[explosionsCount] = bullets[bulletIndex];
 		bulletsCount = removeBullet(bullets, bulletIndex, bulletsCount);
@@ -434,9 +452,9 @@ public class GameDynamics implements Iterable<Cell> {
 			bullets[i].setUpCell(bulletCell);
 			bulletIndex = bulletsContact(bulletCell, i, isPlayers);
 			if(bulletIndex >= 0){
-				explodeBullet(i, null);
-				bullets[bulletIndex].resetBulletShooting();
-				bulletsCount = removeBullet(bullets, bulletIndex, bulletsCount);
+				explodeBullet(bulletIndex, null);
+				bullets[i].resetBulletShooting();
+				bulletsCount = removeBullet(bullets, i, bulletsCount);
 				continue;
 			}
 
@@ -758,14 +776,13 @@ public class GameDynamics implements Iterable<Cell> {
 			private boolean player1Immortality = iteratePlayer1 && player1.getImmortalityCell() != null;
 			private boolean iteratePlayer2 = player2 != null;
 			private boolean player2Immortality = iteratePlayer2 && player2.getImmortalityCell() != null;
-			private boolean drawCollectible = false/*collectibles.getMapCell() != null*/;
 			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
 
 			@Override
 			public boolean hasNext(){
 				return iterateEnvironment || iterateTanks || iterateBullets ||
-						iteratePorts || drawCollectible;
+						iteratePorts;
 			}
 
 			@Override
@@ -825,10 +842,6 @@ public class GameDynamics implements Iterable<Cell> {
 					iteratePorts = iterateIndex < ports.size();
 					if(!iteratePorts)
 						iterateIndex = 0;
-				} else if(drawCollectible){
-					iterCell.setByOtherCell(collectibles);
-					doRound = true;
-					drawCollectible = false;
 				}
 
 				if(doRound)
