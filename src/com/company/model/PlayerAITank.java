@@ -170,17 +170,23 @@ public class PlayerAITank implements Tank {
 		} else {
 			level--;
 			if(level <= 0){
-				//canKeepMoving = false;
 				lifes--;
 				if(lifes > 0){
 					level = 1;
 					revive();
-				} else
-					isExploding = true;
+				}
+
+				isExploding = true;
+
 			}
 		}
 
-		if(level < 5){// don't change icons for every higher level then max = 4;
+		if(isExploding){
+			currentIcons = MapCell.bigExplosionMapCells();
+			currentIconInd = 0;
+			x_pos -= cellPrecisionSize;
+			y_pos -= cellPrecisionSize;
+		} else if(level < 5){// don't change icons for every higher level then max = 4;
 			setIcons();
 			currentIcons = icons.get(currentDirection);
 		}
@@ -232,8 +238,17 @@ public class PlayerAITank implements Tank {
 		tankDriver.blockUnblockController(true);
 	}
 
-	public void getHit(){
-		promoteDegrade(false);
+	public boolean getHit(Cell bulletCell, Cell tankBufferCell){
+		if(bulletCell == null || tankBufferCell == null || isExploding)
+			return false;
+
+		tankBufferCell.setMapCell(currentIcons[currentIconInd]);
+		tankBufferCell.setPos(x_pos, y_pos);
+
+		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) )
+			promoteDegrade(false);
+
+		return isExploding;
 	}
 	@Override
 	public boolean exists(){

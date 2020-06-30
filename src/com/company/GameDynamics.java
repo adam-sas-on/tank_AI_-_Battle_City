@@ -331,6 +331,18 @@ public class GameDynamics implements Iterable<Cell> {
 			bullets[bulletIndex].setSmallExplode();
 	}
 
+	private int tankHitByPlayer(Cell playersBulletCell, Cell tankBufferCell){
+		int i;
+		boolean hit;
+
+		for(i = 0; i < activeTanksCount; i++){
+			hit = activeTanks[i].getHit(playersBulletCell, tankBufferCell);
+			if(hit)
+				return i;
+		}
+		return -1;
+	}
+
 	private int bulletsContact(Cell bulletCell, int bulletIndex){
 		Cell bulletCheckCell;
 		int i;
@@ -395,7 +407,7 @@ public class GameDynamics implements Iterable<Cell> {
 				if(bulletIndex >= 0){
 					explodeContinue = true;
 					bullets[bulletIndex].resetBulletShooting();
-					removeBullet(bulletIndex);
+					removeBullet(bulletIndex);// fixme: what if bulletIndex < i?!
 				}
 
 				if(bullets[i].belongsToPlayer(player1) && !explodeContinue){
@@ -416,6 +428,12 @@ public class GameDynamics implements Iterable<Cell> {
 					bullets[i].setSmallExplode();
 					continue;
 				}
+
+				bulletIndex = tankHitByPlayer(bulletCell, tankCell);
+				if(bulletIndex >= 0){
+					removeBullet(i);
+					continue;
+				}
 			}
 
 			performEnvironmentExplosion(i);
@@ -432,23 +450,11 @@ public class GameDynamics implements Iterable<Cell> {
 		return eagleExists;
 	}
 
-	/*private boolean playerCanMove(PlayerAITank player, Cell currentPositionCell, Cell newPositionCell, int[] position){
-		boolean moved, portsDoNotBlock = false;
-
-		moved = player.requestedPosition(position);
-		player.setUpCell(currentPositionCell);
-
-		player.setUpCell(newPositionCell);
-		newPositionCell.setPos(position[0], position[1]);
-
-		portsDoNotBlock = ports.canMove(currentPositionCell, newPositionCell, cellPrecisionUnitSize);
-
-
-		return moved&&portsDoNotBlock;
-	}*/
-
 	private <T extends Tank> boolean tankCanMove(T tank, Cell currentPositionCell, Cell newPositionCell, int[] position){
 		boolean moved = tank.requestedPosition(position), portsDoNotBlock;
+
+		if( !tank.exists() )
+			return false;
 
 		tank.setUpCell(currentPositionCell);
 
@@ -501,6 +507,13 @@ public class GameDynamics implements Iterable<Cell> {
 
 	private boolean setTwoCells(int tankIndex, int xRequestedPos, int yRequestedPos, Cell current, Cell requested){
 		if(xRequestedPos < 0 || yRequestedPos < 0 || tankIndex >= activeTanksCount + 2)// 2 players
+			return false;
+
+		boolean exploding = false;
+		if(tankIndex > 1)
+			exploding = !activeTanks[tankIndex - 2].exists();
+
+		if(exploding)
 			return false;
 
 		switch(tankIndex){
@@ -597,8 +610,14 @@ public class GameDynamics implements Iterable<Cell> {
 			xyPosAll[2] = xyPosAll[3] = -1;
 
 
-		int i, posIndexBegin = 2, i2;
-		for(i = 0; i < activeTanksCount; i++){
+		int i = 0, posIndexBegin = 2, i2;
+		while(i < activeTanksCount){
+			if( activeTanks[i].doRemove() ){
+				removeTank(i);
+				allTanksCount--;
+				continue;
+			}
+
 			moved = tankCanMove(activeTanks[i], tankNewPositionCell, tankCurrentCell, xyPos);
 			movementAccepted[posIndexBegin + i] = moved;
 
@@ -608,12 +627,15 @@ public class GameDynamics implements Iterable<Cell> {
 			}
 			xyPosAll[i2] = xyPos[0];
 			xyPosAll[i2 + 1] = xyPos[1];
+			i++;
 		}
+
 
 		tanksToTanksMovement(movementAccepted, xyPosAll, tankCurrentCell, tankNewPositionCell);
 
+
 		for(i = 0; i < allTanksCount; i++){
-			if( (i == 0 && !player1playing) || (i == 1 && !player2playing) )
+			if( (i == 0 && !player1playing) || (i == 1 && !player2playing) || (i > 1 && !activeTanks[i - 2].exists()) )
 				continue;
 
 			i2 = i*2;
