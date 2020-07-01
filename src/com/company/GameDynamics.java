@@ -832,10 +832,13 @@ public class GameDynamics implements Iterable<Cell> {
 
 	}
 
-	public boolean nextStep(){
-		/*movePlayer(player1);
+	public boolean isMapFinished(){
+		int totalTanks = tanksSpritesCount + explodingTanksCount + tanksList.size();
 
-		movePlayer(player2);*/
+		return totalTanks <= 0;
+	}
+
+	public boolean nextStep(){
 		moveTanks();
 
 		boolean eagleExists;
@@ -868,20 +871,10 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		steps++;
-		return eagleExists;
+		return eagleExists || (player1.getLifes() < 1 && player2.getLifes() < 1);
 	}
 
 	// - - - - - - - - - - - - - - Methods for iterator and for drawing - - - - - - - - - - - - - -
-
-	private int nextActiveTankIndex(int index){
-		int i = index + 1;
-		for(; i < tanksSpritesCount; i++){
-			if( activeTanks[i].exists() )
-				return i;
-		}
-
-		return -1;
-	}
 
 	public void setFromCollectible(Cell cellToSet){
 		if(cellToSet == null)
