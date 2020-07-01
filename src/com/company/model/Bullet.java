@@ -49,22 +49,6 @@ public class Bullet {
 		setMapCellAndPosition(tankSize, direction, xyPos[0], xyPos[1]);
 
 		setExplodeAttributes(direction, damages);
-		/*flightSteps = 0;
-		xDirection = direction.unitStepX();
-		yDirection = direction.unitStepY();
-
-		cell = new Cell();
-		rightSideDestruction = new HashMap<>(14);
-		leftSideDestruction = new HashMap<>(14);
-
-		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
-				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
-		explodeIndex = -1;
-
-		if(canDestroySteel)
-			damages.setFullDamages(rightSideDestruction, leftSideDestruction, direction);
-		else
-			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);*/
 	}
 
 	public Bullet(Enemy tank, DamageClass damages){
@@ -86,23 +70,6 @@ public class Bullet {
 		setMapCellAndPosition(tankSize, direction, xyPos[0], xyPos[1]);
 
 		setExplodeAttributes(direction, damages);
-
-		/*flightSteps = 0;
-		xDirection = direction.unitStepX();
-		yDirection = direction.unitStepY();
-
-		cell = new Cell();
-		rightSideDestruction = new HashMap<>(14);
-		leftSideDestruction = new HashMap<>(14);
-
-		explodes = new MapCell[]{MapCell.EXPLODE_1, MapCell.EXPLODE_2,
-				MapCell.EXPLODE_3, MapCell.EXPLODE_4, MapCell.EXPLODE_5};
-		explodeIndex = -1;
-
-		if(canDestroySteel)
-			damages.setFullDamages(rightSideDestruction, leftSideDestruction, direction);
-		else
-			damages.setDamages(rightSideDestruction, leftSideDestruction, direction);*/
 	}
 
 	private void setMapCellAndPosition(int tankSize, Direction direction, int tankX, int tankY){
