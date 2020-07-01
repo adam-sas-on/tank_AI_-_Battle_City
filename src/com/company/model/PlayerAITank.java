@@ -15,7 +15,7 @@ public class PlayerAITank implements Tank {
 	private int lastBulletPower;
 	private int x_pos, y_pos, xStart, yStart;
 	private boolean isExploding;
-	private int level, lifes;
+	private int level, lifes, points;
 	private int currentDirection;
 	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
@@ -54,6 +54,7 @@ public class PlayerAITank implements Tank {
 
 		level = 1;
 		lifes = 3;
+		points = 0;
 		icons = new HashMap<>();
 		currentIconInd = 0;
 		isExploding = false;
@@ -109,6 +110,15 @@ public class PlayerAITank implements Tank {
 
 	public int getLifes(){
 		return lifes;
+	}
+
+	public int getPoints(){
+		return points;
+	}
+
+	public int addPoints(int pointsToAdd){
+		points += pointsToAdd;
+		return points;
 	}
 
 	public void resetBulletShots(int bulletsStepsDistance){
@@ -196,12 +206,20 @@ public class PlayerAITank implements Tank {
 		switch(collectibleType){
 			case HELMET:
 				immortalStepper = stepsFor5Sec*2;// 10 seconds of immortality like it is in original game;
+				points += 500;
 				break;
 			case TANK_LIVE:
 				lifes++;
+				points += 500;
 				break;
 			case STAR:
 				promoteDegrade(true);
+				points += 500;
+				break;
+			case BOMB:
+			case SPADE:
+			case TIMER:
+				points += 500;
 				break;
 		}
 	}

@@ -254,13 +254,21 @@ public class GameView {
 	}
 
 	private void printPlayersProperties(GameDynamics dynamics){
-		int lifes = dynamics.get1stPlayerLifes();
+		int lifes = dynamics.get1stPlayerLifes(), points = dynamics.get1stPlayerPoints();
 		if(lifes > 0)
 			playersLives[0].setText("Player 1: " + lifes + " lifes");
+		else
+			playersLives[0].setText("Player 1:  dead!");
+
+		playersPoints[0].setText("          " + points + " pts");
 
 		lifes = dynamics.get2ndPlayerLifes();
+		points = dynamics.get2ndPlayerPoints();
 		if(lifes > 0)
 			playersLives[1].setText("Player 2: " + lifes + " lifes");
+		else
+			playersLives[1].setText("Player 2:  dead!");
+		playersPoints[1].setText("          " + points + " pts");
 	}
 
 	public void drawMap(GameDynamics dynamics){
@@ -277,7 +285,6 @@ public class GameView {
 		powerUps.roundPos(cellDefaultSize, sizePixels);
 
 		Cell cell;
-		boolean isExplosion;
 		final double multiplier = ( (double)sizePixels)/unitSize;
 
 		explodesCount = dynamics.getExplodes(explodes);
@@ -301,7 +308,7 @@ public class GameView {
 		}
 
 		for(i = 0; i < explodesCount; i++){
-			cell.setByOtherCell(explodes.get(i) );
+			cell = explodes.get(i);
 			cell.roundPos(cellDefaultSize, sizePixels);
 			cell.drawCell(gContext, tiles, multiplier);
 		}

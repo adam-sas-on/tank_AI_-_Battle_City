@@ -170,6 +170,7 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 	}
 
+	// - - - - - - - - - - - - - - - - Getters for players statistic- - - - - - - - - - - - - - - - -
 	public int get1stPlayerLifes(){
 		if(player1 == null)
 			return 0;
@@ -179,6 +180,17 @@ public class GameDynamics implements Iterable<Cell> {
 		if(player2 == null)
 			return 0;
 		return player2.getLifes();
+	}
+
+	public int get1stPlayerPoints(){
+		if(player1 == null)
+			return 0;
+		return player1.getPoints();
+	}
+	public int get2ndPlayerPoints(){
+		if(player2 == null)
+			return 0;
+		return player2.getPoints();
 	}
 
 	private void setEagleIndex(){
@@ -293,7 +305,6 @@ public class GameDynamics implements Iterable<Cell> {
 			case STAR:
 			case TANK_LIVE:
 			case HELMET:
-				player.useCollectible(collectibleType);
 				if(collectibleType == MapCell.HELMET)
 					collectibleTimer = stepsPerSecond*30;
 				break;
@@ -302,6 +313,7 @@ public class GameDynamics implements Iterable<Cell> {
 				encircleEagle(MapCell.STEEL);
 				break;
 		}
+		player.useCollectible(collectibleType);
 		collectibles.setMapCell(null);
 	}
 
@@ -427,7 +439,7 @@ public class GameDynamics implements Iterable<Cell> {
 		return exploded;
 	}
 
-	private int tankHitByPlayer(Cell playersBulletCell, Cell tankBufferCell){
+	private int tankHitByPlayer(Cell playersBulletCell, Cell tankBufferCell, boolean firstPlayersBullet){
 		int i;
 		int hitPoints;
 
@@ -440,6 +452,11 @@ public class GameDynamics implements Iterable<Cell> {
 					explodingTanksCount++;
 					ports.removingTankFromMap();
 				}
+
+				if(firstPlayersBullet)
+					player1.addPoints(hitPoints);
+				else
+					player2.addPoints(hitPoints);
 				return i;
 			}
 		}
@@ -556,7 +573,7 @@ public class GameDynamics implements Iterable<Cell> {
 				}
 
 				tanksCount = tanksSpritesCount;
-				bulletOrTankIndex = tankHitByPlayer(bulletCell, tankCell);
+				bulletOrTankIndex = tankHitByPlayer(bulletCell, tankCell, firstPlayer);
 				if(bulletOrTankIndex >= 0){// one tank get hit ...
 					if(tanksCount == tanksSpritesCount)// but tank is not destroyed yet;
 						explodeBullet(i, null);
@@ -565,9 +582,17 @@ public class GameDynamics implements Iterable<Cell> {
 
 					continue;
 				}
-			} /*else {
+			} else {
 				// todo: if touches players? players.getHit(); removeBullet(i);continue;
-			}*/
+				keepMoving = player1.getHit(bulletCell, tankCell);
+				if(!keepMoving)
+					keepMoving = player2.getHit(bulletCell, tankCell);
+
+				if(keepMoving){
+					explodeBullet(i, null);
+					continue;
+				}
+			}
 
 			keepMoving = performEnvironmentExplosion(i);// if true -> continue (no i++);
 			if(keepMoving)
