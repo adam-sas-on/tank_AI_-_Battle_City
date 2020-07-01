@@ -311,8 +311,16 @@ public class PlayerAITank implements Tank {
 
 		if(isExploding){
 			currentIconInd++;
-			if(currentIconInd == currentIcons.length && lifes > 0)
-				revive();
+			if(currentIconInd == currentIcons.length){
+				if(lifes > 0)
+					revive();
+				else {
+					lifes--;
+					currentIconInd = 0;
+					currentIcons = new MapCell[]{null, null};
+				}
+			}
+
 			return false;
 		}
 
