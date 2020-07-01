@@ -66,6 +66,7 @@ public class EnemyPorts {
 			portsCollide[i] = false;
 		}
 		activePortsCounter = 0;
+		tanksOnMap = 0;
 	}
 
 	public void add(int col, int row){
@@ -128,11 +129,13 @@ public class EnemyPorts {
 	}
 
 	public void activatePort(){
-		if(portsCount > 0 && waitingSteps[currentPort] < 0 && currentAmountOfTanks > 0){
+		if(portsCount > 0 && waitingSteps[currentPort] < 0 &&
+				currentAmountOfTanks > 0 && tanksOnMap < 6 && activePortsCounter < portsCount){
 
 			portsCollide[currentPort] = false;
 			waitingSteps[currentPort++] = (activePortsCounter > 0)?currentStepsForNewTank:minimumWaitingSteps;
 			activePortsCounter++;
+			tanksOnMap++;// tank will be on a map;
 			if(currentPort == portsCount)
 				currentPort = 0;
 		}
@@ -171,7 +174,6 @@ public class EnemyPorts {
 					newEnemyTank = true;// add enemy tank into map;
 					portPosition(i, newTankPos);
 					currentAmountOfTanks--;
-					tanksOnMap++;
 				}
 			}
 			portsCollide[i] = false;
