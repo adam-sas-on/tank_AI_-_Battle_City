@@ -45,7 +45,7 @@ public class PlayerAITank implements Tank {
 
 		// steps after which bullets move 3 times their size:
 		int bulletUnitSize = (cellUnitSize*MapCell.BULLET_UP.getSize())/(MapCell.getUnitSize() );
-		nextBulletMinimumSteps = Math.max( ( 3*bulletUnitSize )/bulletSpeed, 2);
+		nextBulletMinimumSteps = Math.max( ( 3*bulletUnitSize )/bulletSpeed, 100/msInterval);
 
 		stepsFor5Sec = 5000/msInterval;
 		freezeStepper = immortalStepper = 0;
@@ -183,11 +183,8 @@ public class PlayerAITank implements Tank {
 				lifes--;
 				if(lifes > 0){
 					level = 1;
-					revive();
 				}
-
 				isExploding = true;
-
 			}
 		}
 
@@ -263,11 +260,15 @@ public class PlayerAITank implements Tank {
 		tankBufferCell.setMapCell(currentIcons[currentIconInd]);
 		tankBufferCell.setPos(x_pos, y_pos);
 
-		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) )
+		boolean hit = false;
+		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) && immortalStepper < 1){
 			promoteDegrade(false);
+			hit = true;
+		}
 
-		return isExploding;
+		return hit;
 	}
+
 	@Override
 	public boolean exists(){
 		return !isExploding;
@@ -291,6 +292,8 @@ public class PlayerAITank implements Tank {
 		isExploding = false;
 		currentIcons = icons.get(currentDirection);
 		immortalStepper = stepsFor5Sec;
+		freezeStepper = bulletsInRange = 0;
+		tankDriver.blockUnblockController(false);
 	}
 
 	public void moveOrBlock(Cell cell, int x, int y){
@@ -306,8 +309,12 @@ public class PlayerAITank implements Tank {
 	public boolean requestedPosition(int[] newXY) {
 		bulletSteps--;
 
-		if(isExploding)
+		if(isExploding){
+			currentIconInd++;
+			if(currentIconInd == currentIcons.length && lifes > 0)
+				revive();
 			return false;
+		}
 
 		if(bulletSteps == 0 && bulletsInRange > 0)
 			bulletsInRange--;

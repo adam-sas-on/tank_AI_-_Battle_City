@@ -511,7 +511,7 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private boolean moveBullets(){
-		boolean keepMoving, eagleExists, isPlayers;
+		boolean isHitExplosion, eagleExists, isPlayers;
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
 		int i = 0, bulletOrTankIndex, tanksCount;
@@ -583,19 +583,20 @@ public class GameDynamics implements Iterable<Cell> {
 					continue;
 				}
 			} else {
-				// todo: if touches players? players.getHit(); removeBullet(i);continue;
-				keepMoving = player1.getHit(bulletCell, tankCell);
-				if(!keepMoving)
-					keepMoving = player2.getHit(bulletCell, tankCell);
+				isHitExplosion = player1.getHit(bulletCell, tankCell);
+				if(!isHitExplosion)
+					isHitExplosion = player2.getHit(bulletCell, tankCell);
 
-				if(keepMoving){
-					explodeBullet(i, null);
+				if(isHitExplosion){
+					isHitExplosion = bulletCell.collide(tankCell, cellPrecisionUnitSize);
+					if(isHitExplosion)
+						explodeBullet(i, null);
 					continue;
 				}
 			}
 
-			keepMoving = performEnvironmentExplosion(i);// if true -> continue (no i++);
-			if(keepMoving)
+			isHitExplosion = performEnvironmentExplosion(i);// if true -> continue (no i++);
+			if(isHitExplosion)
 				continue;
 
 			// if after all environment interactions bullet still runs;
@@ -656,22 +657,6 @@ public class GameDynamics implements Iterable<Cell> {
 			addBullet(bullet);
 		}
 	}
-	/*private void movePlayer(PlayerAITank player){
-		Cell tankNewPositionCell, tankCurrentCell, environmentCell;
-
-		tankNewPositionCell = new Cell();
-		tankCurrentCell = new Cell();
-
-		boolean moved = tankCanMove(player, tankCurrentCell, tankNewPositionCell, xyPos);
-
-		if(moved){
-			environmentCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
-
-			player.moveOrBlock(environmentCell, xyPos[0], xyPos[1]);
-		}
-
-		playersAction(player, tankNewPositionCell);
-	}*/
 
 	private boolean setTwoCells(int tankIndex, int xRequestedPos, int yRequestedPos, Cell current, Cell requested){
 		if(xRequestedPos < 0 || yRequestedPos < 0 || tankIndex >= tanksSpritesCount + 2)// 2 players
