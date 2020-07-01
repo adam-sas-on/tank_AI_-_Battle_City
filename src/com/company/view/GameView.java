@@ -27,6 +27,7 @@ public class GameView {
 	private static Image tiles;
 	private Button startPause;
 	private Button mapSelectButton;
+	private Button resetButton;
 	private Label[] playersLives, playersPoints;
 	private ListView<String> mapList;
 	private int rowCells = 26, colCells = 26;
@@ -78,6 +79,7 @@ public class GameView {
 
 		mapList = new ListView<>();
 		mapSelectButton = new Button("Load map");
+		resetButton = new Button("Reset the game");
 	}
 
 	public int getDefaultCellSize(){
@@ -102,6 +104,10 @@ public class GameView {
 
 	public Button getLoadingMapButton(){
 		return mapSelectButton;
+	}
+
+	public Button getResetButton(){
+		return resetButton;
 	}
 
 	public String getSelectedMap(){
@@ -167,7 +173,7 @@ public class GameView {
 		canvas.setHeight(rowCells*sizePixels);
 	}
 
-	private boolean addExplode(Cell explodeCell){
+	/*private boolean addExplode(Cell explodeCell){
 		MapCell mapCell = explodeCell.getMapCell();
 		if(mapCell != MapCell.EXPLODE_1 && mapCell != MapCell.EXPLODE_2 && mapCell != MapCell.EXPLODE_3 &&
 				mapCell != MapCell.EXPLODE_4 && mapCell != MapCell.EXPLODE_5)
@@ -184,7 +190,7 @@ public class GameView {
 
 		explodesCount++;
 		return true;
-	}
+	}*/
 
 	public void addTree(Cell treeCell){
 		int count = trees.size();
@@ -224,6 +230,8 @@ public class GameView {
 		ui.add(mapList, 0, 11);
 		ui.setHgap(2);
 		ui.add(mapSelectButton, 0, 13);
+
+		ui.add(resetButton, 0, 17);
 	}
 
 	public Scene drawStart(){

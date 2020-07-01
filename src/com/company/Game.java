@@ -125,6 +125,8 @@ public class Game {
 
 		view.getLoadingMapButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::loadMapFromList);
 
+		view.getResetButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::resetGame);
+
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
 		runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
@@ -189,5 +191,9 @@ public class Game {
 			runGame.awaitTermination(1, TimeUnit.SECONDS);
 		} catch(InterruptedException ignore){}
 		runGame.shutdownNow();
+	}
+
+	private void resetGame(MouseEvent mouseEvent){
+		dynamics.resetTheGame();
 	}
 }
