@@ -133,8 +133,12 @@ public class PlayerAITank implements Tank {
 
 	@Override
 	public void setUpCell(Cell cell){
-		cell.setMapCell(currentIcons[currentIconInd]);
-		cell.setPos(x_pos, y_pos);
+		try {
+			cell.setMapCell(currentIcons[currentIconInd]);
+			cell.setPos(x_pos, y_pos);
+		} catch(ArrayIndexOutOfBoundsException e){
+			System.out.println("Players icon index out of range ("+ currentIconInd + ")! \n\t" + e);
+		}
 	}
 
 	public void setIcons(){
@@ -294,6 +298,20 @@ public class PlayerAITank implements Tank {
 		immortalStepper = stepsFor5Sec;
 		freezeStepper = bulletsInRange = 0;
 		tankDriver.blockUnblockController(false);
+	}
+
+	public void reset(){
+		bulletSteps = bulletSteps2nd = 0;
+		bulletsInRange = 0;
+		freezeStepper = immortalStepper = 0;
+		currentDirection = Direction.UP.getDirection();
+
+		level = 1;
+		lifes = 3;
+		points = 0;
+		currentIconInd = 0;
+		isExploding = false;
+		currentIcons = icons.get(currentDirection);
 	}
 
 	public void moveOrBlock(Cell cell, int x, int y){
