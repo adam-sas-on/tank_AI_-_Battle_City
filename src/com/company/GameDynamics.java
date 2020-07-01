@@ -169,6 +169,7 @@ public class GameDynamics implements Iterable<Cell> {
 			ports.levelUpPorts();
 			ports.activatePort();
 			steps = 0;
+			collectibles.setMapCell(null);
 		}
 	}
 
@@ -449,6 +450,9 @@ public class GameDynamics implements Iterable<Cell> {
 			hitPoints = activeTanks[i].getHit(playersBulletCell, tankBufferCell);
 			if(hitPoints > 0){
 				if( !activeTanks[i].exists() ){
+					if( activeTanks[i].clearPowerUp() )
+						createCollectible();
+
 					explodingTanks[explodingTanksCount] = activeTanks[i];
 					tanksSpritesCount = removeFromArray(activeTanks, i, tanksSpritesCount);
 					explodingTanksCount++;
@@ -589,8 +593,10 @@ public class GameDynamics implements Iterable<Cell> {
 				if(bulletOrTankIndex >= 0){// one tank get hit ...
 					if(tanksCount == tanksSpritesCount)// but tank is not destroyed yet;
 						explodeBullet(i, null);
-					else
+					else {
+						bullets[i].resetBulletShooting();
 						bulletsCount = removeFromArray(bullets, i, bulletsCount);
+					}
 
 					continue;
 				}
@@ -850,13 +856,6 @@ public class GameDynamics implements Iterable<Cell> {
 				encircleEagle(MapCell.BRICK);
 		}
 
-		// temporary creating collectible for testing;
-		int tensSeconds = steps/(stepsPerSecond*10);
-		if(tensSeconds%2 == 1 && collectibles.getMapCell() == null){
-			createCollectible();
-		} else if(tensSeconds%2 == 0)
-			collectibles.setMapCell(null);
-
 
 		boolean createNewTank;
 		ports.activatePort();
@@ -868,10 +867,12 @@ public class GameDynamics implements Iterable<Cell> {
 			if(eagleIndex >= 0)
 				tank.setEaglePosition(cells[eagleIndex]);
 			addTank(tank);
+			if( tank.hasPowerUp() )
+				collectibles.setMapCell(null);
 		}
 
 		steps++;
-		return eagleExists || (player1.getLifes() < 1 && player2.getLifes() < 1);
+		return eagleExists && (player1.getLifes() > 0 || player2.getLifes() > 0);
 	}
 
 	// - - - - - - - - - - - - - - Methods for iterator and for drawing - - - - - - - - - - - - - -
