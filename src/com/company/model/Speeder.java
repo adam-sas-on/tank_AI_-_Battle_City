@@ -10,15 +10,18 @@ public class Speeder extends Enemy {
 		int msInterval = view.getIntervalInMilliseconds(), cellUnitSize = view.getDefaultCellSize();
 
 		cellSpeed = (156*msInterval*cellUnitSize*2)/50000;// speed: 1.3 * players speed (12 full-cells / 5000 ms);
+		points = 200;
 		setIcons(false);
 	}
 
-	public Speeder(BattleRandom rand, GameView view, boolean powerApp){
-		super(rand, view, powerApp);
+	public Speeder(BattleRandom rand, GameView view, boolean powerUp){
+		super(rand, view);
 		int msInterval = view.getIntervalInMilliseconds(), cellUnitSize = view.getDefaultCellSize();
 
 		cellSpeed = (156*msInterval*cellUnitSize*2)/50000;// speed: 1.3 * players speed (12 full-cells / 5000 ms);
-		setIcons(powerApp);
+		points = 200;
+		hasPowerUp = powerUp;
+		setIcons(powerUp);
 	}
 
 	@Override

@@ -16,11 +16,14 @@ public class GameDynamics implements Iterable<Cell> {
 
 	private Queue<Enemy> tanksList;
 	private Enemy[] activeTanks;
-	private int activeTanksCount;
+	private Enemy[] explodingTanks;
+	private int tanksSpritesCount, explodingTanksCount;
 	private EnemyPorts ports;
 
 	private Bullet[] bullets;
 	private int bulletsCount;
+	private Bullet[] explosions;
+	private int explosionsCount;
 	private final double bulletsCountMultiplier = 1.4;
 	private DamageClass damages;
 
@@ -31,7 +34,6 @@ public class GameDynamics implements Iterable<Cell> {
 	private int eagleIndex, bulletOnEagleIndex;
 	private Cell collectibles;
 	private int collectibleTimer;// timer how long tank can be suspended or how long player can be indestructible;
-	private List<Integer> treesIds;
 	private int cellUnitSize;
 	private final int cellPrecisionUnitSize;
 	//private final int intervalInMs;
@@ -55,12 +57,13 @@ public class GameDynamics implements Iterable<Cell> {
 
 		tanksList = new LinkedList<>();
 		activeTanks = new Enemy[sizeBegin];
-		activeTanksCount = 0;
+		explodingTanks = new Enemy[sizeBegin];
+		tanksSpritesCount = explodingTanksCount = 0;
 		ports = new EnemyPorts(stepsPerSecond);
-		treesIds = new ArrayList<>();
 
-		bulletsCount = 0;
+		bulletsCount = explosionsCount = 0;
 		bullets = new Bullet[sizeBegin];
+		explosions = new Bullet[sizeBegin];
 		eagleIndex = bulletOnEagleIndex = -1;
 
 		setCellsStructure(maxCols, mapLoader.getMaxRows() );
@@ -145,11 +148,11 @@ public class GameDynamics implements Iterable<Cell> {
 
 		player1.setDefaultPlayerPosition();
 		player2.setDefaultPlayerPosition();
-		activeTanksCount = 0;
+		tanksSpritesCount = 0;
 
 		boolean loaded = true;
 		try {
-			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, tanksList, treesIds, view);
+			mapLoader.loadMap(cells[0], mapFileName, player1, player2, ports, tanksList, view);
 		} catch(IOException | NullPointerException e){
 			System.out.println("Loading map  " + mapFileName + "  failed!");
 			loaded = false;
@@ -158,14 +161,19 @@ public class GameDynamics implements Iterable<Cell> {
 		if(loaded) {
 			rowCells = view.getRowCells();
 			setEagleIndex();
-			player1.revive();
-			player2.revive();
+			if(player1.getLifes() > 0)
+				player1.revive();
+			if(player2.getLifes() > 0)
+				player2.revive();
 			ports.setAmountOfTanks(tanksList);
 			ports.levelUpPorts();
 			ports.activatePort();
+			steps = 0;
+			collectibles.setMapCell(null);
 		}
 	}
 
+	// - - - - - - - - - - - - - - - - Getters for players statistic- - - - - - - - - - - - - - - - -
 	public int get1stPlayerLifes(){
 		if(player1 == null)
 			return 0;
@@ -175,6 +183,17 @@ public class GameDynamics implements Iterable<Cell> {
 		if(player2 == null)
 			return 0;
 		return player2.getLifes();
+	}
+
+	public int get1stPlayerPoints(){
+		if(player1 == null)
+			return 0;
+		return player1.getPoints();
+	}
+	public int get2ndPlayerPoints(){
+		if(player2 == null)
+			return 0;
+		return player2.getPoints();
 	}
 
 	private void setEagleIndex(){
@@ -203,42 +222,39 @@ public class GameDynamics implements Iterable<Cell> {
 			Bullet[] newBullets = new Bullet[newLength];
 			System.arraycopy(bullets,0, newBullets, 0, bullets.length);
 			bullets = newBullets;
+
+			Bullet[] newExplodes = new Bullet[newLength];
+			System.arraycopy(explosions, 0, newExplodes, 0, explosions.length);
+			explosions = newExplodes;
 		}
 		bullets[bulletsCount] = bullet;
 		bulletsCount++;
 	}
-	private void removeBullet(int index){
-		if(index >= bulletsCount)
-			return;
+	private <T> int removeFromArray(T[] array, int index, int count){
+		if(index >= count || count < 1)
+			return count;
 
 		int i = index + 1;
-		while(i < bulletsCount){
-			bullets[i - 1] = bullets[i];
+		while(i < count){
+			array[i - 1] = array[i];
 			i++;
 		}
-		bulletsCount--;
+		return count - 1;
 	}
 
 	private void addTank(Enemy tank){
-		if(activeTanksCount + 1 > activeTanks.length){
+		if(tanksSpritesCount + 1 > activeTanks.length){
 			int newLength = (int)(activeTanks.length*bulletsCountMultiplier);
 			Enemy[] newTanks = new Enemy[newLength];
 			System.arraycopy(activeTanks,0, newTanks, 0, activeTanks.length);
 			activeTanks = newTanks;
-		}
-		activeTanks[activeTanksCount] = tank;
-		activeTanksCount++;
-	}
-	private void removeTank(int index){
-		if(index >= activeTanksCount)
-			return;
 
-		int i = index + 1;
-		while(i < activeTanksCount){
-			activeTanks[i - 1] = activeTanks[i];
-			i++;
+			Enemy[] newExplodingTanks = new Enemy[newLength];
+			System.arraycopy(explodingTanks, 0, newExplodingTanks, 0, explodingTanks.length);
+			explodingTanks = newExplodingTanks;
 		}
-		activeTanksCount--;
+		activeTanks[tanksSpritesCount] = tank;
+		tanksSpritesCount++;
 	}
 
 	private void createCollectible(){
@@ -275,16 +291,23 @@ public class GameDynamics implements Iterable<Cell> {
 		int i;
 		switch(collectibleType){
 			case TIMER:
-				for(i = 0; i < activeTanksCount; i++)
+				for(i = 0; i < tanksSpritesCount; i++)
 					activeTanks[i].makeFreezed();
 				break;
 			case BOMB:
-				// todo: perform explosions for all enemy tanks;
+				Cell bombCell = new Cell();
+				bombCell.setMapCell(MapCell.BOMB);
+				for(i = 0; i < tanksSpritesCount; i++){
+					activeTanks[i].getHit(bombCell, null);
+					explodingTanks[explodingTanksCount] = activeTanks[i];
+					explodingTanksCount++;
+					ports.removingTankFromMap();
+				}
+				tanksSpritesCount = 0;
 				break;
 			case STAR:
 			case TANK_LIVE:
 			case HELMET:
-				player.useCollectible(collectibleType);
 				if(collectibleType == MapCell.HELMET)
 					collectibleTimer = stepsPerSecond*30;
 				break;
@@ -293,6 +316,7 @@ public class GameDynamics implements Iterable<Cell> {
 				encircleEagle(MapCell.STEEL);
 				break;
 		}
+		player.useCollectible(collectibleType);
 		collectibles.setMapCell(null);
 	}
 
@@ -310,7 +334,90 @@ public class GameDynamics implements Iterable<Cell> {
 		return cell.collide(cells[eagleIndex], cellPrecisionUnitSize);
 	}
 
-	private void performEnvironmentExplosion(int bulletIndex){
+
+	private int addEnemyExplodesToList(List<Cell> explodesCell, int startIndex){
+		Cell cell;
+		int i, j = startIndex, count = explodesCell.size();
+
+		for(i = 0; i < explodingTanksCount; i++){
+			if(explodingTanks[i].exists() )
+				continue;
+
+			if(j < count){
+				cell = explodesCell.get(j);
+			} else
+				cell = new Cell();
+
+			explodingTanks[i].setUpCell(cell);
+			cell.setUnsetDoubleSize(true);
+			if(j >= count)
+				explodesCell.add(cell);
+			j++;
+		}
+		return j;
+	}
+
+	private int addPlayerExplodesToList(List<Cell> explodesCell, PlayerAITank player, int startIndex){
+		Cell cell;
+		int j = startIndex, count = explodesCell.size();
+
+		if(player != null && !player.exists() && player.getLifes() >= 0){
+			if(j < count)
+				cell = explodesCell.get(j);
+			else
+				cell = new Cell();
+
+			player.setUpCell(cell);
+			cell.setUnsetDoubleSize(true);
+			if(j >= count)
+				explodesCell.add(cell);
+			j++;
+		}
+
+		return j;
+	}
+	private int addPlayersExplodesToList(List<Cell> explodesCell, int startIndex){
+		int j;
+
+		j = addPlayerExplodesToList(explodesCell, player1, startIndex);
+		j = addPlayerExplodesToList(explodesCell, player2, j);
+		return j;
+	}
+
+	public int getExplodes(List<Cell> explodesCells){
+		Cell cell;
+		int i, count = explodesCells.size(), newSize;
+
+		for(i = 0; i < explosionsCount; i++){
+			if(i < count){
+				cell = explodesCells.get(i);
+			} else
+				cell = new Cell();
+
+			explosions[i].setUpCell( cell );
+			cell.setUnsetDoubleSize(false);
+			if(i >= count)
+				explodesCells.add(cell);
+		}
+
+		newSize = addEnemyExplodesToList(explodesCells, explosionsCount);
+		newSize = addPlayersExplodesToList(explodesCells, newSize);
+
+		return newSize;
+	}
+
+	private void explodeBullet(int bulletIndex, Cell destroyedCell){
+		explosions[explosionsCount] = bullets[bulletIndex];
+		bulletsCount = removeFromArray(bullets, bulletIndex, bulletsCount);
+
+		if (destroyedCell == null) {
+			explosions[explosionsCount].setSmallExplode();
+		} else
+			explosions[explosionsCount].setExplode(destroyedCell);
+		explosionsCount++;
+	}
+
+	private boolean performEnvironmentExplosion(int bulletIndex){
 		Cell cellRight, cellLeft;
 		boolean exploded = false;
 
@@ -330,19 +437,71 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		if(exploded)
-			bullets[bulletIndex].setSmallExplode();
+			explodeBullet(bulletIndex, null);
+
+		return exploded;
 	}
 
-	private int bulletsContact(Cell bulletCell, int bulletIndex){
+	private int tankHitByPlayer(Cell playersBulletCell, Cell tankBufferCell, boolean firstPlayersBullet){
+		int i;
+		int hitPoints;
+
+		for(i = 0; i < tanksSpritesCount; i++){
+			hitPoints = activeTanks[i].getHit(playersBulletCell, tankBufferCell);
+			if(hitPoints > 0){
+				if( activeTanks[i].clearPowerUp() )
+					createCollectible();
+
+				if( !activeTanks[i].exists() ){
+					explodingTanks[explodingTanksCount] = activeTanks[i];
+					tanksSpritesCount = removeFromArray(activeTanks, i, tanksSpritesCount);
+					explodingTanksCount++;
+					ports.removingTankFromMap();
+				}
+
+				if(firstPlayersBullet)
+					player1.addPoints(hitPoints);
+				else
+					player2.addPoints(hitPoints);
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private boolean playerToPlayerBullet(Cell bulletCell, Cell tankBufferCell, boolean firstPlayersBullet){
+		if(player1.getLifes() < 1 || player2.getLifes() < 1)
+			return false;
+
+		boolean isContact = false;
+
+		if(firstPlayersBullet){
+			player2.setUpCell(tankBufferCell);
+			if(bulletCell.collide(tankBufferCell, cellPrecisionUnitSize) ){
+				player2.makeFreezed();
+				isContact = true;
+			}
+		} else {
+			player1.setUpCell(tankBufferCell);
+			if(bulletCell.collide(tankBufferCell, cellPrecisionUnitSize) ){
+				player1.makeFreezed();
+				isContact = true;
+			}
+		}
+
+		return isContact;
+	}
+
+	private int bulletsContact(Cell bulletCell, int bulletIndex, boolean isPlayerBullet){
 		Cell bulletCheckCell;
 		int i;
-		boolean collide;
+		boolean collide, isCurrentPlayers;
 
 		bulletCheckCell = new Cell();
-		//bullets[bulletIndex].setUpCell(bulletCell);
 
 		for(i = bulletIndex + 1; i < bulletsCount; i++){
-			if(bullets[i].isExploding() )
+			isCurrentPlayers = bullets[i].belongsToPlayer();
+			if(!isPlayerBullet && !isCurrentPlayers)
 				continue;
 
 			bullets[i].setUpCell(bulletCheckCell);
@@ -353,79 +512,114 @@ public class GameDynamics implements Iterable<Cell> {
 		return -1;
 	}
 
-	private boolean moveBullets(){
-		boolean keepMoving, eagleExists = true, isPlayers/*, contactedWithTank*/;
+	private boolean stepOfExplodes(){
+		boolean eagleExists = true, keepSimulate;
+		int i = 0;
 
-		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
-		int i = 0, bulletIndex;
-		Cell bulletCell = new Cell(), tankCell = new Cell();
-
-		while(i < bulletsCount && eagleExists){
-			keepMoving = bullets[i].move();
-			if(!keepMoving){// explosion sprite finished;
-				removeBullet(i);
-				if(i == bulletOnEagleIndex || cells[eagleIndex].getMapCell() == MapCell.EAGLE_DESTROYED)
+		while(i < explosionsCount){
+			keepSimulate = explosions[i].move();
+			if(!keepSimulate){
+				explosionsCount = removeFromArray(explosions, i, explosionsCount);
+				if(i == bulletOnEagleIndex)
 					eagleExists = false;
 				continue;
 			}
+			i++;
+		}
 
-			if(bullets[i].isExploding() ) {
-				i++;
+		i = 0;
+		while(i < explodingTanksCount){
+			if(explodingTanks[i].doRemove() ){
+				explodingTanksCount = removeFromArray(explodingTanks, i, explodingTanksCount);
 				continue;
 			}
+			i++;
+		}
+
+		return eagleExists;
+	}
+
+	private boolean moveBullets(){
+		boolean isHitExplosion, eagleExists, isPlayers;
+
+		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
+		int i = 0, bulletOrTankIndex, tanksCount;
+		Cell bulletCell = new Cell(), tankCell = new Cell();
+
+		// simulate explodes;
+		eagleExists = stepOfExplodes();
+
+		while(i < bulletsCount){
+			bullets[i].move();
 
 			// - - - bullet touches border:
 			bullets[i].getBulletPos(xyPos);
 			if(xyPos[0] <= 0 || xyPos[1] <= 0 || xyPos[0] >= colLimit || xyPos[1] >= (rowCells-1)*cellPrecisionUnitSize){
-				bullets[i].setSmallExplode();
-				i++;
+				explodeBullet(i, null);
 				continue;
 			}
 
 			bullets[i].setUpCell(bulletCell);
 			if(cellCollideEagle(bulletCell) ){
 				cells[eagleIndex].setMapCell(MapCell.EAGLE_DESTROYED);
-				bullets[i].setExplode(cells[eagleIndex]);
-				bulletOnEagleIndex = i;
+				explodeBullet(i, cells[eagleIndex]);
+				bulletOnEagleIndex = explosionsCount - 1;
 			}
 
 			isPlayers = bullets[i].belongsToPlayer();
+
+			bullets[i].setUpCell(bulletCell);
+			bulletOrTankIndex = bulletsContact(bulletCell, i, isPlayers);
+			if(bulletOrTankIndex >= 0){
+				explodeBullet(bulletOrTankIndex, null);
+				bullets[i].resetBulletShooting();
+				bulletsCount = removeFromArray(bullets, i, bulletsCount);
+				continue;
+			}
+
 			if(isPlayers){
-				boolean explodeContinue = false;
+				boolean explodeContinue, firstPlayer = bullets[i].belongsToPlayer(player1);
 				bullets[i].setUpCell(bulletCell);
 
-				bulletIndex = bulletsContact(bulletCell, i);
-				if(bulletIndex >= 0){
-					explodeContinue = true;
-					bullets[bulletIndex].resetBulletShooting();
-					removeBullet(bulletIndex);
-				}
-
-				if(bullets[i].belongsToPlayer(player1) && !explodeContinue){
-					player2.setUpCell(tankCell);
-					if(bulletCell.collide(tankCell, cellPrecisionUnitSize) ){
-						player2.makeFreezed();
-						explodeContinue = true;
-					}
-				} else if(!explodeContinue){
-					player1.setUpCell(tankCell);
-					if(bulletCell.collide(tankCell, cellPrecisionUnitSize) ){
-						player1.makeFreezed();
-						explodeContinue = true;
-					}
-				}
+				explodeContinue = playerToPlayerBullet(bulletCell, tankCell, firstPlayer);
 
 				if(explodeContinue){
-					bullets[i].setSmallExplode();
+					explodeBullet(i, null);
+					continue;
+				}
+
+				tanksCount = tanksSpritesCount;
+				bulletOrTankIndex = tankHitByPlayer(bulletCell, tankCell, firstPlayer);
+				if(bulletOrTankIndex >= 0){// one tank get hit ...
+					if(tanksCount == tanksSpritesCount)// but tank is not destroyed yet;
+						explodeBullet(i, null);
+					else {
+						bullets[i].resetBulletShooting();
+						bulletsCount = removeFromArray(bullets, i, bulletsCount);
+					}
+
+					continue;
+				}
+			} else {
+				isHitExplosion = player1.getHit(bulletCell, tankCell);
+				if(!isHitExplosion)
+					isHitExplosion = player2.getHit(bulletCell, tankCell);
+
+				if(isHitExplosion){
+					isHitExplosion = bulletCell.collide(tankCell, cellPrecisionUnitSize);
+					if(isHitExplosion)
+						explodeBullet(i, null);
 					continue;
 				}
 			}
 
-			performEnvironmentExplosion(i);
+			isHitExplosion = performEnvironmentExplosion(i);// if true -> continue (no i++);
+			if(isHitExplosion)
+				continue;
 
 			// if after all environment interactions bullet still runs;
-			// check its interactions with ports if it is the players one;
-			if(isPlayers && !bullets[i].isExploding() ){
+			// check its interactions with ports  if it is the players one;
+			if(isPlayers){
 				bullets[i].setUpCell(bulletCell);
 				ports.blockBlinking(bulletCell, cellPrecisionUnitSize);
 			}
@@ -435,23 +629,25 @@ public class GameDynamics implements Iterable<Cell> {
 		return eagleExists;
 	}
 
-	/*private boolean playerCanMove(PlayerAITank player, Cell currentPositionCell, Cell newPositionCell, int[] position){
-		boolean moved, portsDoNotBlock = false;
+	// - - - - - - - - - - - - - - - - - - - Simulating tanks - - - - - - - - - - - - - - - - - - - -
 
-		moved = player.requestedPosition(position);
-		player.setUpCell(currentPositionCell);
+	private void tanksExplodes(Cell bufferCell){
+		for(int i = 0; i < explodingTanksCount; i++){
+			explodingTanks[i].requestedPosition(xyPos);
+			explodingTanks[i].setUpCell(bufferCell);
+		}
 
-		player.setUpCell(newPositionCell);
-		newPositionCell.setPos(position[0], position[1]);
-
-		portsDoNotBlock = ports.canMove(currentPositionCell, newPositionCell, cellPrecisionUnitSize);
-
-
-		return moved&&portsDoNotBlock;
-	}*/
+		if(player1.getLifes() <= 0)
+			player1.requestedPosition(xyPos);
+		if(player2.getLifes() <= 0)
+			player2.requestedPosition(xyPos);
+	}
 
 	private <T extends Tank> boolean tankCanMove(T tank, Cell currentPositionCell, Cell newPositionCell, int[] position){
 		boolean moved = tank.requestedPosition(position), portsDoNotBlock;
+
+		if( !tank.exists() )
+			return false;
 
 		tank.setUpCell(currentPositionCell);
 
@@ -476,25 +672,25 @@ public class GameDynamics implements Iterable<Cell> {
 			collect(player);
 	}
 
-	/*private void movePlayer(PlayerAITank player){
-		Cell tankNewPositionCell, tankCurrentCell, environmentCell;
 
-		tankNewPositionCell = new Cell();
-		tankCurrentCell = new Cell();
+	private void tanksAction(Enemy tank, Cell positionCell){
+		tank.setUpCell(positionCell);
 
-		boolean moved = tankCanMove(player, tankCurrentCell, tankNewPositionCell, xyPos);
-
-		if(moved){
-			environmentCell = cellByPosition(xyPos[0], xyPos[1]);// environment cell for (x, y) position;
-
-			player.moveOrBlock(environmentCell, xyPos[0], xyPos[1]);
+		if(tank.fireBullet() ){
+			Bullet bullet = new Bullet(tank, damages);
+			addBullet(bullet);
 		}
-
-		playersAction(player, tankNewPositionCell);
-	}*/
+	}
 
 	private boolean setTwoCells(int tankIndex, int xRequestedPos, int yRequestedPos, Cell current, Cell requested){
-		if(xRequestedPos < 0 || yRequestedPos < 0 || tankIndex >= activeTanksCount + 2)// 2 players
+		if(xRequestedPos < 0 || yRequestedPos < 0 || tankIndex >= tanksSpritesCount + 2)// 2 players
+			return false;
+
+		boolean exploding = false;
+		if(tankIndex > 1)
+			exploding = !activeTanks[tankIndex - 2].exists();
+
+		if(exploding)
 			return false;
 
 		switch(tankIndex){
@@ -516,13 +712,13 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void tanksToTanksMovement(boolean[] acceptance, int[] xy2Dpoints, Cell current, Cell requested){
-		final int count = 2 + activeTanksCount;
+		final int count = 2 + tanksSpritesCount;
 
 		if(count < acceptance.length || count*2 < xy2Dpoints.length)
 			return;// throw new...
 
 		Cell currentB = new Cell();
-		int i, j, i2, currentArea, requestedArea;
+		int i, j, i2;
 		boolean accepted;
 
 		for(i = 0; i < count; i++){
@@ -564,7 +760,7 @@ public class GameDynamics implements Iterable<Cell> {
 			player2playing = player2.getLifes() > 0;
 		}
 
-		allTanksCount += activeTanksCount;
+		allTanksCount += tanksSpritesCount;
 		xyPosAll = new int[allTanksCount*2];// pairs of points for all tanks: {player1, player2, ...rest tanks};
 		movementAccepted = new boolean[allTanksCount];
 		tankNewPositionCell = new Cell();
@@ -591,8 +787,14 @@ public class GameDynamics implements Iterable<Cell> {
 			xyPosAll[2] = xyPosAll[3] = -1;
 
 
-		int i, posIndexBegin = 2, i2;
-		for(i = 0; i < activeTanksCount; i++){
+		int i = 0, posIndexBegin = 2, i2;
+		while(i < tanksSpritesCount){
+			if( activeTanks[i].doRemove() ){
+				tanksSpritesCount = removeFromArray(activeTanks, i, tanksSpritesCount);
+				allTanksCount--;
+				continue;
+			}
+
 			moved = tankCanMove(activeTanks[i], tankNewPositionCell, tankCurrentCell, xyPos);
 			movementAccepted[posIndexBegin + i] = moved;
 
@@ -602,12 +804,16 @@ public class GameDynamics implements Iterable<Cell> {
 			}
 			xyPosAll[i2] = xyPos[0];
 			xyPosAll[i2 + 1] = xyPos[1];
+			i++;
 		}
+
+		tanksExplodes(tankCurrentCell);
 
 		tanksToTanksMovement(movementAccepted, xyPosAll, tankCurrentCell, tankNewPositionCell);
 
+
 		for(i = 0; i < allTanksCount; i++){
-			if( (i == 0 && !player1playing) || (i == 1 && !player2playing) )
+			if( (i == 0 && !player1playing) || (i == 1 && !player2playing) || (i > 1 && !activeTanks[i - 2].exists()) )
 				continue;
 
 			i2 = i*2;
@@ -624,7 +830,7 @@ public class GameDynamics implements Iterable<Cell> {
 						player2.moveOrBlock(environmentCell, xyPosAll[i2], xyPosAll[i2 + 1]);
 					break;
 				default:
-					//tanksAction(activeTanks[i - 2], tankCurrentCell);
+					tanksAction(activeTanks[i - 2], tankCurrentCell);
 					if(movementAccepted[i])
 						activeTanks[i - 2].moveOrBlock(environmentCell, xyPosAll[i2], xyPosAll[i2 + 1]);
 			}
@@ -632,10 +838,16 @@ public class GameDynamics implements Iterable<Cell> {
 
 	}
 
-	public boolean nextStep(){
-		/*movePlayer(player1);
+	public boolean isMapFinished(){
+		int totalTanks = tanksSpritesCount + explodingTanksCount + tanksList.size();
 
-		movePlayer(player2);*/
+		return totalTanks <= 0;
+	}
+
+	public boolean nextStep(){
+		if( isMapFinished() )
+			return true;
+
 		moveTanks();
 
 		boolean eagleExists;
@@ -647,28 +859,41 @@ public class GameDynamics implements Iterable<Cell> {
 				encircleEagle(MapCell.BRICK);
 		}
 
-		// temporary creating collectible for testing;
-		int tensSeconds = steps/(stepsPerSecond*10);
-		if(tensSeconds%2 == 1 && collectibles.getMapCell() == null){
-			createCollectible();
-			ports.activatePort();// testing ports;
-		} else if(tensSeconds%2 == 0)
-			collectibles.setMapCell(null);
 
 		boolean createNewTank;
+		ports.activatePort();
 		createNewTank = ports.nextStep(xyPos);
+
 		if(createNewTank && !tanksList.isEmpty() ){
 			Enemy tank = tanksList.poll();
 			tank.setPos(xyPos[0], xyPos[1]);
 			if(eagleIndex >= 0)
 				tank.setEaglePosition(cells[eagleIndex]);
 			addTank(tank);
+			if( tank.hasPowerUp() )
+				collectibles.setMapCell(null);
 		}
 
 		steps++;
-		return eagleExists;
+		return eagleExists && (player1.getLifes() > 0 || player2.getLifes() > 0);
 	}
 
+	public void resetTheGame(){
+		steps = 0;
+		tanksSpritesCount = explodingTanksCount = 0;
+		bulletsCount = explosionsCount = 0;
+		collectibles.setMapCell(null);
+		player1.reset();
+		player2.reset();
+	}
+
+	// - - - - - - - - - - - - - - Methods for iterator and for drawing - - - - - - - - - - - - - -
+
+	public void setFromCollectible(Cell cellToSet){
+		if(cellToSet == null)
+			return;
+		cellToSet.setByOtherCell(collectibles);
+	}
 
 	public void setCellSize(int cellSize){
 		cellUnitSize = 16;
@@ -681,20 +906,21 @@ public class GameDynamics implements Iterable<Cell> {
 		Iterator<Cell> iter = new Iterator<>() {
 			Cell iterCell = new Cell();
 			private boolean iterateEnvironment = true;
-			private boolean iterateTanks = activeTanksCount > 0, iterateBullets = bulletsCount > 0;
-			private boolean iteratePlayer1 = player1 != null;
+			private boolean iterateTanks = tanksSpritesCount > 0;
+			private boolean iterateBullets = bulletsCount > 0;
+
+			private boolean iteratePlayer1 = player1 != null && player1.exists();
 			private boolean player1Immortality = iteratePlayer1 && player1.getImmortalityCell() != null;
-			private boolean iteratePlayer2 = player2 != null;
+			private boolean iteratePlayer2 = player2 != null && player2.exists();
 			private boolean player2Immortality = iteratePlayer2 && player2.getImmortalityCell() != null;
-			private boolean iterateTrees = treesIds.size() > 0, drawCollectible = collectibles.getMapCell() != null;
+
 			private boolean iteratePorts = ports.size() > 0;
 			private int iterateIndex = 0;
-			private final int treesCount = treesIds.size();
 
 			@Override
 			public boolean hasNext(){
 				return iterateEnvironment || iterateTanks || iterateBullets ||
-						iterateTrees || iteratePorts || drawCollectible;
+						iteratePorts;
 			}
 
 			@Override
@@ -734,11 +960,10 @@ public class GameDynamics implements Iterable<Cell> {
 					activeTanks[iterateIndex++].setUpCell(iterCell);
 					doRound = true;
 
-					if(iterateIndex >= activeTanksCount){
+					if(iterateIndex >= tanksSpritesCount){
 						iterateTanks = false;
 						iterateIndex = 0;
 					}
-
 				} else if(iterateBullets){
 					bullets[iterateIndex++].setUpCell(iterCell);
 					doRound = true;
@@ -746,16 +971,6 @@ public class GameDynamics implements Iterable<Cell> {
 						iterateBullets = false;
 						iterateIndex = 0;
 					}
-				} else if(iterateTrees) {
-					int treeInd = treesIds.get(iterateIndex);
-					iterateIndex++;
-					cell = cells[treeInd];// be sure this is properly implemented;
-					iterCell.setByOtherCell(cell);
-					doRound = true;
-
-					iterateTrees = iterateIndex < treesCount;
-					if(!iterateTrees)
-						iterateIndex = 0;
 				} else if(iteratePorts){
 					ports.setNextCell(iterCell);
 					iterateIndex++;
@@ -764,10 +979,6 @@ public class GameDynamics implements Iterable<Cell> {
 					iteratePorts = iterateIndex < ports.size();
 					if(!iteratePorts)
 						iterateIndex = 0;
-				} else if(drawCollectible){
-					iterCell.setByOtherCell(collectibles);
-					doRound = true;
-					drawCollectible = false;
 				}
 
 				if(doRound)

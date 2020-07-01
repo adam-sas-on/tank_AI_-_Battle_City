@@ -25,7 +25,7 @@ public class Game {
 	private final int msInterval = 20;
 	private GameDynamics dynamics;
 	private final Timeline timeline;
-	private boolean pause;
+	private boolean pause, mapFinished;
 
 	private MapLoader mapLoader;
 	private List<String> maps;
@@ -50,7 +50,7 @@ public class Game {
 
 		runGame = Executors.newSingleThreadScheduledExecutor();
 		dynamics = new GameDynamics(mapLoader, view, rand);
-		pause = false;
+		pause = mapFinished = false;
 
 		setControllers();
 
@@ -63,7 +63,7 @@ public class Game {
 		dynamics.setFirstPlayer(player1);
 		dynamics.setSecondPlayer(player2);
 
-		mapNumber = 14;
+		mapNumber = 1;
 		dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
 		this.view.selectMap(maps.get(mapNumber));
 
@@ -114,6 +114,9 @@ public class Game {
 		else {
 			mapNumber = mapIndex;
 			dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
+			pause = false;
+			view.getLoadingMapButton().setDisable(true);
+			view.keepDrawing();
 		}
 	}
 
@@ -121,6 +124,8 @@ public class Game {
 		view.getStartPauseButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startPauseGameByMouse);
 
 		view.getLoadingMapButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::loadMapFromList);
+
+		view.getResetButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::resetGame);
 
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
@@ -132,6 +137,10 @@ public class Game {
 		KeyCode keyCode = keyEvent.getCode();
 		if(keyCode == KeyCode.C){
 			startPauseGame();
+			if(mapFinished){
+				loadMapFromList(null);
+				mapFinished = false;
+			}
 
 			return;
 		} else if(pause)
@@ -154,6 +163,7 @@ public class Game {
 			return;
 
 		keepRunning = dynamics.nextStep();
+		mapFinished = dynamics.isMapFinished();
 		if(!keepRunning){
 			pause = true;
 			view.typeText("Game Over!");
@@ -161,7 +171,15 @@ public class Game {
 			mapNumber++;
 			if(mapNumber == maps.size() )
 				mapNumber = 0;
-			dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
+			view.selectNextMap();
+		} else if(mapFinished){
+			pause = true;
+			view.typeText("Map finished");
+			mapNumber++;
+			if(mapNumber == maps.size() )
+				mapNumber = 0;
+			view.getLoadingMapButton().setDisable(false);
+			//dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
 			view.selectNextMap();
 		}
 	}
@@ -173,5 +191,10 @@ public class Game {
 			runGame.awaitTermination(1, TimeUnit.SECONDS);
 		} catch(InterruptedException ignore){}
 		runGame.shutdownNow();
+	}
+
+	private void resetGame(MouseEvent mouseEvent){
+		dynamics.resetTheGame();
+		pause = false;
 	}
 }

@@ -11,6 +11,7 @@ public class Cell {
 	private int col;
 	private int row;
 	private int size;// size of icon from image-cells in pixels;
+	private boolean doubleSize;
 	private boolean destructible, accessible;
 	private Cell upCell, rightCell, downCell, leftCell;
 	private boolean canMoveUp, canMoveRight, canMoveDown, canMoveLeft;
@@ -22,6 +23,7 @@ public class Cell {
 		destructible = false;
 		upCell = rightCell = downCell = leftCell = null;
 		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = false;
+		doubleSize = false;
 		id = -1;
 	}
 
@@ -158,6 +160,10 @@ public class Cell {
 		// (!accessible1 && isBigger1) || (!accessible2  && isBigger2) || (!accessible3  && isBigger3);
 		return isBlocking;
 	}*/
+
+	public void setUnsetDoubleSize(boolean setDouble){
+		doubleSize = setDouble;
+	}
 
 	public void resetMovement(final int col, final int row, final int maxCols, final int maxRows){
 		canMoveUp = canMoveRight = canMoveDown = canMoveLeft = true;
@@ -368,9 +374,10 @@ public class Cell {
 		this.row = row;
 	}
 
-	public void setMapCell(MapCell newCell) {
+	public void setMapCell(MapCell newCell){
 		mapCell = newCell;
-		if (mapCell == null){
+
+		if(mapCell == null){
 			size = 0;
 			destructible = false;
 			accessible = true;
@@ -573,10 +580,13 @@ public class Cell {
 			return;
 		int mapCellSize = mapCell.getSize();
 		double zoomedSize = zoomMultiplier*mapCellSize;
+		if(doubleSize)
+			zoomedSize *= 2.0;
 		context.drawImage(tile, mapCell.getRow(), mapCell.getCol(), mapCellSize, mapCellSize, col, row, zoomedSize, zoomedSize);
 	}
 
 
+	// - - - - - to string;
 	private boolean caseAppend(StringBuilder sb, boolean appendCase, String appendString, boolean previousAppend){
 		if(appendCase){
 			if(previousAppend)

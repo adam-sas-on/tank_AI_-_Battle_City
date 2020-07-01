@@ -13,7 +13,7 @@ public class EnemyPorts {
 	private MapCell[] icons;
 	private int currentPort, iterIndex;
 	private int currentStepsForNewTank;
-	private int currentAmountOfTanks;
+	private int currentAmountOfTanks, tanksOnMap;
 	private final double countMultiplier = 1.4;
 	private final int minimumStepsForNewTank, decreaseStepper;// game-steps after which new tank can appear;
 	private final int buildingSteps, minimumWaitingSteps;
@@ -40,6 +40,7 @@ public class EnemyPorts {
 		// minimum steps to activate new port when more tanks have to be created:
 		minimumWaitingSteps = Math.max(stepsPerSecond/ 25, 1);
 		currentAmountOfTanks = 20;// default in original game;
+		tanksOnMap = 0;
 	}
 
 
@@ -65,6 +66,7 @@ public class EnemyPorts {
 			portsCollide[i] = false;
 		}
 		activePortsCounter = 0;
+		tanksOnMap = 0;
 	}
 
 	public void add(int col, int row){
@@ -106,6 +108,7 @@ public class EnemyPorts {
 		currentStepsForNewTank -= decreaseStepper;
 		if(currentStepsForNewTank < minimumStepsForNewTank)
 			currentStepsForNewTank = minimumStepsForNewTank;
+		currentPort = (portsCount > 1)?1:0;
 	}
 
 	public void setNextCell(Cell cell){
@@ -126,11 +129,13 @@ public class EnemyPorts {
 	}
 
 	public void activatePort(){
-		if(portsCount > 0 && waitingSteps[currentPort] < 0 && currentAmountOfTanks > 0){
+		if(portsCount > 0 && waitingSteps[currentPort] < 0 &&
+				currentAmountOfTanks > 0 && tanksOnMap < 6 && activePortsCounter < portsCount){
 
 			portsCollide[currentPort] = false;
 			waitingSteps[currentPort++] = (activePortsCounter > 0)?currentStepsForNewTank:minimumWaitingSteps;
 			activePortsCounter++;
+			tanksOnMap++;// tank will be on a map;
 			if(currentPort == portsCount)
 				currentPort = 0;
 		}
@@ -176,19 +181,9 @@ public class EnemyPorts {
 		return newEnemyTank;
 	}
 
-	public boolean collide(Cell cell, final int unitSizeOfCells){
-		if(cell == null || activePortsCounter > 0)
-			return false;
-
-		boolean collision = false;
-
-		for(int i = 0; i < portsCount && !collision; i++){
-			if(currentIconIndices[i] < 0)
-				continue;
-
-			collision = portCells[i].collide(cell, unitSizeOfCells);
-		}
-		return collision;
+	public void removingTankFromMap(){
+		if(tanksOnMap > 0)
+			tanksOnMap--;
 	}
 
 	public boolean canMove(Cell spritePosition, Cell spriteRequestedPos, final int unitSizeOfCells){

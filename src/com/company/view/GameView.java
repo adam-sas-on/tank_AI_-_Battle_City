@@ -27,6 +27,7 @@ public class GameView {
 	private static Image tiles;
 	private Button startPause;
 	private Button mapSelectButton;
+	private Button resetButton;
 	private Label[] playersLives, playersPoints;
 	private ListView<String> mapList;
 	private int rowCells = 26, colCells = 26;
@@ -36,9 +37,12 @@ public class GameView {
 	private boolean pause;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
-	List<Integer> trees;
-	List<Cell> tanks;
-	List<Bullet> bullets;
+
+	private Cell powerUps;
+	private List<Cell> trees;
+	private int treesCount;
+	private List<Cell> explodes;
+	private int explodesCount;
 
 	public GameView(int cellPrecisionUnitSize){
 		sizePixels = unitSize;
@@ -57,9 +61,10 @@ public class GameView {
 
 		pause = false;
 
+		powerUps = new Cell();
 		trees = new ArrayList<>();
-		tanks = new ArrayList<>();
-		bullets = new LinkedList<>();
+		explodes = new ArrayList<>();
+		treesCount = explodesCount = 0;
 	}
 
 	private void setRightMenu(){
@@ -74,6 +79,7 @@ public class GameView {
 
 		mapList = new ListView<>();
 		mapSelectButton = new Button("Load map");
+		resetButton = new Button("Reset the game");
 	}
 
 	public int getDefaultCellSize(){
@@ -100,8 +106,12 @@ public class GameView {
 		return mapSelectButton;
 	}
 
+	public Button getResetButton(){
+		return resetButton;
+	}
+
 	public String getSelectedMap(){
-		String map = "";
+		String map;
 		map = mapList.getSelectionModel().getSelectedItem();
 		return map;
 	}
@@ -161,6 +171,157 @@ public class GameView {
 
 		canvas.setWidth(colCells*sizePixels);
 		canvas.setHeight(rowCells*sizePixels);
+	}
+
+	/*private boolean addExplode(Cell explodeCell){
+		MapCell mapCell = explodeCell.getMapCell();
+		if(mapCell != MapCell.EXPLODE_1 && mapCell != MapCell.EXPLODE_2 && mapCell != MapCell.EXPLODE_3 &&
+				mapCell != MapCell.EXPLODE_4 && mapCell != MapCell.EXPLODE_5)
+			return false;
+
+		int count = explodes.size();
+
+		if(explodesCount >= count){
+			Cell cell = new Cell();
+			cell.setByOtherCell(explodeCell);
+			explodes.add(cell);
+		} else
+			explodes.get(explodesCount).setByOtherCell(explodeCell);
+
+		explodesCount++;
+		return true;
+	}*/
+
+	public void addTree(Cell treeCell){
+		int count = trees.size();
+
+		if(treesCount >= count){
+			Cell cell = new Cell();
+			cell.setByOtherCell(treeCell);
+			trees.add(cell);
+		} else
+			trees.get(treesCount).setByOtherCell(treeCell);
+
+		treesCount++;
+	}
+
+	public void clearTrees(){
+		treesCount = 0;
+	}
+
+	private void setRightMenu(GridPane ui){
+		ui.setPadding(new Insets(10));
+
+		ui.add(startPause, 0, 1);
+		ui.setVgap(8);
+
+		//VBox box = new VBox(10);
+		//box.getChildren().addAll(playersLives[0], playersPoints[0], playersLives[1], playersPoints[1]);
+		ui.add(playersLives[0], 0, 3);
+		ui.setHgap(2);
+		ui.add(playersPoints[0], 0, 5);
+		ui.setHgap(8);
+		ui.add(playersLives[1], 0, 7);
+		ui.setHgap(2);
+		ui.add(playersPoints[1], 0, 9);
+
+		ui.setHgap(8);
+		mapList.setPrefHeight( 8*MapCell.getUnitSize() );
+		ui.add(mapList, 0, 11);
+		ui.setHgap(2);
+		ui.add(mapSelectButton, 0, 13);
+
+		ui.add(resetButton, 0, 17);
+	}
+
+	public Scene drawStart(){
+		GridPane gridPane = new GridPane();
+		BorderPane borderP = new BorderPane();
+
+		gridPane.setPrefWidth(rightMenuWidth);
+		setRightMenu(gridPane);
+
+		borderP.setLeft(canvas);
+		borderP.setRight(gridPane);
+
+		//StackPane layout = new StackPane();
+		Scene scene = new Scene(borderP);
+
+		return scene;
+	}
+
+	public void typeText(String text){
+		gContext.setFill(Color.AZURE);
+		double width = canvas.getWidth(), charWidth = width/(text.length() + 2);
+		Font font = new Font("", 120);
+
+		gContext.setFont(font);
+		gContext.fillText(text, charWidth, canvas.getHeight()/2, width - charWidth*2);
+
+		pause = true;
+	}
+
+	private void printPlayersProperties(GameDynamics dynamics){
+		int lifes = dynamics.get1stPlayerLifes(), points = dynamics.get1stPlayerPoints();
+		if(lifes > 0)
+			playersLives[0].setText("Player 1: " + lifes + " lifes");
+		else
+			playersLives[0].setText("Player 1:  dead!");
+
+		playersPoints[0].setText("          " + points + " pts");
+
+		lifes = dynamics.get2ndPlayerLifes();
+		points = dynamics.get2ndPlayerPoints();
+		if(lifes > 0)
+			playersLives[1].setText("Player 2: " + lifes + " lifes");
+		else
+			playersLives[1].setText("Player 2:  dead!");
+		playersPoints[1].setText("          " + points + " pts");
+	}
+
+	public void drawMap(GameDynamics dynamics){
+		if(pause)
+			return;
+
+		gContext.setFill(Color.BLACK);
+		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+		printPlayersProperties(dynamics);
+
+		dynamics.setCellSize(sizePixels);
+		dynamics.setFromCollectible(powerUps);
+		powerUps.roundPos(cellDefaultSize, sizePixels);
+
+		Cell cell;
+		final double multiplier = ( (double)sizePixels)/unitSize;
+
+		explodesCount = dynamics.getExplodes(explodes);
+
+		Iterator<Cell> iter = dynamics.iterator();
+		while(iter.hasNext() ){
+			cell = iter.next();
+			//cell.roundPos(cellDefaultSize, sizePixels);
+			if(cell.getMapCell() == MapCell.FOREST)
+				continue;
+
+			cell.drawCell(gContext, tiles, multiplier);
+		}
+
+		cell = new Cell();
+		int i = 0;
+		for(; i < treesCount; i++){
+			cell.setByOtherCell(trees.get(i) );
+			cell.roundPos(cellDefaultSize, sizePixels);
+			cell.drawCell(gContext, tiles, multiplier);
+		}
+
+		for(i = 0; i < explodesCount; i++){
+			cell = explodes.get(i);
+			cell.roundPos(cellDefaultSize, sizePixels);
+			cell.drawCell(gContext, tiles, multiplier);
+		}
+
+		powerUps.drawCell(gContext, tiles, multiplier);
 	}
 
 	/*private boolean cellNotCollideWithOthers(Cell cell){
@@ -230,84 +391,4 @@ public class GameView {
 		return accessible;
 	}*/
 
-
-	private void setRightMenu(GridPane ui){
-		ui.setPadding(new Insets(10));
-
-		ui.add(startPause, 0, 1);
-		ui.setVgap(8);
-
-		//VBox box = new VBox(10);
-		//box.getChildren().addAll(playersLives[0], playersPoints[0], playersLives[1], playersPoints[1]);
-		ui.add(playersLives[0], 0, 3);
-		ui.setHgap(2);
-		ui.add(playersPoints[0], 0, 5);
-		ui.setHgap(8);
-		ui.add(playersLives[1], 0, 7);
-		ui.setHgap(2);
-		ui.add(playersPoints[1], 0, 9);
-
-		ui.setHgap(8);
-		mapList.setPrefHeight( 8*MapCell.getUnitSize() );
-		ui.add(mapList, 0, 11);
-		ui.setHgap(2);
-		ui.add(mapSelectButton, 0, 13);
-	}
-
-	public Scene drawStart(){
-		GridPane gridPane = new GridPane();
-		BorderPane borderP = new BorderPane();
-
-		gridPane.setPrefWidth(rightMenuWidth);
-		setRightMenu(gridPane);
-
-		borderP.setLeft(canvas);
-		borderP.setRight(gridPane);
-
-		//StackPane layout = new StackPane();
-		Scene scene = new Scene(borderP);
-
-		return scene;
-	}
-
-	public void typeText(String text){
-		gContext.setFill(Color.AZURE);
-		double width = canvas.getWidth(), charWidth = width/(text.length() + 2);
-		Font font = new Font("", 120);
-
-		gContext.setFont(font);
-		gContext.fillText(text, charWidth, canvas.getHeight()/2, width - charWidth*2);
-
-		pause = true;
-	}
-
-	public void drawMap(GameDynamics dynamics){
-		if(pause)
-			return;
-
-		gContext.setFill(Color.BLACK);
-		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
-		int lifes = dynamics.get1stPlayerLifes();
-		if(lifes > 0)
-			playersLives[0].setText("Player 1: " + lifes + " lifes");
-
-		lifes = dynamics.get2ndPlayerLifes();
-		if(lifes > 0)
-			playersLives[1].setText("Player 2: " + lifes + " lifes");
-
-		dynamics.setCellSize(sizePixels);
-
-		Cell cell;
-		final double multiplier = ( (double)sizePixels)/unitSize;
-
-		Iterator<Cell> iter = dynamics.iterator();
-		while(iter.hasNext() ){
-			cell = iter.next();
-			//cell.roundPos(cellDefaultSize, sizePixels);
-
-			cell.drawCell(gContext, tiles, multiplier);
-		}
-
-	}
 }
