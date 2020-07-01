@@ -145,6 +145,15 @@ public abstract class Enemy implements Tank {
 		return hit?points:0;
 	}
 
+	public boolean hasPowerUp(){
+		return hasPowerUp;
+	}
+	public boolean clearPowerUp(){
+		boolean powerUp = hasPowerUp;
+		hasPowerUp = false;
+		return powerUp;
+	}
+
 	@Override
 	public boolean exists(){
 		return !isExploding;
