@@ -128,6 +128,12 @@ public abstract class Enemy implements Tank {
 	}
 
 	public int getHit(Cell bulletCell, Cell tankBufferCell){
+		if(bulletCell.getMapCell() == MapCell.BOMB){
+			level = 0;
+			setExplosion();
+			return 0;
+		}
+
 		boolean hit = isHit(bulletCell, tankBufferCell);
 
 		if(hit) {
@@ -136,7 +142,7 @@ public abstract class Enemy implements Tank {
 				setExplosion();
 		}
 
-		return isExploding?points:0;
+		return hit?points:0;
 	}
 
 	@Override

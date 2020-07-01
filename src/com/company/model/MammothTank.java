@@ -44,6 +44,12 @@ public class MammothTank extends Enemy {
 
 	@Override
 	public int getHit(Cell bulletCell, Cell tankBufferCell){
+		if(bulletCell.getMapCell() == MapCell.BOMB){
+			level = 0;
+			setExplosion();
+			return 0;
+		}
+
 		boolean hit = isHit(bulletCell, tankBufferCell);
 
 		if(hit)
@@ -57,6 +63,6 @@ public class MammothTank extends Enemy {
 			currentIconInd = 0;
 		}
 
-		return isExploding?points:0;
+		return hit?points:0;
 	}
 }
