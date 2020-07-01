@@ -13,6 +13,7 @@ public abstract class Enemy implements Tank {
 	protected int cellSpeed;
 	protected int bulletSpeed;
 	protected int x_pos, y_pos;
+	private boolean positionHasChanged;
 	private int eagleX, eagleY;
 	protected int level;
 	protected boolean isExploding;
@@ -46,7 +47,7 @@ public abstract class Enemy implements Tank {
 		eagleX = eagleY = -1;
 		stepsFor5Sec = 5000/msInterval;
 		freezeStepper = 0;
-		evenMove = false;
+		evenMove = positionHasChanged = false;
 		isExploding = false;
 		hasPowerUp = false;
 
@@ -186,6 +187,7 @@ public abstract class Enemy implements Tank {
 		Direction direction = Direction.directionByAngle(currentDirection);
 		x_pos = cell.checkModifyCol(direction, x);
 		y_pos = cell.checkModifyRow(direction, y);
+		positionHasChanged |= (x_pos != x || y_pos != x);
 	}
 
 	@Override
@@ -207,12 +209,13 @@ public abstract class Enemy implements Tank {
 
 		int newDirection = currentDirection, eagleDx = eagleX - x_pos;
 		if(evenMove)
-			newDirection = randomEngine.randomDirectionAngleOrStop(eagleDx, eagleY - y_pos, currentDirection);
+			newDirection = randomEngine.randomDirectionAngleOrStop(eagleDx, eagleY - y_pos, currentDirection, positionHasChanged);
 		evenMove = !evenMove;
 		if(newDirection < 0)
 			return false;
 
 		int xPosNew = x_pos, yPosNew = y_pos;
+		positionHasChanged = false;
 
 		if(newDirection != currentDirection){
 			xPosNew = roundInRange(x_pos, cellPrecisionSize);
@@ -222,6 +225,7 @@ public abstract class Enemy implements Tank {
 
 			currentIcons = icons.get(newDirection);
 			currentDirection = newDirection;
+			positionHasChanged = true;
 		} else {
 			Direction direction = Direction.directionByAngle(currentDirection);
 			newXY[0] = xPosNew;

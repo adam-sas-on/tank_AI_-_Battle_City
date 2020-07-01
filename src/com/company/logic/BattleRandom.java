@@ -16,21 +16,40 @@ public class BattleRandom {
 		preferenceToMaintainDirection = 0.96;// = 0 - will surely change direction; 1.0 - will keep direction;
 	}
 
-	public int randomDirectionAngleOrStop(int tankToEagleDx, int tankToEagleDy, int currentDirection){
+
+	/**
+	 * If position or direction has nat been changed or is UP -> make preference lower;
+	 * @param currentDirection last direction of movement;
+	 * @param positionHasChanged informs if sprite has been moving;
+	 * @return modified preference (probability) of keeping direction;
+	 */
+	private double modifyPreference(int currentDirection, boolean positionHasChanged){
+		double modifiedPreference = preferenceToMaintainDirection;
+
+		if(!positionHasChanged){
+			modifiedPreference = 0.6 * preferenceToMaintainDirection;
+		} else if(Direction.directionByAngle(currentDirection) == Direction.UP)
+			modifiedPreference = 0.75*preferenceToMaintainDirection;
+
+		return modifiedPreference;
+	}
+
+	public int randomDirectionAngleOrStop(int tankToEagleDx, int tankToEagleDy, int currentDirection, boolean positionHasChanged){
 		if(preferenceToMaintainDirection == 1.0)
 			return currentDirection;
 
-		double randAngle = rand.nextDouble();
-		final double unitLengthForOtherDirections = (1.0 - preferenceToMaintainDirection)/4.0;// 5 direction options, 4 without preferred one;
+		double randAngle = rand.nextDouble(), modifiedPreference = modifyPreference(currentDirection, positionHasChanged);
+		final double unitLengthForOtherDirections = (1.0 - modifiedPreference)/4.0;// 5 direction options, 4 without preferred one;
+
 		if(randAngle < unitLengthForOtherDirections)
 			return -1;
 
 		double rightAngle = 90.0, distance;
-		if(randAngle < (1.0 + 3.0*preferenceToMaintainDirection)/4.0){
-			distance = (1.0 - 1.0/preferenceToMaintainDirection)/4.0;
-			randAngle = rightAngle/preferenceToMaintainDirection * randAngle + rightAngle*distance;
+		if(randAngle < (1.0 + 3.0*modifiedPreference)/4.0){
+			distance = (1.0 - 1.0/modifiedPreference)/4.0;
+			randAngle = rightAngle/modifiedPreference * randAngle + rightAngle*distance;
 		} else {
-			distance = preferenceToMaintainDirection*4.0/(preferenceToMaintainDirection - 1.0);
+			distance = modifiedPreference*4.0/(modifiedPreference - 1.0);
 			randAngle = rightAngle*randAngle/unitLengthForOtherDirections + rightAngle*distance;
 		}
 
@@ -99,9 +118,9 @@ public class BattleRandom {
 
 		double interceptProbability = 0.1, slope;
 		if(steps > 0){
-			slope = (0.1 - interceptProbability)/rangeLimit;
+			slope = (0.01 - interceptProbability)/rangeLimit;
 		} else {
-			slope = (interceptProbability - 0.999)/rangeLimit;
+			slope = (interceptProbability - 0.99)/rangeLimit;
 		}
 
 		interceptProbability = slope*steps + interceptProbability;
