@@ -52,15 +52,16 @@ public class MammothTank extends Enemy {
 
 		boolean hit = isHit(bulletCell, tankBufferCell);
 
-		if(hit)
+		if(hit) {
 			level--;
 
-		if(level < 1)
-			setExplosion();
-		else {
-			setIcons(false);
-			currentIcons = icons.get(currentDirection);
-			currentIconInd = 0;
+			if (level < 1)
+				setExplosion();
+			else {
+				setIcons(false);
+				currentIcons = icons.get(currentDirection);
+				currentIconInd = 0;
+			}
 		}
 
 		return hit?points:0;
