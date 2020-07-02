@@ -196,5 +196,6 @@ public class Game {
 	private void resetGame(MouseEvent mouseEvent){
 		dynamics.resetTheGame();
 		pause = false;
+		view.getLoadingMapButton().setDisable(false);
 	}
 }

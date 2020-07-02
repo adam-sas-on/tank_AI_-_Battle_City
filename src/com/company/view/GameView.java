@@ -231,7 +231,7 @@ public class GameView {
 		ui.setHgap(2);
 		ui.add(mapSelectButton, 0, 13);
 
-		ui.add(resetButton, 0, 17);
+		ui.add(resetButton, 0, 15);
 	}
 
 	public Scene drawStart(){

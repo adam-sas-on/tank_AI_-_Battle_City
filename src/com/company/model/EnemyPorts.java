@@ -108,7 +108,7 @@ public class EnemyPorts {
 		currentStepsForNewTank -= decreaseStepper;
 		if(currentStepsForNewTank < minimumStepsForNewTank)
 			currentStepsForNewTank = minimumStepsForNewTank;
-		currentPort = (portsCount > 1)?1:0;
+		currentPort = 0;
 	}
 
 	public void setNextCell(Cell cell){
