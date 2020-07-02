@@ -113,7 +113,7 @@ public class EnemyPorts {
 
 	public void setNextCell(Cell cell){
 		cell.setMapCell(null);
-		if(portsCount == 0)
+		if(portsCount == 0 || currentAmountOfTanks < 1)
 			return;
 
 		if(currentIconIndices[iterIndex] >= 0){
@@ -132,12 +132,14 @@ public class EnemyPorts {
 		if(portsCount > 0 && waitingSteps[currentPort] < 0 &&
 				currentAmountOfTanks > 0 && tanksOnMap < 6 && activePortsCounter < portsCount){
 
-			portsCollide[currentPort] = false;
-			waitingSteps[currentPort++] = (activePortsCounter > 0)?currentStepsForNewTank:minimumWaitingSteps;
-			activePortsCounter++;
-			tanksOnMap++;// tank will be on a map;
+			currentPort++;
 			if(currentPort == portsCount)
 				currentPort = 0;
+
+			portsCollide[currentPort] = false;
+			waitingSteps[currentPort] = (activePortsCounter > 0)?currentStepsForNewTank:minimumWaitingSteps;
+			activePortsCounter++;
+			tanksOnMap++;// tank will be on a map;
 		}
 	}
 
@@ -149,7 +151,7 @@ public class EnemyPorts {
 	}
 
 	public boolean nextStep(int[] newTankPos){
-		if(portsCount < 1)
+		if(portsCount < 1 || currentAmountOfTanks < 1)
 			return false;
 
 		boolean newEnemyTank = false;
@@ -221,10 +223,6 @@ public class EnemyPorts {
 
 			portsCollide[i] = portCells[i].collide(bulletCell, unitSizeOfCells);
 		}
-	}
-
-	public void createTank(){
-
 	}
 
 }
