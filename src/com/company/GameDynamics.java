@@ -457,12 +457,13 @@ public class GameDynamics implements Iterable<Cell> {
 					tanksSpritesCount = removeFromArray(activeTanks, i, tanksSpritesCount);
 					explodingTanksCount++;
 					ports.removingTankFromMap();
+
+					if(firstPlayersBullet)
+						player1.addPoints(hitPoints);
+					else
+						player2.addPoints(hitPoints);
 				}
 
-				if(firstPlayersBullet)
-					player1.addPoints(hitPoints);
-				else
-					player2.addPoints(hitPoints);
 				return i;
 			}
 		}
@@ -480,12 +481,14 @@ public class GameDynamics implements Iterable<Cell> {
 			if(bulletCell.collide(tankBufferCell, cellPrecisionUnitSize) ){
 				player2.makeFreezed();
 				isContact = true;
+				player1.friendlyFire();
 			}
 		} else {
 			player1.setUpCell(tankBufferCell);
 			if(bulletCell.collide(tankBufferCell, cellPrecisionUnitSize) ){
 				player1.makeFreezed();
 				isContact = true;
+				player2.friendlyFire();
 			}
 		}
 
@@ -564,6 +567,8 @@ public class GameDynamics implements Iterable<Cell> {
 				cells[eagleIndex].setMapCell(MapCell.EAGLE_DESTROYED);
 				explodeBullet(i, cells[eagleIndex]);
 				bulletOnEagleIndex = explosionsCount - 1;
+				player1.eagleDestroyed();
+				player2.eagleDestroyed();
 			}
 
 			isPlayers = bullets[i].belongsToPlayer();

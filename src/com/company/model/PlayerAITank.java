@@ -15,7 +15,8 @@ public class PlayerAITank implements Tank {
 	private int lastBulletPower;
 	private int x_pos, y_pos, xStart, yStart;
 	private boolean isExploding;
-	private int level, lifes, points;
+	private int level, lifes;
+	private int points, actionPoints;
 	private int currentDirection;
 	private Map<Integer, MapCell[]> icons;
 	private MapCell[] currentIcons;
@@ -54,7 +55,7 @@ public class PlayerAITank implements Tank {
 
 		level = 1;
 		lifes = 3;
-		points = 0;
+		points = actionPoints = 0;
 		icons = new HashMap<>();
 		currentIconInd = 0;
 		isExploding = false;
@@ -118,6 +119,7 @@ public class PlayerAITank implements Tank {
 
 	public int addPoints(int pointsToAdd){
 		points += pointsToAdd;
+		actionPoints += pointsToAdd;
 		return points;
 	}
 
@@ -189,7 +191,9 @@ public class PlayerAITank implements Tank {
 					level = 1;
 				}
 				isExploding = true;
+				actionPoints -= 4000;// arbitrary values for now;
 			}
+			actionPoints -= 1000;
 		}
 
 		if(isExploding){
@@ -204,25 +208,28 @@ public class PlayerAITank implements Tank {
 	}
 
 	public void useCollectible(MapCell collectibleType){
+		int addPoints = 0;
 		switch(collectibleType){
 			case HELMET:
 				immortalStepper = stepsFor5Sec*2;// 10 seconds of immortality like it is in original game;
-				points += 500;
+				addPoints = 500;
 				break;
 			case TANK_LIVE:
 				lifes++;
-				points += 500;
+				addPoints = 500;
 				break;
 			case STAR:
 				promoteDegrade(true);
-				points += 500;
+				addPoints = 500;
 				break;
 			case BOMB:
 			case SPADE:
 			case TIMER:
-				points += 500;
+				addPoints = 500;
 				break;
 		}
+		points += addPoints;
+		actionPoints += addPoints;
 	}
 
 	public MapCell getImmortalityCell(){
@@ -308,9 +315,10 @@ public class PlayerAITank implements Tank {
 
 		level = 1;
 		lifes = 3;
-		points = 0;
+		points = actionPoints = 0;
 		currentIconInd = 0;
 		isExploding = false;
+		setIcons();
 		currentIcons = icons.get(currentDirection);
 	}
 
@@ -349,6 +357,7 @@ public class PlayerAITank implements Tank {
 			bulletsInRange = 0;
 		}
 
+		actionPoints--;
 
 		if (freezeStepper > 0){
 			freezeStepper--;
@@ -413,4 +422,11 @@ public class PlayerAITank implements Tank {
 		return true;
 	}
 
+	// - - - - - - - - - - - - - Methods for points of players behaviour- - - - - - - - - - - - - - -
+	public void friendlyFire(){
+		actionPoints -= 1000;// arbitrary values for now;
+	}
+	public void eagleDestroyed(){
+		actionPoints -= 20000;
+	}
 }
