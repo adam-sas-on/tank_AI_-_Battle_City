@@ -117,6 +117,10 @@ public class PlayerAITank implements Tank {
 		return points;
 	}
 
+	public boolean isImmortal(){
+		return immortalStepper > 0;
+	}
+
 	public int addPoints(int pointsToAdd){
 		points += pointsToAdd;
 		actionPoints += pointsToAdd;
@@ -272,8 +276,9 @@ public class PlayerAITank implements Tank {
 		tankBufferCell.setPos(x_pos, y_pos);
 
 		boolean hit = false;
-		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) && immortalStepper < 1){
-			promoteDegrade(false);
+		if(bulletCell.collide(tankBufferCell, cellPrecisionSize) ){
+			if(immortalStepper < 1)
+				promoteDegrade(false);
 			hit = true;
 		}
 
@@ -303,7 +308,7 @@ public class PlayerAITank implements Tank {
 		isExploding = false;
 		currentIcons = icons.get(currentDirection);
 		immortalStepper = stepsFor5Sec;
-		freezeStepper = bulletsInRange = 0;
+		freezeStepper = 0;
 		tankDriver.blockUnblockController(false);
 	}
 

@@ -196,6 +196,9 @@ public class Game {
 	private void resetGame(MouseEvent mouseEvent){
 		dynamics.resetTheGame();
 		pause = false;
+		mapFinished = false;
+		mapNumber = 1;
+		// reload map;
 		view.getLoadingMapButton().setDisable(false);
 	}
 }

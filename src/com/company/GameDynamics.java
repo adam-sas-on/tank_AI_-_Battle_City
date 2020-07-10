@@ -543,7 +543,7 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private boolean moveBullets(){
-		boolean isHitExplosion, eagleExists, isPlayers;
+		boolean isHitExplosion, eagleExists, isPlayers, isPlayerImmortal;
 
 		final int colLimit = (colCells - 1)*cellPrecisionUnitSize;
 		int i = 0, bulletOrTankIndex, tanksCount;
@@ -607,13 +607,20 @@ public class GameDynamics implements Iterable<Cell> {
 				}
 			} else {
 				isHitExplosion = player1.getHit(bulletCell, tankCell);
-				if(!isHitExplosion)
+				isPlayerImmortal = player1.isImmortal();
+				if(!isHitExplosion){
 					isHitExplosion = player2.getHit(bulletCell, tankCell);
+					isPlayerImmortal = player2.isImmortal();
+				}
 
 				if(isHitExplosion){
 					isHitExplosion = bulletCell.collide(tankCell, cellPrecisionUnitSize);
-					if(isHitExplosion)
-						explodeBullet(i, null);
+					if(isHitExplosion){
+						if(isPlayerImmortal)
+							explodeBullet(i, null);
+						else
+							explodeBullet(i, tankCell);
+					}
 					continue;
 				}
 			}
