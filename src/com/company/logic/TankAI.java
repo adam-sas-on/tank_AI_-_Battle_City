@@ -1,18 +1,26 @@
 package com.company.logic;
 
+import com.company.view.Cell;
+
 public class TankAI {
 	private BattleRandom rand;
 	private double[][] layers;
 	private double[] inputData;
 	private double[] output;
 	private double[] bufferedOutput;// its size has to be the sum of 2 maximum lengths of layers;
+	private int mapMaxCols, mapMaxRows;
+	private int maxNeurons;
 	private boolean ready;
+	private boolean updateOutput;
+	private final int cellPrecisionUnitSize;
 
-	public TankAI(BattleRandom rand, int outputSize){
+	public TankAI(BattleRandom rand, int outputSize, int cellPrecision){
 		output = new double[outputSize];
 		ready = false;
+		updateOutput = true;
 
 		this.rand = rand;
+		cellPrecisionUnitSize = cellPrecision;
 	}
 
 	/**
@@ -24,7 +32,7 @@ public class TankAI {
 	 * @param productSize length of sub-arrays to multiply;
 	 * @return the dot product of sub-arrays/vectors;
 	 */
-	private double productVector(double[] v, double[] w, int vIndexBegin, int wIndexBegin, int productSize){
+	private double productVector(double[] v, double[] w, int vIndexBegin, int wIndexBegin, final int productSize){
 		final int wLastIndex = wIndexBegin + productSize;
 		if(vIndexBegin + productSize > v.length || wLastIndex > w.length)
 			throw new IndexOutOfBoundsException("Wrong sizes of vectors in vector multiplication!");
@@ -40,8 +48,8 @@ public class TankAI {
 	}
 
 	private double activationFunction(double x){
-		double f = 0.0;
-		// todo: set f as sigmoid: 1/( 1 + e^-x );
+		double f = -Math.PI;
+		f += Math.PI*3/(1.0 + Math.exp(-x));// make domain of a function to be from -PI to 2*PI;
 		return f;
 	}
 
@@ -49,19 +57,66 @@ public class TankAI {
 		if(!ready)
 			return null;
 
+		if(!updateOutput)
+			return output;
+
+		double product;
 		final int layersCount = layers.length;
-		int i, inputOutputSize;
+		int i, rowIndexBegin, rowsCount;
 
-		for(i = 0; i < layersCount; i++){
-			// todo: multiply input inputData[] by all layers with weights;
+		rowsCount = layers[0].length/(inputData.length + 1);// number of neurons in first layer;
+		rowIndexBegin = 0;
+		for(i = 0; i < rowsCount; i++){// i * inputData.length
+			product = productVector(layers[0], inputData, rowIndexBegin, 0, inputData.length);
+			rowIndexBegin += inputData.length;
+			product += layers[0][rowIndexBegin];// bias;
+			rowIndexBegin++;
+
+			bufferedOutput[i] = activationFunction(product);
 		}
-		// todo: multiply input inputData[] by all layers with weights;
 
+		int n, inputIndex = 0, outputIndex = maxNeurons, currentInputDataLength;
+
+		for(n = 1; n < layersCount; n++){
+			currentInputDataLength = rowsCount;
+			rowsCount = layers[n].length/(currentInputDataLength + 1);
+			rowIndexBegin = 0;
+
+			for(i = 0; i < rowsCount; i++){
+				product = productVector(layers[n], bufferedOutput, rowIndexBegin, inputIndex, currentInputDataLength);
+				rowIndexBegin += currentInputDataLength;
+				product += layers[n][rowIndexBegin];// bias;
+				rowIndexBegin++;
+
+				bufferedOutput[outputIndex + i] = activationFunction(product);
+			}
+
+			i = inputIndex;
+			inputIndex = outputIndex;
+			outputIndex = i;
+		}
+
+		n = Math.min(inputIndex + maxNeurons, bufferedOutput.length);
+		for(i = 0; inputIndex < n && i < output.length; i++, inputIndex++)
+			output[i] = bufferedOutput[inputIndex];
+
+		updateOutput = false;
 		return output;
 	}
 
 	public void setNeuralNetwork(int inputSize){
 		// todo: set fields according to arguments (there will have to be more);
+	}
+
+	public void updateMapState(Cell[] cells, int mapRows, int mapCols, int maxCols){
+		int i, limit = mapRows*mapCols, mapIndex, columnIndex;
+		int nNetLimit, nNetIndex;
+		nNetLimit = mapMaxCols*mapMaxRows;// every group of mapMaxCols inputs is for defined map row;
+
+		for(i = 0; i < limit; i++){
+			mapIndex = i/mapCols*(maxCols - mapCols) + i;// index + remaining cols;
+
+		}
 	}
 
 
