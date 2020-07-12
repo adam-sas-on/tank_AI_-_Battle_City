@@ -238,6 +238,7 @@ public enum MapCell {
 	private int imageCol, imageRow;
 	private int width;
 	private boolean accessible, destructible;
+	private final double code;
 
 	MapCell(int col, int row, int size){
 		imageCol = col;
@@ -245,6 +246,8 @@ public enum MapCell {
 		width = size;
 		destructible = true;
 		accessible = false;
+
+		code = (1.0 + ordinal() )/16.0;
 	}
 	MapCell(int col, int row, int size, boolean isDestructible){
 		imageCol = col;
@@ -252,6 +255,8 @@ public enum MapCell {
 		width = size;
 		destructible = isDestructible;
 		accessible = false;
+
+		code = (1.0 + ordinal() )/16.0;
 	}
 	MapCell(int col, int row, int size, boolean isDestructible, boolean accessibility){
 		imageCol = col;
@@ -259,6 +264,8 @@ public enum MapCell {
 		width = size;
 		destructible = isDestructible;
 		accessible = accessibility;
+
+		code = (1.0 + ordinal() )/16.0;
 	}
 
 	public int getRow(){
@@ -280,6 +287,10 @@ public enum MapCell {
 	}
 	public boolean isDestructible(){
 		return destructible;
+	}
+
+	public double getCellCode(){
+		return code;
 	}
 
 	// - - - - - Icons for 1-st player for several side of movements;
