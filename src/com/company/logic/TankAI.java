@@ -1,6 +1,9 @@
 package com.company.logic;
 
 import com.company.view.Cell;
+import com.company.view.MapCell;
+
+import java.util.Arrays;
 
 public class TankAI {
 	private BattleRandom rand;
@@ -109,14 +112,30 @@ public class TankAI {
 	}
 
 	public void updateMapState(Cell[] cells, int mapRows, int mapCols, int maxCols){
+		if(!ready)
+			return;
+
+		MapCell mapCell;
 		int i, limit = mapRows*mapCols, mapIndex, columnIndex;
-		int nNetLimit, nNetIndex;
+		int nNetLimit, nNetIndex = 0;
 		nNetLimit = mapMaxCols*mapMaxRows;// every group of mapMaxCols inputs is for defined map row;
 
-		for(i = 0; i < limit; i++){
-			mapIndex = i/mapCols*(maxCols - mapCols) + i;// index + remaining cols;
+		Arrays.fill(inputData, 0, nNetLimit - 1, 0.0);
 
+		for(i = 0; i < limit && nNetIndex < nNetLimit; i++){
+			columnIndex = i/mapCols;// rowIndex;
+			nNetIndex = columnIndex*mapMaxCols;
+
+			columnIndex = i - columnIndex*mapCols;
+			nNetIndex = nNetIndex*mapMaxCols + columnIndex;
+			if(columnIndex >= mapMaxCols || nNetIndex >= nNetLimit)
+				continue;
+
+			mapIndex = i/mapCols*(maxCols - mapCols) + i;// index + remaining cols;
+			mapCell = cells[mapIndex].getMapCell();
+			// todo: inputData[nNetIndex] = code value;
 		}
+		updateOutput = true;
 	}
 
 
