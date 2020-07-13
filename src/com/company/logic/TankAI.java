@@ -1,5 +1,7 @@
 package com.company.logic;
 
+import com.company.model.Enemy;
+import com.company.model.PlayerAITank;
 import com.company.view.Cell;
 import com.company.view.MapCell;
 
@@ -13,6 +15,8 @@ public class TankAI {
 	private double[] bufferedOutput;// its size has to be the sum of 2 maximum lengths of layers;
 	private int mapMaxCols, mapMaxRows;
 	private int maxNeurons;
+	private int bulletsFirstIndex;
+	private int[] ownerXY_pos;
 	private boolean ready;
 	private boolean updateOutput;
 	private final int cellPrecisionUnitSize;
@@ -21,9 +25,25 @@ public class TankAI {
 		output = new double[outputSize];
 		ready = false;
 		updateOutput = true;
+		ownerXY_pos = new int[2];
 
 		this.rand = rand;
 		cellPrecisionUnitSize = cellPrecision;
+	}
+
+	private void setDefaultTriple(int inputIndex){
+		inputData[inputIndex] = inputData[inputIndex + 2] = -1.0;
+		inputData[inputIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
+	}
+
+	private void setTripleByCell(Cell cell, int netIndex){
+		double dx, dy;
+		dx = (cell.getCol() - ownerXY_pos[0])/(double)cellPrecisionUnitSize;
+		dy = (cell.getRow() - ownerXY_pos[1])/(double)cellPrecisionUnitSize;
+
+		inputData[netIndex] = Math.atan2(dy, dx);
+		inputData[netIndex + 1] = Math.hypot(dx, dy);
+		inputData[netIndex + 2] = cell.getMapCell().getCellCode();
 	}
 
 	/**
@@ -133,11 +153,70 @@ public class TankAI {
 
 			mapIndex = i/mapCols*(maxCols - mapCols) + i;// index + remaining cols;
 			mapCell = cells[mapIndex].getMapCell();
-			// todo: inputData[nNetIndex] = code value;
+			inputData[nNetIndex] = mapCell.getCellCode();
 		}
 		updateOutput = true;
 	}
 
+	public void updateEagleAndOwnerState(PlayerAITank tank, Cell eagleCell, MapCell ownerMapCell){
+		if(!ready)
+			return;
+
+		int nNetIndex = mapMaxCols*mapMaxRows;
+
+		tank.getPos(ownerXY_pos);
+
+		if(eagleCell == null){
+			inputData[nNetIndex] = -1.0;
+			inputData[nNetIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
+			return;
+		}
+
+		int eagleX, eagleY;
+		double dx, dy;
+
+		eagleX = eagleCell.getCol();
+		eagleY = eagleCell.getRow();
+		dx = (eagleX - ownerXY_pos[0])/(double)cellPrecisionUnitSize;
+		dy = (eagleY - ownerXY_pos[1])/(double)cellPrecisionUnitSize;
+		inputData[nNetIndex] = Math.atan2(dy, dx);
+		inputData[nNetIndex + 1] = Math.hypot(dx, dy);// = sqrt(dx*dx + dy*dy);
+
+		inputData[nNetIndex + 2] = ownerMapCell.getCellCode();
+		updateOutput = true;
+	}
+
+	public void updateTanksState(Enemy[] tanks, int activeTanksCount, PlayerAITank allyTank){
+		if(!ready)
+			return;
+
+		Cell cell = new Cell();
+		// MapCell mapCell;
+		int i, nNetIndex = mapMaxCols*mapMaxRows + 3;// 3 for eagle and controlled tanks cell-code;
+
+		setDefaultTriple(nNetIndex);
+
+		if(allyTank != null){
+			allyTank.setUpCell(cell);
+			setTripleByCell(cell, nNetIndex);
+		}
+
+		final int inputSize = bulletsFirstIndex;
+		nNetIndex += 3;
+
+		for(i = 0; i < activeTanksCount && nNetIndex < inputSize; i++){
+			setDefaultTriple(nNetIndex);
+			if(tanks[i] == null){
+				nNetIndex += 3;
+				continue;
+			}
+
+			tanks[i].setUpCell(cell);
+			setTripleByCell(cell, nNetIndex);
+		}
+
+		updateOutput = true;
+	}
 
 	public void readFile(){
 
