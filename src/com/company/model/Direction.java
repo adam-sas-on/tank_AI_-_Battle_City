@@ -149,4 +149,17 @@ public enum Direction {
 			else return LEFT;
 		}
 	}
+
+	public static double stepVectorToRadians(final double dx, final double dy){
+		if(Math.abs(dy) > Math.abs(dx) ){
+			if(dy >= 0.0)
+				return DOWN.radAngleOrm1;
+			else
+				return UP.radAngleOrm1;
+		} else {
+			if(dx > 0.0)
+				return RIGHT.radAngleOrm1;
+			else return LEFT.radAngleOrm1;
+		}
+	}
 }

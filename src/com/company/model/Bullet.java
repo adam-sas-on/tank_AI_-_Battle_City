@@ -2,7 +2,6 @@ package com.company.model;
 
 import com.company.view.Cell;
 import com.company.view.MapCell;
-import javafx.scene.input.KeyCode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -181,8 +180,8 @@ public class Bullet {
 		cell.setPos(x_pos, y_pos);
 	}
 
-	public boolean isExploding(){
-		return explodeIndex >= 0;
+	public double getDirectionInRadians(){
+		return Direction.stepVectorToRadians(xDirection, yDirection);
 	}
 
 	public boolean move(){
