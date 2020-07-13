@@ -28,7 +28,10 @@ public class TankAI {
 		ready = false;
 		updateOutput = true;
 		ownerXY_pos = new int[2];
+		maxNeurons = 0;
 		netFitness = 0;
+
+		mapMaxRows = mapMaxCols = 26;// Battle City default map size;
 
 		this.rand = rand;
 		cellPrecisionUnitSize = cellPrecision;
@@ -140,7 +143,24 @@ public class TankAI {
 		inputSize += maxEnemyTanks*3;// 3: enemy tanks angle to owner, distance to owner  and  cell-code;
 		bulletsFirstIndex = inputSize;
 		inputSize += maxBullets*3;// 3: bullets angle to owner, distance to owner  and  direction on map;
-		// todo: set fields according to arguments;
+
+		try {
+			inputData = new double[inputSize];
+
+			int layerSize, numberOfWeights, i;
+			final double range = 10.0;
+			layers = new double[4][];
+
+			layerSize = 30;
+			numberOfWeights = layerSize * (inputSize + 1);// +1: bias;
+			layers[0] = new double[numberOfWeights];
+
+			// todo: set fields according to arguments;
+
+		} catch(OutOfMemoryError e){
+			System.out.println("AI network can not be created for players tank! " + e);
+			ready = false;
+		}
 	}
 
 	public void updateMapState(Cell[] cells, int mapRows, int mapCols, int maxCols){
