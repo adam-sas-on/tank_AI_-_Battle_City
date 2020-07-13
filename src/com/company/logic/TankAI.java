@@ -82,6 +82,11 @@ public class TankAI {
 		return f;
 	}
 
+	public int getSetFitness(int fitnessStep){
+		netFitness += fitnessStep;
+		return netFitness;
+	}
+
 	public double[] getOutput(){
 		if(!ready)
 			return null;
@@ -140,7 +145,7 @@ public class TankAI {
 
 		int inputSize;
 		inputSize = mapMaxCols*mapMaxRows + 3;// 3 - owners input and 2 inputs of eagle;
-		inputSize += maxEnemyTanks*3;// 3: enemy tanks angle to owner, distance to owner  and  cell-code;
+		inputSize += (maxEnemyTanks + 1)*3;// 3: enemy tanks angle to owner, distance to owner  and  cell-code (+ ally tank);
 		bulletsFirstIndex = inputSize;
 		inputSize += maxBullets*3;// 3: bullets angle to owner, distance to owner  and  direction on map;
 
@@ -154,13 +159,44 @@ public class TankAI {
 			layerSize = 30;
 			numberOfWeights = layerSize * (inputSize + 1);// +1: bias;
 			layers[0] = new double[numberOfWeights];
+			for(i = 0; i < numberOfWeights; i++)
+				layers[0][i] = rand.symmetricRandRange(range);
 
-			// todo: set fields according to arguments;
+			inputSize = layerSize;
+			layerSize = maxNeurons = 100;
+			numberOfWeights = layerSize*(inputSize + 1);
+			layers[1] = new double[numberOfWeights];
+			for(i = 0; i < numberOfWeights; i++)
+				layers[1][i] = rand.symmetricRandRange(range);
 
+			inputSize = layerSize;
+			layerSize = 40;
+			numberOfWeights = layerSize*(inputSize + 1);
+			layers[2] = new double[numberOfWeights];
+			for(i = 0; i < numberOfWeights; i++)
+				layers[2][i] = rand.symmetricRandRange(range);
+
+			inputSize = layerSize;
+			layerSize = 2;
+			output = new double[layerSize];// 2 outputs: current angle of tank and shoot power;
+			numberOfWeights = layerSize*(inputSize + 1);
+			layers[3] = new double[numberOfWeights];
+			for(i = 0; i < numberOfWeights; i++)
+				layers[3][i] = rand.symmetricRandRange(range);
+
+			bufferedOutput = new double[maxNeurons*2];
 		} catch(OutOfMemoryError e){
 			System.out.println("AI network can not be created for players tank! " + e);
 			ready = false;
 		}
+		netFitness = 0;
+		ready = true;
+	}
+
+	public void setDefaultNeuralNetwork(){
+		int defaultEnemyTanks = 20, defaultBullets;
+		defaultBullets = defaultEnemyTanks*2 + 8;// 8 for players;
+		setDefaultNeuralNetwork(50, 50, defaultEnemyTanks, defaultBullets);
 	}
 
 	public void updateMapState(Cell[] cells, int mapRows, int mapCols, int maxCols){
