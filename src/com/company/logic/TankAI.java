@@ -35,8 +35,8 @@ public class TankAI {
 	}
 
 	private void setDefaultTriple(int inputIndex){
-		inputData[inputIndex] = inputData[inputIndex + 2] = -1.0;
-		inputData[inputIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
+		inputData[inputIndex + 1] = inputData[inputIndex + 2] = -1.0;
+		inputData[inputIndex] = -3.0*Math.PI;// anything less then -2*PI;
 	}
 
 	private void setTripleByCell(Cell cell, int netIndex){
@@ -130,8 +130,17 @@ public class TankAI {
 		return output;
 	}
 
-	public void setNeuralNetwork(int inputSize){
-		// todo: set fields according to arguments (there will have to be more);
+	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
+		ready = false;
+		if(mapMaxCols == 0 && mapMaxRows == 0 && maxEnemyTanks == 0 && maxBullets == 0)
+			return;
+
+		int inputSize;
+		inputSize = mapMaxCols*mapMaxRows + 3;// 3 - owners input and 2 inputs of eagle;
+		inputSize += maxEnemyTanks*3;// 3: enemy tanks angle to owner, distance to owner  and  cell-code;
+		bulletsFirstIndex = inputSize;
+		inputSize += maxBullets*3;// 3: bullets angle to owner, distance to owner  and  direction on map;
+		// todo: set fields according to arguments;
 	}
 
 	public void updateMapState(Cell[] cells, int mapRows, int mapCols, int maxCols){
@@ -216,6 +225,12 @@ public class TankAI {
 
 			tanks[i].setUpCell(cell);
 			setTripleByCell(cell, nNetIndex);
+			nNetIndex += 3;
+		}
+
+		while(nNetIndex < bulletsFirstIndex){
+			setDefaultTriple(nNetIndex);
+			nNetIndex += 3;
 		}
 
 		updateOutput = true;
@@ -226,19 +241,26 @@ public class TankAI {
 			return;
 
 		int[] xyPos = new int[2];
+		double dx, dy;
 		int i, nNetIndex = bulletsFirstIndex, nNetLimit = inputData.length;
 
-		for(i = 0; nNetIndex < nNetLimit; i++){
+		for(i = 0; i < activeBulletsCount && nNetIndex < nNetLimit; i++){
 			setDefaultTriple(nNetIndex);
-			if(i >= activeBulletsCount){
-				nNetIndex += 3;
-				continue;
-			}
 
 			bullets[i].getBulletPos(xyPos);
-			// todo: update inputData[i] ...
+			dx = (xyPos[0] - ownerXY_pos[0])/(double)cellPrecisionUnitSize;
+			dy = (xyPos[1] - ownerXY_pos[1])/(double)cellPrecisionUnitSize;
+			inputData[nNetIndex] = Math.atan2(dy, dx);
+			inputData[nNetIndex + 1] = Math.hypot(dx, dy);
+			inputData[nNetIndex + 2] = bullets[i].getDirectionInRadians();
+			nNetIndex += 3;
 		}
 
+		for(; nNetIndex < nNetLimit; nNetIndex += 3){
+			setDefaultTriple(nNetIndex);
+		}
+
+		updateOutput = true;
 	}
 
 
