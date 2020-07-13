@@ -106,6 +106,10 @@ public class BattleRandom {
 		return begin + rand.nextInt(end - begin);
 	}
 
+	public double symmetricRandRange(double range){
+		return range*( 2.0*rand.nextDouble() - 1.0 );
+	}
+
 	/**
 	 * Binomial trial with probability dependent on the value of steps relative to rangeLimit.
 	 * @param steps
