@@ -1,5 +1,6 @@
 package com.company.logic;
 
+import com.company.model.Bullet;
 import com.company.model.Enemy;
 import com.company.model.PlayerAITank;
 import com.company.view.Cell;
@@ -15,6 +16,7 @@ public class TankAI {
 	private double[] bufferedOutput;// its size has to be the sum of 2 maximum lengths of layers;
 	private int mapMaxCols, mapMaxRows;
 	private int maxNeurons;
+	private int netFitness;
 	private int bulletsFirstIndex;
 	private int[] ownerXY_pos;
 	private boolean ready;
@@ -26,6 +28,7 @@ public class TankAI {
 		ready = false;
 		updateOutput = true;
 		ownerXY_pos = new int[2];
+		netFitness = 0;
 
 		this.rand = rand;
 		cellPrecisionUnitSize = cellPrecision;
@@ -217,6 +220,27 @@ public class TankAI {
 
 		updateOutput = true;
 	}
+
+	public void updateBulletsState(Bullet[] bullets, int activeBulletsCount){
+		if(!ready)
+			return;
+
+		int[] xyPos = new int[2];
+		int i, nNetIndex = bulletsFirstIndex, nNetLimit = inputData.length;
+
+		for(i = 0; nNetIndex < nNetLimit; i++){
+			setDefaultTriple(nNetIndex);
+			if(i >= activeBulletsCount){
+				nNetIndex += 3;
+				continue;
+			}
+
+			bullets[i].getBulletPos(xyPos);
+			// todo: update inputData[i] ...
+		}
+
+	}
+
 
 	public void readFile(){
 
