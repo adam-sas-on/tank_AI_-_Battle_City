@@ -6,6 +6,9 @@ import com.company.model.PlayerAITank;
 import com.company.view.Cell;
 import com.company.view.MapCell;
 
+import java.io.*;
+import java.net.URL;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
 public class TankAI {
@@ -85,6 +88,10 @@ public class TankAI {
 	public int getSetFitness(int fitnessStep){
 		netFitness += fitnessStep;
 		return netFitness;
+	}
+
+	public boolean isAIReady(){
+		return ready;
 	}
 
 	public double[] getOutput(){
@@ -185,12 +192,13 @@ public class TankAI {
 				layers[3][i] = rand.symmetricRandRange(range);
 
 			bufferedOutput = new double[maxNeurons*2];
+			ready = true;
 		} catch(OutOfMemoryError e){
 			System.out.println("AI network can not be created for players tank! " + e);
 			ready = false;
 		}
+
 		netFitness = 0;
-		ready = true;
 	}
 
 	public void setDefaultNeuralNetwork(){
@@ -320,12 +328,94 @@ public class TankAI {
 	}
 
 
-	public void readFile(){
-
+	public boolean readFile(){
+		return readFile("tank_ai.bin");
 	}
+	public boolean readFile(String fileName){
+		ready = false;
+
+		try {
+			InputStream is = TankAI.class.getResourceAsStream("/resources/ai_resources/" + fileName);
+			DataInputStream dIs = new DataInputStream(is);
+
+			String fileHeader = "", correct = "tank_ai";
+			StringBuilder sb = new StringBuilder(7);
+			int i;
+			for (i = correct.length(); i > 0; i--) {
+				sb.append( dIs.readChar() );
+			}
+			fileHeader = sb.toString();
+			if (!fileHeader.equalsIgnoreCase(correct)) {
+				System.out.println("Wrong file format of  " + fileName);
+				return false;
+			}
+
+			dIs.skipBytes(16 - correct.length());
+
+			int inputSize = dIs.readInt(), numberOfWeights;
+
+			if (inputSize < 2)// minimum 2 inputs;
+				throw new IOException("Data in file  \" + fileName + \"  is corrupted!");
+
+			netFitness = dIs.readInt();
+			mapMaxCols = dIs.readInt();
+			mapMaxRows = dIs.readInt();
+			bulletsFirstIndex = dIs.readInt();
+			int layersCount = dIs.readInt();
+			i = mapMaxCols * mapMaxRows;
+
+			if (layersCount < 1 || i < 4 || bulletsFirstIndex < 1)
+				throw new IOException("Data in file  " + fileName + "  is corrupted!");
+
+			layers = new double[layersCount][];
+			int[] neuronsCounts = new int[layersCount];
+			for (i = 0; i < layersCount; i++) {
+				neuronsCounts[i] = dIs.readInt();
+
+				numberOfWeights = neuronsCounts[i] * (inputSize + 1);
+				inputSize = neuronsCounts[i];// output of current layer (n neurons) will be an input of the next one;
+				layers[i] = new double[numberOfWeights];
+			}
+
+			int j, count;
+			i = 0;
+			try {
+				for (; i < layersCount; i++) {
+					count = layers[i].length;
+					for (j = 0; j < count; j++) {
+						layers[i][j] = dIs.readDouble();
+					}
+				}
+
+			} catch (EOFException e) {
+				System.out.println("EOF error during reading  " + fileName + ", ... creating random weights.");
+
+				double range = 10.0;
+				for (; i < layersCount; i++) {
+					count = layers[i].length;
+					for (j = 0; j < count; j++) {
+						layers[i][j] = rand.symmetricRandRange(range);
+					}
+				}
+
+			}
+			ready = true;
+		} catch(IOException | NullPointerException e){
+			System.out.println("Reading AI file  " + fileName + " failed!");
+			ready = false;
+		}
+		return ready;
+	}
+
 
 	public void writeFile(){
+		writeFile("tank_ai.bin");
+	}
+	public void writeFile(String fileName){
+		if(!ready){
+			System.out.println("AI not saved!");
+			return;
+		}
 
 	}
-
 }
