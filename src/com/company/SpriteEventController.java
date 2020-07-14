@@ -1,10 +1,15 @@
 package com.company;
 
+import com.company.logic.TankAI;
 import com.company.model.Direction;
 import javafx.scene.input.KeyCode;
 
 public class SpriteEventController {
-	// AIDriver tankAI;
+	private TankAI AIDriver;
+	private boolean readyAI;
+	private boolean aiEvenMove;
+	private int mapMaxColumns;
+	private int actionPoints;
 	private final KeyCode moveUp, moveRight, moveDown, moveLeft;
 	private final KeyCode singleShot, singlePanzerShot;
 	private final KeyCode continuousShooting, continuousPanzerShooting;
@@ -17,6 +22,12 @@ public class SpriteEventController {
 	public SpriteEventController(KeyCode up, KeyCode right, KeyCode down, KeyCode left,
 								KeyCode shot, KeyCode panzerShot,
 								KeyCode shooting, KeyCode panzerShooting){
+		AIDriver = null;
+		readyAI = false;
+		actionPoints = 0;
+		aiEvenMove = true;
+		mapMaxColumns = 26;// default in BC;
+
 		moveUp = up;
 		moveRight = right;
 		moveDown = down;
@@ -31,6 +42,23 @@ public class SpriteEventController {
 		isPlayer = true;
 		keepShooting = false;
 		freezed = false;
+	}
+
+
+	private void aiRequest(){
+		aiEvenMove = !aiEvenMove;
+		if(aiEvenMove)
+			return;
+
+		double[] order = AIDriver.getOutput();
+		if(order == null)
+			return;
+
+		currentShotPower = (int) order[1];
+		currentAngle = -1;
+		if(order[0] > 0.0){
+			currentAngle = Direction.stepVectorToDegrees(Math.cos(order[0]), Math.sin(order[0]));
+		}
 	}
 
 	/**
@@ -58,6 +86,10 @@ public class SpriteEventController {
 	public Direction getDirection(int directionAngle){
 		return Direction.directionByAngle(directionAngle);
 	}
+
+	/*public boolean isAIactive(){
+		return !isPlayer && readyAI;
+	}*/
 
 	public void blockUnblockController(boolean freeze){
 		freezed = freeze;
@@ -105,6 +137,22 @@ public class SpriteEventController {
 			singleShoot = false;
 	}
 
+	public void setAI(TankAI tankAI){
+		AIDriver = tankAI;
+		readyAI = false;
+		if(AIDriver != null){
+			readyAI = AIDriver.readFile();
+			if( !readyAI )
+				AIDriver.setDefaultNeuralNetwork();
+
+			readyAI = AIDriver.isAIReady();
+		}
+	}
+
+	public void upDateActionPoints(int newActionPoints){
+		actionPoints = newActionPoints;
+	}
+
 	public void usePlayer(){
 		isPlayer = true;
 	}
@@ -113,8 +161,21 @@ public class SpriteEventController {
 		isPlayer = false;
 	}
 
+	/**
+	 * Set
+	 * @param maxCols
+	 */
+	public void setMaxColsOfMap(int maxCols){
+		if(maxCols > 1)
+			mapMaxColumns = maxCols;
+	}
+
 	public int move(){
 		if(!isPlayer) {
+			if(!readyAI)
+				return -1;
+
+			aiRequest();
 			// todo: make here computer to drive the tank;
 			return -1;
 		}
@@ -123,8 +184,10 @@ public class SpriteEventController {
 
 	public int takeTheShootPower(){
 		if(!isPlayer) {
+			if(!readyAI)
+				return 0;
 			// todo: make here computer to take the shoot;
-			return 0;
+			return currentShotPower;
 		}
 
 		int shootPower = currentShotPower;

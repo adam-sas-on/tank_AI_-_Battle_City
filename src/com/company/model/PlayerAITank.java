@@ -300,7 +300,7 @@ public class PlayerAITank implements Tank {
 		yStart = y_pos = y;
 	}
 
-	public void revive(){
+	private void reviveInAction(){
 		x_pos = xStart;
 		y_pos = yStart;
 		//currentDirection = Direction.UP.getDirection();
@@ -310,6 +310,12 @@ public class PlayerAITank implements Tank {
 		immortalStepper = stepsFor5Sec;
 		freezeStepper = 0;
 		tankDriver.blockUnblockController(false);
+	}
+	public void revive(){
+		reviveInAction();
+
+		tankDriver.upDateActionPoints(actionPoints);
+		actionPoints = 0;
 	}
 
 	public void reset(){
@@ -344,7 +350,7 @@ public class PlayerAITank implements Tank {
 			currentIconInd++;
 			if(currentIconInd == currentIcons.length){
 				if(lifes > 0)
-					revive();
+					reviveInAction();
 				else {
 					lifes--;
 					currentIconInd = 0;
@@ -434,4 +440,9 @@ public class PlayerAITank implements Tank {
 	public void eagleDestroyed(){
 		actionPoints -= 20000;
 	}
+
+	public void setMaxColsOfMaps(int maxCols){
+		tankDriver.setMaxColsOfMap(maxCols);
+	}
+
 }

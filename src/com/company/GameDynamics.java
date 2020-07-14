@@ -211,9 +211,13 @@ public class GameDynamics implements Iterable<Cell> {
 
 	public void setFirstPlayer(PlayerAITank player){
 		player1 = player;
+		if(player1 != null)
+			player.setMaxColsOfMaps(maxCols);
 	}
 	public void setSecondPlayer(PlayerAITank player){
 		player2 = player;
+		if(player2 != null)
+			player2.setMaxColsOfMaps(maxCols);
 	}
 
 	private void addBullet(Bullet bullet){
