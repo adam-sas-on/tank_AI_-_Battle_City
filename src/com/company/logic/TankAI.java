@@ -207,7 +207,15 @@ public class TankAI {
 		setDefaultNeuralNetwork(50, 50, defaultEnemyTanks, defaultBullets);
 	}
 
-	public void updateMapState(Cell[] cells, int mapRows, int mapCols, int maxCols){
+	/**
+	 * Changes AI networks input data according to map situation;
+	 *
+	 * @param cells array of map cells sorted as ordinary image pixels;
+	 * @param mapCols number of cols currently used on map;
+	 * @param mapRows number of rows currently used on map;
+	 * @param maxCols maximum number of columns the map cells can handle;
+	 */
+	public void updateMapState(Cell[] cells, int mapCols, int mapRows, int maxCols){
 		if(!ready)
 			return;
 
@@ -234,13 +242,15 @@ public class TankAI {
 		updateOutput = true;
 	}
 
-	public void updateEagleAndOwnerState(PlayerAITank tank, Cell eagleCell, MapCell ownerMapCell){
+	public void updateEagleAndOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell, Cell eagleCell){
 		if(!ready)
 			return;
 
 		int nNetIndex = mapMaxCols*mapMaxRows;
 
-		tank.getPos(ownerXY_pos);
+		ownerXY_pos[0] = ownerX_pos;
+		ownerXY_pos[1] = ownerY_pos;
+		inputData[nNetIndex + 2] = ownerMapCell.getCellCode();
 
 		if(eagleCell == null){
 			inputData[nNetIndex] = -1.0;
@@ -258,7 +268,6 @@ public class TankAI {
 		inputData[nNetIndex] = Math.atan2(dy, dx);
 		inputData[nNetIndex + 1] = Math.hypot(dx, dy);// = sqrt(dx*dx + dy*dy);
 
-		inputData[nNetIndex + 2] = ownerMapCell.getCellCode();
 		updateOutput = true;
 	}
 
@@ -354,8 +363,10 @@ public class TankAI {
 
 			int inputSize = dIs.readInt(), numberOfWeights;
 
-			if (inputSize < 2)// minimum 2 inputs;
-				throw new IOException("Data in file  \" + fileName + \"  is corrupted!");
+			if (inputSize < 2){// minimum 2 inputs;
+				System.out.println("Data in file  " + fileName + "  is corrupted!");
+				return false;
+			}
 
 			netFitness = dIs.readInt();
 			mapMaxCols = dIs.readInt();
@@ -400,6 +411,9 @@ public class TankAI {
 
 			}
 			ready = true;
+
+			dIs.close();
+			is.close();
 		} catch(IOException | NullPointerException e){
 			System.out.println("Reading AI file  " + fileName + " failed!");
 			ready = false;
