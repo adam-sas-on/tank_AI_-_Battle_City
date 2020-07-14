@@ -2,13 +2,15 @@ package com.company;
 
 import com.company.logic.TankAI;
 import com.company.model.Direction;
+import com.company.view.Cell;
+import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 
 public class SpriteEventController {
 	private TankAI AIDriver;
 	private boolean readyAI;
 	private boolean aiEvenMove;
-	private int mapMaxColumns;
+	private int mapMaxColumns, mapCurrentColumns, mapCurrentRows;
 	private int actionPoints;
 	private final KeyCode moveUp, moveRight, moveDown, moveLeft;
 	private final KeyCode singleShot, singlePanzerShot;
@@ -27,6 +29,7 @@ public class SpriteEventController {
 		actionPoints = 0;
 		aiEvenMove = true;
 		mapMaxColumns = 26;// default in BC;
+		mapCurrentColumns = mapCurrentRows = 26;
 
 		moveUp = up;
 		moveRight = right;
@@ -162,12 +165,26 @@ public class SpriteEventController {
 	}
 
 	/**
-	 * Set
-	 * @param maxCols
+	 * Set maximum number of cells in row of maps from resource files;
+	 * @param maxCols maximum number of columns;
 	 */
 	public void setMaxColsOfMap(int maxCols){
 		if(maxCols > 1)
 			mapMaxColumns = maxCols;
+	}
+
+	public void setCurrentMapSize(int currentMapCols, int currentMapRows){
+		if(currentMapCols <= mapMaxColumns)
+			mapCurrentColumns = currentMapCols;
+		if(currentMapRows > 1)
+			mapCurrentRows = currentMapRows;
+	}
+
+	public void readMapReport(Cell[] mapCells, int x_pos, int y_pos, MapCell tankMapCell, Cell eagleCell){
+		if(!isPlayer && readyAI){
+			AIDriver.updateMapState(mapCells, mapCurrentColumns, mapCurrentRows, mapMaxColumns);
+			AIDriver.updateEagleAndOwnerState(x_pos, y_pos, tankMapCell, eagleCell);
+		}
 	}
 
 	public int move(){

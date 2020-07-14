@@ -445,4 +445,12 @@ public class PlayerAITank implements Tank {
 		tankDriver.setMaxColsOfMap(maxCols);
 	}
 
+	public void setCurrentMapRange(int mapCols, int mapRows){
+		tankDriver.setCurrentMapSize(mapCols, mapRows);
+	}
+
+	public void reportMapSituation(Cell[] map, Cell eagleCell){
+		if(!isExploding)
+			tankDriver.readMapReport(map, x_pos, y_pos, currentIcons[currentIconInd], eagleCell);
+	}
 }

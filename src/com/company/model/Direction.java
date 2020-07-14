@@ -162,4 +162,16 @@ public enum Direction {
 			else return LEFT.radAngleOrm1;
 		}
 	}
+	public static int stepVectorToDegrees(final double dx, final double dy){
+		if(Math.abs(dy) > Math.abs(dx) ){
+			if(dy >= 0.0)
+				return DOWN.degAngleOrm1;
+			else
+				return UP.degAngleOrm1;
+		} else {
+			if(dx > 0.0)
+				return RIGHT.degAngleOrm1;
+			else return LEFT.degAngleOrm1;
+		}
+	}
 }

@@ -90,6 +90,10 @@ public class GameView {
 		return rowCells;
 	}
 
+	public int getColCells(){
+		return colCells;
+	}
+
 	public int getFramesPerSecond(){
 		return framesPerSecond;
 	}

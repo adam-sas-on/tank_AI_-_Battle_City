@@ -160,11 +160,18 @@ public class GameDynamics implements Iterable<Cell> {
 
 		if(loaded) {
 			rowCells = view.getRowCells();
+			colCells = view.getColCells();
 			setEagleIndex();
-			if(player1.getLifes() > 0)
+
+			if(player1.getLifes() > 0){
 				player1.revive();
-			if(player2.getLifes() > 0)
+				player1.setCurrentMapRange(colCells, rowCells);
+			}
+			if(player2.getLifes() > 0){
 				player2.revive();
+				player2.setCurrentMapRange(colCells, rowCells);
+			}
+
 			ports.setAmountOfTanks(tanksList);
 			ports.levelUpPorts();
 			ports.activatePort();
