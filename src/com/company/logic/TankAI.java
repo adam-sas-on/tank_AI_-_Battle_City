@@ -7,8 +7,6 @@ import com.company.view.Cell;
 import com.company.view.MapCell;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
 public class TankAI {
@@ -162,7 +160,7 @@ public class TankAI {
 			inputData = new double[inputSize];
 
 			int layerSize, numberOfWeights, i;
-			final double range = 10.0;
+			final double range = 1.0;
 			layers = new double[4][];
 
 			layerSize = 30;
@@ -176,7 +174,7 @@ public class TankAI {
 			numberOfWeights = layerSize*(inputSize + 1);
 			layers[1] = new double[numberOfWeights];
 			for(i = 0; i < numberOfWeights; i++)
-				layers[1][i] = rand.symmetricRandRange(range);
+				layers[1][i] = rand.symmetricRandRange(range) - 0.2;
 
 			inputSize = layerSize;
 			layerSize = 40;

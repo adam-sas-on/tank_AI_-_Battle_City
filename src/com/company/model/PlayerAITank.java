@@ -453,7 +453,7 @@ public class PlayerAITank implements Tank {
 		if(!isExploding){
 			double immortalSecs = (5.0*immortalStepper)/stepsFor5Sec,
 				freezeSecs = (5.0*freezeStepper)/stepsFor5Sec;
-			tankDriver.reamTankControls(x_pos, y_pos, currentIcons[currentIconInd], lifes, immortalSecs, freezeSecs);
+			tankDriver.readTankControls(x_pos, y_pos, currentIcons[currentIconInd], lifes, immortalSecs, freezeSecs);
 			tankDriver.readMapReport(map, eagleCell, collectible);
 		}
 	}

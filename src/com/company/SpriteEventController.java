@@ -9,6 +9,8 @@ import com.company.view.Cell;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
 
+import java.util.Arrays;
+
 public class SpriteEventController {
 	private TankAI AIDriver;
 	private boolean readyAI;
@@ -185,7 +187,7 @@ public class SpriteEventController {
 	}
 
 
-	public void reamTankControls(int x_pos, int y_pos, MapCell tankMapCell, int lifes, double immortalSecs, double freezeSecs){
+	public void readTankControls(int x_pos, int y_pos, MapCell tankMapCell, int lifes, double immortalSecs, double freezeSecs){
 		if(!isPlayer && readyAI){
 			AIDriver.updateOwnerState(x_pos, y_pos, tankMapCell, lifes, immortalSecs, freezeSecs);
 		}
