@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.logic.BattleRandom;
+import com.company.logic.TankAI;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
 import com.company.view.MapLoader;
@@ -35,6 +36,8 @@ public class Game {
 	private SpriteEventController player1driver, player2driver;
 	private PlayerAITank player1;
 	private PlayerAITank player2;
+	private TankAI allyAI1;
+	private TankAI allyAI2;
 
 	public Game(GameView view){
 		this.view = view;
@@ -52,7 +55,7 @@ public class Game {
 		dynamics = new GameDynamics(mapLoader, view, rand);
 		pause = mapFinished = false;
 
-		setControllers();
+		setControllers(cellPrecisionUnitSize);
 
 		player1 = new PlayerAITank(player1driver, this.view);
 		player1.setDefaultPlayerPosition();
@@ -79,12 +82,15 @@ public class Game {
 		);
 	}
 
-	private void setControllers(){
+	private void setControllers(int cellPrecisionUnitSize){
 		player1driver = new SpriteEventController(KeyCode.UP, KeyCode.RIGHT, KeyCode.DOWN, KeyCode.LEFT,
 				KeyCode.N, KeyCode.COMMA, KeyCode.M, KeyCode.PERIOD);
 
 		player2driver = new SpriteEventController(KeyCode.W, KeyCode.D, KeyCode.S, KeyCode.A,
 				KeyCode.T, KeyCode.G, KeyCode.R, KeyCode.F);
+		allyAI2 = new TankAI(rand, 2, cellPrecisionUnitSize);
+		player2driver.setAI(allyAI2);
+		player2driver.useAI();
 	}
 
 	private void setPlayerIcons(){
@@ -186,6 +192,8 @@ public class Game {
 
 	public void stop(){
 		timeline.stop();
+		allyAI2.writeFile();
+
 		runGame.shutdown();
 		try {
 			runGame.awaitTermination(1, TimeUnit.SECONDS);

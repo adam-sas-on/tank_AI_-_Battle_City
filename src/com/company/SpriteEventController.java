@@ -1,7 +1,10 @@
 package com.company;
 
 import com.company.logic.TankAI;
+import com.company.model.Bullet;
 import com.company.model.Direction;
+import com.company.model.Enemy;
+import com.company.model.PlayerAITank;
 import com.company.view.Cell;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
@@ -61,6 +64,7 @@ public class SpriteEventController {
 		currentAngle = -1;
 		if(order[0] > 0.0){
 			currentAngle = Direction.stepVectorToDegrees(Math.cos(order[0]), Math.sin(order[0]));
+			turningAngle = currentAngle;
 		}
 	}
 
@@ -187,6 +191,15 @@ public class SpriteEventController {
 		}
 	}
 
+	public void readEVAsReport(Enemy[] enemies, int activeEnemies, PlayerAITank ally,
+							Bullet[] bullets, int activeBullets){
+		if(!isPlayer && readyAI){
+			AIDriver.updateTanksState(enemies, activeEnemies, ally);
+			AIDriver.updateBulletsState(bullets, activeBullets);
+		}
+	}
+
+
 	public int move(){
 		if(!isPlayer) {
 			if(!readyAI)
@@ -194,7 +207,7 @@ public class SpriteEventController {
 
 			aiRequest();
 			// todo: make here computer to drive the tank;
-			return -1;
+			return currentAngle;
 		}
 		return currentAngle;
 	}

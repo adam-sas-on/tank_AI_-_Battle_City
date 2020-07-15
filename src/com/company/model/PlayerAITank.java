@@ -453,4 +453,10 @@ public class PlayerAITank implements Tank {
 		if(!isExploding)
 			tankDriver.readMapReport(map, x_pos, y_pos, currentIcons[currentIconInd], eagleCell);
 	}
+
+	public void evaDetailsOnAllTanksAndBullets(Enemy[] enemies, int activeEnemies, PlayerAITank ally,
+											Bullet[] bullets, int activeBullets){
+		if(!isExploding)
+			tankDriver.readEVAsReport(enemies, activeEnemies, ally, bullets, activeBullets);
+	}
 }
