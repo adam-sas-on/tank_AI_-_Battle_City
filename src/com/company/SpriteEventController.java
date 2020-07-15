@@ -184,11 +184,17 @@ public class SpriteEventController {
 			mapCurrentRows = currentMapRows;
 	}
 
-	public void readMapReport(Cell[] mapCells, int x_pos, int y_pos, MapCell tankMapCell,
-							Cell eagleCell, Cell collectible){
+
+	public void reamTankControls(int x_pos, int y_pos, MapCell tankMapCell, int lifes, double immortalSecs, double freezeSecs){
+		if(!isPlayer && readyAI){
+			AIDriver.updateOwnerState(x_pos, y_pos, tankMapCell, lifes, immortalSecs, freezeSecs);
+		}
+	}
+
+	public void readMapReport(Cell[] mapCells, Cell eagleCell, Cell collectible){
 		if(!isPlayer && readyAI){
 			AIDriver.updateMapState(mapCells, mapCurrentColumns, mapCurrentRows, mapMaxColumns);
-			AIDriver.updateEagleAndOwnerState(x_pos, y_pos, tankMapCell, eagleCell, collectible);
+			AIDriver.updateEagleAndCollectibleState(eagleCell, collectible);
 		}
 	}
 

@@ -39,7 +39,7 @@ public class TankAI {
 
 		this.rand = rand;
 		cellPrecisionUnitSize = cellPrecision;
-		eagleCollectibleTankInputSize = 5;// 5 for eagle, controlled tanks cell-code and collectible;
+		eagleCollectibleTankInputSize = 8;// 8 for eagle, collectible  and 4  for controlled tank;
 	}
 
 	private void setDefaultTriple(int inputIndex){
@@ -246,19 +246,26 @@ public class TankAI {
 		updateOutput = true;
 	}
 
-	public void updateEagleAndOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell,
-										Cell eagleCell, Cell collectible){
+	public void updateOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell, int lifes, double immortalSecs, double freezeSecs){
 		if(!ready)
 			return;
 
-		int nNetIndex = mapMaxCols*mapMaxRows;
-
+		int nNetIndex = mapMaxCols*mapMaxRows + 4;// eagle and collectibles;
 		ownerXY_pos[0] = ownerX_pos;
 		ownerXY_pos[1] = ownerY_pos;
-		inputData[nNetIndex + 2] = ownerMapCell.getCellCode();
+		inputData[nNetIndex] = ownerMapCell.getCellCode();
+		inputData[nNetIndex + 1] = lifes/10.0;// simple normalize;
+		inputData[nNetIndex + 2] = immortalSecs;
+		inputData[nNetIndex + 3] = freezeSecs;
 
+		updateOutput = true;
+	}
 
-		int eagleX, eagleY;
+	public void updateEagleAndCollectibleState(Cell eagleCell, Cell collectible){
+		if(!ready)
+			return;
+
+		int nNetIndex = mapMaxCols*mapMaxRows, eagleX, eagleY;
 		double dx, dy;
 
 		if(eagleCell != null){
@@ -279,7 +286,7 @@ public class TankAI {
 			return;
 		}
 
-		nNetIndex += 3;// eagle cell  and  controlled tank cell-code;
+		nNetIndex += 2;
 		inputData[nNetIndex] = -1.0;
 		inputData[nNetIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
 
@@ -427,6 +434,7 @@ public class TankAI {
 				inputSize = neuronsCounts[i];// output of current layer (n neurons) will be an input of the next one;
 				layers[i] = new double[numberOfWeights];
 			}
+			maxNeurons = count;
 
 			bufferedOutput = new double[count*2];
 

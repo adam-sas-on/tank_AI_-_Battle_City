@@ -450,8 +450,12 @@ public class PlayerAITank implements Tank {
 	}
 
 	public void reportMapSituation(Cell[] map, Cell eagleCell, Cell collectible){
-		if(!isExploding)
-			tankDriver.readMapReport(map, x_pos, y_pos, currentIcons[currentIconInd], eagleCell, collectible);
+		if(!isExploding){
+			double immortalSecs = (5.0*immortalStepper)/stepsFor5Sec,
+				freezeSecs = (5.0*freezeStepper)/stepsFor5Sec;
+			tankDriver.reamTankControls(x_pos, y_pos, currentIcons[currentIconInd], lifes, immortalSecs, freezeSecs);
+			tankDriver.readMapReport(map, eagleCell, collectible);
+		}
 	}
 
 	public void evaDetailsOnAllTanksAndBullets(Enemy[] enemies, int activeEnemies, PlayerAITank ally,
