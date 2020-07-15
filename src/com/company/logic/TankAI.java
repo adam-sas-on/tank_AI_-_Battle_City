@@ -236,8 +236,10 @@ public class TankAI {
 				continue;
 
 			mapIndex = i/mapCols*(maxCols - mapCols) + i;// index + remaining cols;
+
 			mapCell = cells[mapIndex].getMapCell();
-			inputData[nNetIndex] = mapCell.getCellCode();
+			if(mapCell != null)
+				inputData[nNetIndex] = mapCell.getCellCode();
 		}
 		updateOutput = true;
 	}
@@ -347,7 +349,7 @@ public class TankAI {
 			InputStream is = TankAI.class.getResourceAsStream("/resources/ai_resources/" + fileName);
 			DataInputStream dIs = new DataInputStream(is);
 
-			String fileHeader = "", correct = "tank_ai";
+			String fileHeader, correct = "tank_ai";
 			StringBuilder sb = new StringBuilder(7);
 			int i;
 			for (i = correct.length(); i > 0; i--) {
@@ -367,28 +369,48 @@ public class TankAI {
 				System.out.println("Data in file  " + fileName + "  is corrupted!");
 				return false;
 			}
+			inputData = new double[inputSize];
 
 			netFitness = dIs.readInt();
 			mapMaxCols = dIs.readInt();
 			mapMaxRows = dIs.readInt();
 			bulletsFirstIndex = dIs.readInt();
+
+			if(mapMaxCols < 2 || mapMaxRows < 2){// map minimum 2x2;
+				System.out.println("Data in file  " + fileName + "  is corrupted!");
+				return false;
+			}
+
 			int layersCount = dIs.readInt();
 			i = mapMaxCols * mapMaxRows;
 
-			if (layersCount < 1 || i < 4 || bulletsFirstIndex < 1)
-				throw new IOException("Data in file  " + fileName + "  is corrupted!");
+			if (layersCount < 1 || i < 4 || bulletsFirstIndex < 1){
+				System.out.println("Data in file  " + fileName + "  is corrupted!");
+				return false;
+			}
 
 			layers = new double[layersCount][];
+
 			int[] neuronsCounts = new int[layersCount];
+			int count = 0;
 			for (i = 0; i < layersCount; i++) {
 				neuronsCounts[i] = dIs.readInt();
+				if(neuronsCounts[i] > count)
+					count = neuronsCounts[i];
 
 				numberOfWeights = neuronsCounts[i] * (inputSize + 1);
+				if(numberOfWeights < 2){
+					System.out.println("Data in file  " + fileName + "  is corrupted (#weights has to be > 2)!");
+					return false;
+				}
+
 				inputSize = neuronsCounts[i];// output of current layer (n neurons) will be an input of the next one;
 				layers[i] = new double[numberOfWeights];
 			}
 
-			int j, count;
+			bufferedOutput = new double[count*2];
+
+			int j;
 			i = 0;
 			try {
 				for (; i < layersCount; i++) {
@@ -431,5 +453,77 @@ public class TankAI {
 			return;
 		}
 
+		DataOutputStream dOs = null;
+		File file = null;
+		OutputStream os = null;
+
+		try {
+			String fPath = TankAI.class.getResource("/resources/").getFile();
+			file = new File(fPath + "ai_resources/" + fileName);
+
+			os = new FileOutputStream(file);
+			dOs = new DataOutputStream(os);
+
+			if(!file.exists() )
+				file.createNewFile();
+
+			//oos = new ObjectOutputStream(os);
+			//oos.writeObject(layers[0]);
+			String fileHeader = "tank_ai";
+			dOs.writeChars(fileHeader);
+			int inputSize = 16 - fileHeader.length();
+
+			dOs.write(new byte[inputSize]);
+
+			inputSize = inputData.length;
+			dOs.writeInt(inputSize);
+			dOs.writeInt(netFitness);
+			dOs.writeInt(mapMaxCols);
+			dOs.writeInt(mapMaxRows);
+			dOs.writeInt(bulletsFirstIndex);
+
+			int size = layers.length;
+			dOs.writeInt(size);
+
+			int i = 0, neuronsCount;
+			for(; i < size; i++){
+				neuronsCount = layers[i].length / (inputSize + 1);
+				inputSize = neuronsCount;
+				dOs.writeInt(neuronsCount);
+			}
+
+			neuronsCount = layers.length;
+			int j;
+			for(i = 0; i < neuronsCount; i++){
+				size = layers[i].length;
+				for(j = 0; j < size; j++){
+					dOs.writeDouble(layers[i][j]);
+				}
+			}
+
+			//os.flush();
+			//dOs.close();
+		} catch(FileNotFoundException e){
+			System.out.println("Creating/writing file  " + fileName  + "  failed!");
+		} catch(IOException e){
+			System.out.println("Writing to file  " + fileName  + "  failed!");
+		} finally {
+			if(os != null){
+				try {
+					os.flush();
+					os.close();
+				}catch(IOException e){
+					System.out.println("Error closing stream! " + e);
+				}
+			}
+			if(dOs != null){
+				try {
+					dOs.flush();
+					dOs.close();
+				} catch(IOException e){
+					System.out.println("Error closing data-stream! " + e);
+				}
+			}
+		}
 	}
 }
