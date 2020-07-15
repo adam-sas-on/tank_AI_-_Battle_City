@@ -40,6 +40,7 @@ public class TankAI {
 		eagleCollectibleTankInputSize = 8;// 8 for eagle, collectible  and 4  for controlled tank;
 	}
 
+
 	private void setDefaultTriple(int inputIndex){
 		inputData[inputIndex + 1] = inputData[inputIndex + 2] = -1.0;
 		inputData[inputIndex] = -3.0*Math.PI;// anything less then -2*PI;
@@ -206,6 +207,31 @@ public class TankAI {
 		defaultBullets = defaultEnemyTanks*2 + 8;// 8 for players;
 		setDefaultNeuralNetwork(50, 50, defaultEnemyTanks, defaultBullets);
 	}
+
+
+	public void mutate(double mutationRate){
+		double randVal;
+		int i, j, size, layersCount = layers.length;
+
+		for(i = 0; i < layersCount; i++){
+			size = layers[i].length;
+			for(j = 0; j < size; j++){
+				randVal = rand.randRange(1.0);
+				if(randVal < mutationRate){
+					layers[i][j] = rand.symmetricRandRange(5.0);
+				}
+
+			}
+		}
+	}
+
+	public void setByOther(TankAI otherAI){
+		netFitness = otherAI.getSetFitness(0);
+
+
+
+	}
+
 
 	/**
 	 * Changes AI networks input data according to map situation;

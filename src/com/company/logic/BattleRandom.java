@@ -106,6 +106,10 @@ public class BattleRandom {
 		return begin + rand.nextInt(end - begin);
 	}
 
+	public double randRange(double range){
+		return range*rand.nextDouble();
+	}
+
 	public double symmetricRandRange(double range){
 		return range*( 2.0*rand.nextDouble() - 1.0 );
 	}
