@@ -874,11 +874,11 @@ public class GameDynamics implements Iterable<Cell> {
 		moveTanks();
 
 		if(eagleIndex >= 0){
-			player1.reportMapSituation(cells, cells[eagleIndex]);
-			player2.reportMapSituation(cells, cells[eagleIndex]);
+			player1.reportMapSituation(cells, cells[eagleIndex], collectibles);
+			player2.reportMapSituation(cells, cells[eagleIndex], collectibles);
 		} else {
-			player1.reportMapSituation(cells, null);
-			player2.reportMapSituation(cells, null);
+			player1.reportMapSituation(cells, null, collectibles);
+			player2.reportMapSituation(cells, null, collectibles);
 		}
 		player2.evaDetailsOnAllTanksAndBullets(activeTanks, tanksSpritesCount, player1, bullets, bulletsCount);
 

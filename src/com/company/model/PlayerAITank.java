@@ -449,9 +449,9 @@ public class PlayerAITank implements Tank {
 		tankDriver.setCurrentMapSize(mapCols, mapRows);
 	}
 
-	public void reportMapSituation(Cell[] map, Cell eagleCell){
+	public void reportMapSituation(Cell[] map, Cell eagleCell, Cell collectible){
 		if(!isExploding)
-			tankDriver.readMapReport(map, x_pos, y_pos, currentIcons[currentIconInd], eagleCell);
+			tankDriver.readMapReport(map, x_pos, y_pos, currentIcons[currentIconInd], eagleCell, collectible);
 	}
 
 	public void evaDetailsOnAllTanksAndBullets(Enemy[] enemies, int activeEnemies, PlayerAITank ally,

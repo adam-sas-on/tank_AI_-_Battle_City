@@ -25,6 +25,7 @@ public class TankAI {
 	private boolean ready;
 	private boolean updateOutput;
 	private final int cellPrecisionUnitSize;
+	private final int eagleCollectibleTankInputSize;
 
 	public TankAI(BattleRandom rand, int outputSize, int cellPrecision){
 		output = new double[outputSize];
@@ -38,6 +39,7 @@ public class TankAI {
 
 		this.rand = rand;
 		cellPrecisionUnitSize = cellPrecision;
+		eagleCollectibleTankInputSize = 5;// 5 for eagle, controlled tanks cell-code and collectible;
 	}
 
 	private void setDefaultTriple(int inputIndex){
@@ -151,7 +153,7 @@ public class TankAI {
 			return;
 
 		int inputSize;
-		inputSize = mapMaxCols*mapMaxRows + 3;// 3 - owners input and 2 inputs of eagle;
+		inputSize = mapMaxCols*mapMaxRows + eagleCollectibleTankInputSize;
 		inputSize += (maxEnemyTanks + 1)*3;// 3: enemy tanks angle to owner, distance to owner  and  cell-code (+ ally tank);
 		bulletsFirstIndex = inputSize;
 		inputSize += maxBullets*3;// 3: bullets angle to owner, distance to owner  and  direction on map;
@@ -244,7 +246,8 @@ public class TankAI {
 		updateOutput = true;
 	}
 
-	public void updateEagleAndOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell, Cell eagleCell){
+	public void updateEagleAndOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell,
+										Cell eagleCell, Cell collectible){
 		if(!ready)
 			return;
 
@@ -254,21 +257,38 @@ public class TankAI {
 		ownerXY_pos[1] = ownerY_pos;
 		inputData[nNetIndex + 2] = ownerMapCell.getCellCode();
 
-		if(eagleCell == null){
-			inputData[nNetIndex] = -1.0;
-			inputData[nNetIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
-			return;
-		}
 
 		int eagleX, eagleY;
 		double dx, dy;
 
-		eagleX = eagleCell.getCol();
-		eagleY = eagleCell.getRow();
-		dx = (eagleX - ownerXY_pos[0])/(double)cellPrecisionUnitSize;
-		dy = (eagleY - ownerXY_pos[1])/(double)cellPrecisionUnitSize;
-		inputData[nNetIndex] = Math.atan2(dy, dx);
-		inputData[nNetIndex + 1] = Math.hypot(dx, dy);// = sqrt(dx*dx + dy*dy);
+		if(eagleCell != null){
+			eagleX = eagleCell.getCol();
+			eagleY = eagleCell.getRow();
+			dx = (eagleX - ownerXY_pos[0])/(double)cellPrecisionUnitSize;
+			dy = (eagleY - ownerXY_pos[1])/(double)cellPrecisionUnitSize;
+			inputData[nNetIndex] = Math.atan2(dy, dx);
+			inputData[nNetIndex + 1] = Math.hypot(dx, dy);// = sqrt(dx*dx + dy*dy);
+
+			updateOutput = true;
+		} else {
+			inputData[nNetIndex] = -1.0;
+			inputData[nNetIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
+		}
+
+		if(collectible == null){
+			return;
+		}
+
+		nNetIndex += 3;// eagle cell  and  controlled tank cell-code;
+		inputData[nNetIndex] = -1.0;
+		inputData[nNetIndex + 1] = -3.0*Math.PI;// anything less then -2*PI;
+
+		if(collectible.getMapCell() != null){
+			dx = (collectible.getCol() - ownerXY_pos[0])/(double)cellPrecisionUnitSize;
+			dy = (collectible.getRow() - ownerXY_pos[1])/(double)cellPrecisionUnitSize;
+			inputData[nNetIndex] = Math.atan2(dy, dx);
+			inputData[nNetIndex + 1] = Math.hypot(dx, dy);// = sqrt(dx*dx + dy*dy);
+		}
 
 		updateOutput = true;
 	}
@@ -279,7 +299,7 @@ public class TankAI {
 
 		Cell cell = new Cell();
 		// MapCell mapCell;
-		int i, nNetIndex = mapMaxCols*mapMaxRows + 3;// 3 for eagle and controlled tanks cell-code;
+		int i, nNetIndex = mapMaxCols*mapMaxRows + eagleCollectibleTankInputSize;
 
 		setDefaultTriple(nNetIndex);
 
