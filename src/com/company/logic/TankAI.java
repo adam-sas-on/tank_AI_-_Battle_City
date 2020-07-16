@@ -259,9 +259,38 @@ public class TankAI {
 		}
 	}
 
+	/**
+	 * For all layers:
+	 * get random int in range [1, layers[i].length);
+	 * values before random int - set from parentAI_1,
+	 * after that int - set by parentAI_2;
+	 *
+	 * @param parentAI_1 1st neural network source;
+	 * @param parentAI_2 2nd neural network source to mix;
+	 */
 	public void mixByOthers(TankAI parentAI_1, TankAI parentAI_2){
-		// todo: for all layers get random int in range [1, layers[i].length);
-		// values before random int set from parentAI_1, after set by parentAI_2;
+		if(layers == null || parentAI_1.layers == null || parentAI_2.layers == null)
+			return;
+
+		int layersCount = Math.min(layers.length, parentAI_1.layers.length);
+		layersCount = Math.min(layersCount, parentAI_2.layers.length);
+		if(layersCount < 1)
+			return;
+
+		int i, minSize, randIndex, sizeThis;
+		for(i = 0; i < layersCount; i++){
+			sizeThis = layers[i].length;
+			minSize = Math.min(parentAI_1.layers[i].length, parentAI_2.layers[i].length);
+			if(sizeThis > minSize)
+				sizeThis = minSize;
+
+			randIndex = rand.randRange(0, sizeThis);
+			System.arraycopy(parentAI_1.layers[i], 0, layers[i], 0, randIndex);
+			if(sizeThis > randIndex)
+				System.arraycopy(parentAI_2.layers[i], randIndex, layers[i], randIndex, sizeThis - randIndex);
+		}
+
+		netFitness = 0;
 	}
 
 	/**
