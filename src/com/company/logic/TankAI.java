@@ -156,51 +156,72 @@ public class TankAI {
 		netFitness = 0;
 	}
 
-	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
-		ready = false;
-		if(mapMaxCols == 0 && mapMaxRows == 0 && maxEnemyTanks == 0 && maxBullets == 0)
-			return;
 
-		int inputSize;
-		inputSize = mapMaxCols*mapMaxRows + eagleCollectibleTankInputSize;
+	public int necessaryInputSize(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
+		if(mapMaxCols == 0 && mapMaxRows == 0 && maxEnemyTanks == 0 && maxBullets == 0)
+			return 0;
+
+		int inputSize = mapMaxCols*mapMaxRows + eagleCollectibleTankInputSize;
 		inputSize += (maxEnemyTanks + 1)*3;// 3: enemy tanks angle to owner, distance to owner  and  cell-code (+ ally tank);
 		bulletsFirstIndex = inputSize;
 		inputSize += maxBullets*3;// 3: bullets angle to owner, distance to owner  and  direction on map;
+		return inputSize;
+	}
+
+	public void setNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks,
+								int maxBullets, int[] neuronsCounts, double[] inputDataBuffer){
+
+		ready = false;
+		int inputSize = necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
+		if(inputSize == 0)
+			return;
+
+		int[] nnCounts;
+		if(neuronsCounts == null)
+			nnCounts = new int[]{30, 100, 40};
+		else if(neuronsCounts.length < 1)
+			nnCounts = new int[]{30, 100, 40};
+		else
+			nnCounts = neuronsCounts;
 
 		try {
-			inputData = new double[inputSize];
+			if(inputDataBuffer == null)
+				inputData = new double[inputSize];
+			else if(inputDataBuffer.length < inputSize)
+				inputData = new double[inputSize];
+			else
+				inputData = inputDataBuffer;
 
-			int layerSize, numberOfWeights, i;
+			int layerSize, numberOfWeights, i, k = nnCounts.length + 1;
+			double shift;
 			final double range = 1.0;
-			layers = new double[4][];
 
-			layerSize = 30;
-			numberOfWeights = layerSize * (inputSize + 1);// +1: bias;
-			layers[0] = new double[numberOfWeights];
-			for(i = 0; i < numberOfWeights; i++)
-				layers[0][i] = rand.symmetricRandRange(range);
+			layers = new double[k][];
+			maxNeurons = nnCounts[0];
+			for(k = 0; k < nnCounts.length; k++){
+				if(nnCounts[k] > maxNeurons)
+					maxNeurons = nnCounts[k];
 
-			inputSize = layerSize;
-			layerSize = maxNeurons = 100;
-			numberOfWeights = layerSize*(inputSize + 1);
-			layers[1] = new double[numberOfWeights];
-			for(i = 0; i < numberOfWeights; i++)
-				layers[1][i] = rand.symmetricRandRange(range) - 0.2;
+				layerSize = nnCounts[k];
+				numberOfWeights = layerSize * (inputSize + 1);// +1: bias;
+				layers[k] = new double[numberOfWeights];
+				shift = (k == 1)?-0.2:0.0;
+				for(i = 0; i < numberOfWeights; i++)
+					layers[k][i] = rand.symmetricRandRange(range) + shift;
 
-			inputSize = layerSize;
-			layerSize = 40;
-			numberOfWeights = layerSize*(inputSize + 1);
-			layers[2] = new double[numberOfWeights];
-			for(i = 0; i < numberOfWeights; i++)
-				layers[2][i] = rand.symmetricRandRange(range);
+				inputSize = layerSize;
+			}
 
-			inputSize = layerSize;
 			layerSize = 2;
+			if(maxNeurons < layerSize)
+				maxNeurons = layerSize;
+
 			output = new double[layerSize];// 2 outputs: current angle of tank and shoot power;
 			numberOfWeights = layerSize*(inputSize + 1);
-			layers[3] = new double[numberOfWeights];
+			k = nnCounts.length;
+			layers[k] = new double[numberOfWeights];
 			for(i = 0; i < numberOfWeights; i++)
-				layers[3][i] = rand.symmetricRandRange(range);
+				layers[k][i] = rand.symmetricRandRange(range);
 
 			bufferedOutput = new double[maxNeurons*2];
 			ready = true;
@@ -212,10 +233,14 @@ public class TankAI {
 		netFitness = 0;
 	}
 
+	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
+		setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, null, null);
+	}
+
 	public void setDefaultNeuralNetwork(){
 		int defaultEnemyTanks = 20, defaultBullets;
 		defaultBullets = defaultEnemyTanks*2 + 8;// 8 for players;
-		setDefaultNeuralNetwork(50, 50, defaultEnemyTanks, defaultBullets);
+		setNeuralNetwork(50, 50, defaultEnemyTanks, defaultBullets, null, null);
 	}
 
 	public boolean resetByOtherNN(TankAI otherAI){
