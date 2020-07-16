@@ -152,6 +152,10 @@ public class TankAI {
 		return layers[index];
 	}*/
 
+	public void resetFitness(){
+		netFitness = 0;
+	}
+
 	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
 		ready = false;
 		if(mapMaxCols == 0 && mapMaxRows == 0 && maxEnemyTanks == 0 && maxBullets == 0)
@@ -308,6 +312,10 @@ public class TankAI {
 			}
 		}
 	}
+
+	/*public boolean hasBiggerFitness(TankAI otherAI){
+		return netFitness > otherAI.netFitness;
+	}*/
 
 	/**
 	 * For all layers:
