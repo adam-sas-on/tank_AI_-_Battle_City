@@ -214,21 +214,55 @@ public class TankAI {
 		setDefaultNeuralNetwork(50, 50, defaultEnemyTanks, defaultBullets);
 	}
 
-
-	public void mutate(double mutationRate){
-		double randVal;
-		int i, j, size, layersCount = layers.length;
-
-		for(i = 0; i < layersCount; i++){
-			size = layers[i].length;
-			for(j = 0; j < size; j++){
-				randVal = rand.randRange(1.0);
-				if(randVal < mutationRate){
-					layers[i][j] = rand.symmetricRandRange(5.0);
-				}
-
-			}
+	public boolean resetByOtherNN(TankAI otherAI){
+		if(!otherAI.ready){
+			ready = false;
+			return false;
 		}
+
+		netFitness = 0;
+		updateOutput = otherAI.updateOutput;
+		mapMaxCols = otherAI.mapMaxCols;
+		mapMaxRows = otherAI.mapMaxRows;
+
+		int i, layersCount = otherAI.layers.length, count;
+
+		try {
+			layers = new double[layersCount][];
+			for (i = 0; i < layersCount; i++) {
+				count = otherAI.layers[i].length;
+				layers[i] = new double[count];
+				System.arraycopy(otherAI.layers[i], 0, layers[i], 0, count);
+			}
+
+			count = otherAI.inputData.length;
+			inputData = new double[count];
+			System.arraycopy(otherAI.inputData, 0, inputData, 0, count);
+			bulletsFirstIndex = otherAI.bulletsFirstIndex;
+
+
+			maxNeurons = otherAI.maxNeurons;
+			if (bufferedOutput == null)
+				bufferedOutput = new double[maxNeurons * 2];
+			else if (bufferedOutput.length != maxNeurons * 2)
+				bufferedOutput = new double[maxNeurons * 2];
+
+
+			if (output == null)
+				output = new double[otherAI.output.length];
+			else if (output.length != otherAI.output.length)
+				output = new double[otherAI.output.length];
+
+			if (!updateOutput)
+				System.arraycopy(otherAI.output, 0, output, 0, output.length);
+
+			ready = true;
+		} catch(OutOfMemoryError e){
+			System.out.println("Couldn't recreate AI network from another one! " + e);
+			ready = false;
+		}
+
+		return ready;
 	}
 
 	public void setByOther(TankAI otherAI){
@@ -256,6 +290,22 @@ public class TankAI {
 				sizeThis = otherSize;
 
 			System.arraycopy(otherAI.layers[i], 0, layers[i], 0, sizeThis);
+		}
+	}
+
+	public void mutate(double mutationRate){
+		double randVal;
+		int i, j, size, layersCount = layers.length;
+
+		for(i = 0; i < layersCount; i++){
+			size = layers[i].length;
+			for(j = 0; j < size; j++){
+				randVal = rand.randRange(1.0);
+				if(randVal < mutationRate){
+					layers[i][j] = rand.symmetricRandRange(5.0);
+				}
+
+			}
 		}
 	}
 
