@@ -146,6 +146,12 @@ public class TankAI {
 		return output;
 	}
 
+	public double[] getLayerByIndex(int index){
+		if(index < 0 || index >= layers.length)
+			return null;
+		return layers[index];
+	}
+
 	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
 		ready = false;
 		if(mapMaxCols == 0 && mapMaxRows == 0 && maxEnemyTanks == 0 && maxBullets == 0)
@@ -227,11 +233,36 @@ public class TankAI {
 
 	public void setByOther(TankAI otherAI){
 		netFitness = otherAI.getSetFitness(0);
+		if(!ready)
+			return;
 
+		double[] othersLayer;
+		int i, layersCount = layers.length, otherLayersCount = 0, sizeThis, otherSize;
 
+		if(otherAI.layers != null)
+			otherLayersCount = otherAI.layers.length;
 
+		if(layersCount > otherLayersCount)
+			layersCount = otherLayersCount;
+
+		for(i = 0; i < layersCount; i++){
+			othersLayer = otherAI.layers[i];
+			if(othersLayer == null)
+				continue;
+
+			sizeThis = layers[i].length;
+			otherSize = othersLayer.length;
+			if(sizeThis > otherSize)
+				sizeThis = otherSize;
+
+			System.arraycopy(otherAI.layers[i], 0, layers[i], 0, sizeThis);
+		}
 	}
 
+	public void mixByOthers(TankAI parentAI_1, TankAI parentAI_2){
+		// todo: for all layers get random int in range [1, layers[i].length);
+		// values before random int set from parentAI_1, after set by parentAI_2;
+	}
 
 	/**
 	 * Changes AI networks input data according to map situation;
