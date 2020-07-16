@@ -146,11 +146,11 @@ public class TankAI {
 		return output;
 	}
 
-	public double[] getLayerByIndex(int index){
+	/*public double[] getLayerByIndex(int index){
 		if(index < 0 || index >= layers.length)
 			return null;
 		return layers[index];
-	}
+	}*/
 
 	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
 		ready = false;
@@ -342,6 +342,10 @@ public class TankAI {
 
 		netFitness = 0;
 	}
+
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	// - - - - - - - - - - - - Methods to get informations about battlefield - - - - - - - - - - - -
 
 	/**
 	 * Changes AI networks input data according to map situation;
@@ -616,7 +620,7 @@ public class TankAI {
 		}
 
 		DataOutputStream dOs = null;
-		File file = null;
+		File file;
 		OutputStream os = null;
 
 		try {

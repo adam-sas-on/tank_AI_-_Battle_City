@@ -51,7 +51,9 @@ public class LearningAIClass {
 			}
 
 			if(success) {
-				tanksAI[0].resetByOtherNN(processedAI);
+				success = tanksAI[0].resetByOtherNN(processedAI);
+				if(!success)
+					tanksAI[0].setDefaultNeuralNetwork();
 				indexBest = 0;
 			} else {
 				tanksAI[0].setDefaultNeuralNetwork();
