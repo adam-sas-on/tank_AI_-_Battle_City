@@ -117,14 +117,8 @@ public class DamageClass {
 		rightSideDestruction.put(MapCell.BRICK_L_UP_RIGHT, MapCell.BRICK_I_RIGHT);
 		rightSideDestruction.put(MapCell.BRICK_L_DOWN_RIGHT, MapCell.BRICK_I_DOWN);
 		rightSideDestruction.put(MapCell.BRICK_L_DOWN_LEFT, MapCell.BRICK_DOWN_RIGHT);
-		rightSideDestruction.put(MapCell.BRICK_I_LEFT, null);
-		rightSideDestruction.put(MapCell.BRICK_I_DOWN, MapCell.BRICK_I_DOWN);
-		rightSideDestruction.put(MapCell.BRICK_I_RIGHT, null);
+		horizontalDownMapSet(rightSideDestruction);
 		rightSideDestruction.put(MapCell.BRICK_I_UP, MapCell.BRICK_UP_RIGHT);
-		rightSideDestruction.put(MapCell.BRICK_UP_LEFT, null);
-		rightSideDestruction.put(MapCell.BRICK_UP_RIGHT, null);
-		rightSideDestruction.put(MapCell.BRICK_DOWN_RIGHT, MapCell.BRICK_DOWN_RIGHT);
-		rightSideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
 	}
 
 	private void rightLeftDamageSet(Map<MapCell,MapCell> leftSideDestruction){
@@ -168,14 +162,8 @@ public class DamageClass {
 		leftSideDestruction.put(MapCell.BRICK_L_UP_RIGHT, MapCell.BRICK_UP_LEFT);
 		leftSideDestruction.put(MapCell.BRICK_L_DOWN_RIGHT, MapCell.BRICK_DOWN_LEFT);
 		leftSideDestruction.put(MapCell.BRICK_L_DOWN_LEFT, MapCell.BRICK_I_DOWN);
-		leftSideDestruction.put(MapCell.BRICK_I_LEFT, null);
-		leftSideDestruction.put(MapCell.BRICK_I_DOWN, MapCell.BRICK_I_DOWN);
-		leftSideDestruction.put(MapCell.BRICK_I_RIGHT, null);
+		horizontalDownMapSet(leftSideDestruction);
 		leftSideDestruction.put(MapCell.BRICK_I_UP, MapCell.BRICK_UP_LEFT);
-		leftSideDestruction.put(MapCell.BRICK_UP_LEFT, null);
-		leftSideDestruction.put(MapCell.BRICK_UP_RIGHT, null);
-		leftSideDestruction.put(MapCell.BRICK_DOWN_RIGHT, MapCell.BRICK_DOWN_RIGHT);
-		leftSideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
 	}
 
 	private void downRightDamagesSet(Map<MapCell,MapCell> rightSideDestruction){
@@ -219,8 +207,16 @@ public class DamageClass {
 		sideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
 	}
 
-	 /*private void horizontalUpMapSet(Map<MapCell,MapCell> sideDestruction){}
-	 private void horizontalDownMapSet(Map<MapCell,MapCell> sideDestruction){}*/
+	 /*private void horizontalUpMapSet(Map<MapCell,MapCell> sideDestruction){}*/
+	 private void horizontalDownMapSet(Map<MapCell,MapCell> sideDestruction){
+		 sideDestruction.put(MapCell.BRICK_I_LEFT, null);
+		 sideDestruction.put(MapCell.BRICK_I_DOWN, MapCell.BRICK_I_DOWN);
+		 sideDestruction.put(MapCell.BRICK_I_RIGHT, null);
+		 sideDestruction.put(MapCell.BRICK_UP_LEFT, null);
+		 sideDestruction.put(MapCell.BRICK_UP_RIGHT, null);
+		 sideDestruction.put(MapCell.BRICK_DOWN_RIGHT, MapCell.BRICK_DOWN_RIGHT);
+		 sideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
+	 }
 
 	// - - - Same us before but for powerful bullet
 	private void verticalRightFullDamagesSet(Map<MapCell,MapCell> sideDestruction){
