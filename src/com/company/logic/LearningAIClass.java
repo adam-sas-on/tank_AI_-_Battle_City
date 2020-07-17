@@ -153,6 +153,8 @@ public class LearningAIClass {
 		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
 		bufferedInputData = new double[inputSize];
 
+		int fitness = Integer.MIN_VALUE + 1;
+
 		try {
 			for(i = 0; i < count; i++){
 				tanksAI[i] = new TankAI(rand, 2, cellPrecisionUnitSize);
@@ -160,17 +162,21 @@ public class LearningAIClass {
 
 			if(success) {
 				success = tanksAI[0].resetByOtherNN(processedAI);
-				if(!success)
+				if(!success) {
 					tanksAI[0].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+					tanksAI[0].getSetFitness(fitness);
+				}
 				indexBest = 0;
 			} else {
 				tanksAI[0].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+				tanksAI[0].getSetFitness(fitness);
 				processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
 			}
 
 			for(i = 1; i < count; i++){
 				allFitness[i] = Integer.MIN_VALUE;
 				tanksAI[i].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+				tanksAI[i].getSetFitness(fitness);
 			}
 
 			indexWorst = 1;

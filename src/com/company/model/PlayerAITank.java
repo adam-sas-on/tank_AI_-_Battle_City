@@ -313,9 +313,11 @@ public class PlayerAITank implements Tank {
 	}
 	public void revive(){
 		reviveInAction();
-
-		tankDriver.upDateActionPoints(actionPoints);
 		actionPoints = 0;
+	}
+
+	public void updateActionPoints(){
+		tankDriver.upDateActionPoints(actionPoints);
 	}
 
 	public void reset(){
