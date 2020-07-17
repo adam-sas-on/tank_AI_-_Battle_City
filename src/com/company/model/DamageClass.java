@@ -86,6 +86,8 @@ public class DamageClass {
 		leftSideDestruction.put(MapCell.EAGLE, MapCell.EAGLE_DESTROYED);
 	}
 
+	// 'which direction bullets move'.'which side of bullet to change';
+
 	private void upRightDamagesSet(Map<MapCell,MapCell> rightSideDestruction){
 		rightSideDestruction.put(MapCell.STEEL, MapCell.STEEL);
 		rightSideDestruction.put(MapCell.BRICK, MapCell.BRICK_I_UP);
@@ -104,14 +106,8 @@ public class DamageClass {
 		leftSideDestruction.put(MapCell.BRICK_L_UP_RIGHT, MapCell.BRICK_I_UP);
 		leftSideDestruction.put(MapCell.BRICK_L_DOWN_RIGHT, MapCell.BRICK_UP_RIGHT);
 		leftSideDestruction.put(MapCell.BRICK_L_DOWN_LEFT, MapCell.BRICK_UP_LEFT);
-		leftSideDestruction.put(MapCell.BRICK_I_LEFT, MapCell.BRICK_I_LEFT);
-		leftSideDestruction.put(MapCell.BRICK_I_DOWN, null);
+		verticalLeftMapSet(leftSideDestruction);
 		leftSideDestruction.put(MapCell.BRICK_I_RIGHT, MapCell.BRICK_UP_RIGHT);
-		leftSideDestruction.put(MapCell.BRICK_I_UP, null);
-		leftSideDestruction.put(MapCell.BRICK_UP_LEFT, MapCell.BRICK_UP_LEFT);
-		leftSideDestruction.put(MapCell.BRICK_UP_RIGHT, null);
-		leftSideDestruction.put(MapCell.BRICK_DOWN_RIGHT, null);
-		leftSideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
 	}
 
 	private void rightRightDamagesSet(Map<MapCell,MapCell> rightSideDestruction){
@@ -189,14 +185,8 @@ public class DamageClass {
 		rightSideDestruction.put(MapCell.BRICK_L_UP_RIGHT, MapCell.BRICK_DOWN_RIGHT);
 		rightSideDestruction.put(MapCell.BRICK_L_DOWN_RIGHT, MapCell.BRICK_I_DOWN);
 		rightSideDestruction.put(MapCell.BRICK_L_DOWN_LEFT, MapCell.BRICK_I_LEFT);
-		rightSideDestruction.put(MapCell.BRICK_I_LEFT, MapCell.BRICK_I_LEFT);
-		rightSideDestruction.put(MapCell.BRICK_I_DOWN, null);
+		verticalLeftMapSet(rightSideDestruction);
 		rightSideDestruction.put(MapCell.BRICK_I_RIGHT, MapCell.BRICK_DOWN_RIGHT);
-		rightSideDestruction.put(MapCell.BRICK_I_UP, null);
-		rightSideDestruction.put(MapCell.BRICK_UP_LEFT, MapCell.BRICK_UP_LEFT);
-		rightSideDestruction.put(MapCell.BRICK_UP_RIGHT, null);
-		rightSideDestruction.put(MapCell.BRICK_DOWN_RIGHT, null);
-		rightSideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
 	}
 
 	private void downLeftDamageSet(Map<MapCell,MapCell> leftSideDestruction){
@@ -219,9 +209,17 @@ public class DamageClass {
 		sideDestruction.put(MapCell.BRICK_DOWN_RIGHT, MapCell.BRICK_DOWN_RIGHT);
 		sideDestruction.put(MapCell.BRICK_DOWN_LEFT, null);
 	}
-	/*private void verticalLeftMapSet(Map<MapCell,MapCell> sideDestruction){}
+	private void verticalLeftMapSet(Map<MapCell,MapCell> sideDestruction){
+		sideDestruction.put(MapCell.BRICK_I_LEFT, MapCell.BRICK_I_LEFT);
+		sideDestruction.put(MapCell.BRICK_I_DOWN, null);
+		sideDestruction.put(MapCell.BRICK_I_UP, null);
+		sideDestruction.put(MapCell.BRICK_UP_LEFT, MapCell.BRICK_UP_LEFT);
+		sideDestruction.put(MapCell.BRICK_UP_RIGHT, null);
+		sideDestruction.put(MapCell.BRICK_DOWN_RIGHT, null);
+		sideDestruction.put(MapCell.BRICK_DOWN_LEFT, MapCell.BRICK_DOWN_LEFT);
+	}
 
-	 private void horizontalUpMapSet(Map<MapCell,MapCell> sideDestruction){}
+	 /*private void horizontalUpMapSet(Map<MapCell,MapCell> sideDestruction){}
 	 private void horizontalDownMapSet(Map<MapCell,MapCell> sideDestruction){}*/
 
 	// - - - Same us before but for powerful bullet
