@@ -148,6 +148,9 @@ public class LearningAIClass {
 
 		countInputs = new int[]{30, 100, 40};
 
+		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
+		bufferedInputData = new double[inputSize];
+
 		try {
 			for(i = 0; i < count; i++){
 				tanksAI[i] = new TankAI(rand, 2, cellPrecisionUnitSize);
@@ -156,16 +159,16 @@ public class LearningAIClass {
 			if(success) {
 				success = tanksAI[0].resetByOtherNN(processedAI);
 				if(!success)
-					tanksAI[0].setDefaultNeuralNetwork();
+					tanksAI[0].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
 				indexBest = 0;
 			} else {
-				tanksAI[0].setDefaultNeuralNetwork();
-				processedAI.setDefaultNeuralNetwork();
+				tanksAI[0].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+				processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
 			}
 
 			for(i = 1; i < count; i++){
 				allFitness[i] = Integer.MIN_VALUE;
-				tanksAI[i].setDefaultNeuralNetwork();
+				tanksAI[i].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
 			}
 
 			indexWorst = 1;
@@ -178,6 +181,60 @@ public class LearningAIClass {
 		readyToLearn = true;
 	}
 
+
+	private boolean readNeuralNetworks(DataInputStream dIs, int countAIs, String fileName){
+		if(countInputs == null)
+			return false;
+
+		double[] layer;
+		final int layersCount = countInputs.length + 1;// 2 output values;
+		boolean done;
+
+		try {
+			allFitness = new int[countAIs];
+			tanksAI = new TankAI[countAIs];
+			indexBest = indexWorst = 0;
+
+			int i = 0, j, k, size;
+			for(; i < countAIs; i++){
+				allFitness[i] = dIs.readInt();
+				if(allFitness[i] > allFitness[indexBest])
+					indexBest = i;
+				else if(allFitness[i] < allFitness[indexWorst])
+					indexWorst = i;
+
+
+				tanksAI[i] = new TankAI(rand, 2, cellPrecisionUnitSize);
+				tanksAI[i].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+
+				for(j = 0; j < layersCount; j++){
+					layer = tanksAI[i].getLayerByIndex(j);
+					if(layer == null){
+						dIs.readDouble();
+						continue;
+					}
+
+					size = layer.length;
+					for(k = 0; k < size; k++){
+						layer[k] = dIs.readDouble();
+					}
+				}
+			}
+
+			processedAI = new TankAI(rand, 2, cellPrecisionUnitSize);
+			processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+
+			done = true;
+		} catch(OutOfMemoryError e){
+			System.out.println("Can't read Machine Learning file,  " + e);
+			done = false;
+		} catch(IOException | NullPointerException e){
+			System.out.println("Reading Machine learning file  " + fileName + " failed!");
+			done = false;
+		}
+
+		return done;
+	}
 
 	public boolean readFile(){
 		processedAI.readFile();
@@ -231,9 +288,16 @@ public class LearningAIClass {
 			}
 			i = dIs.readInt();//to skip bec. = 2;
 
-			// todo: read rest data from Machine Learning file;
+			int nnCounts = dIs.readInt();
+
+			if(nnCounts < 3){// should be minimum 3 AIs to perform learning!
+				System.out.println("Data in file  " + fileName + "  is corrupted!");
+				return false;
+			}
+
+			readyToLearn = readNeuralNetworks(dIs, nnCounts, fileName);
 		} catch(IOException | NullPointerException e){
-			System.out.println("Reading AI file  " + fileName + " failed!");
+			System.out.println("Reading AI file  " + fileName + "  failed!");
 			readyToLearn = false;
 		}
 
