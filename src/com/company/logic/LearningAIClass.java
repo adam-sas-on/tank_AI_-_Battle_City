@@ -121,11 +121,13 @@ public class LearningAIClass {
 
 		int newFitness = processedAI.getSetFitness(0);
 
+		System.out.println("\tUpdating series of AIs, fitness = " + newFitness);
+
 		if(newFitness > allFitness[indexWorst]){
 			tanksAI[indexWorst].setByOther(processedAI);
 			allFitness[indexWorst] = newFitness;
 
-			int i, fitness = tanksAI[indexBest].getSetFitness(0);
+			int fitness = tanksAI[indexBest].getSetFitness(0);
 			if(newFitness > fitness){// new is better than best;
 				indexBest = indexWorst;
 				bestWasChanged = true;
@@ -190,6 +192,8 @@ public class LearningAIClass {
 		final int layersCount = countInputs.length + 1;// 2 output values;
 		boolean done;
 
+		System.out.println("\tReading series of neural networks.");
+
 		try {
 			allFitness = new int[countAIs];
 			tanksAI = new TankAI[countAIs];
@@ -222,7 +226,14 @@ public class LearningAIClass {
 			}
 
 			processedAI = new TankAI(rand, 2, cellPrecisionUnitSize);
-			processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+			done = processedAI.readFile();
+			if(!done)
+				processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
+
+			size = tanksAI[indexBest].getSetFitness(0);
+			System.out.println("\rAfter reading ML; best fitness = " + size);
+			size = tanksAI[indexWorst].getSetFitness(0);
+			System.out.println("\t\tworst fitness = " + size);
 
 			done = true;
 		} catch(OutOfMemoryError e){
@@ -358,6 +369,8 @@ public class LearningAIClass {
 			final int layersCount = countInputs.length + 1, nnCounts = tanksAI.length;
 			double[] layer;
 			int j, k, size;
+
+			System.out.println("\tWriting series of neural networks.");
 
 			dOs.writeInt(nnCounts);
 
