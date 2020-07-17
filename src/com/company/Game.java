@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.logic.BattleRandom;
+import com.company.logic.LearningAIClass;
 import com.company.logic.TankAI;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
@@ -38,6 +39,7 @@ public class Game {
 	private PlayerAITank player2;
 	private TankAI allyAI1;
 	private TankAI allyAI2;
+	private LearningAIClass machineLearning;
 
 	public Game(GameView view){
 		this.view = view;
@@ -88,7 +90,13 @@ public class Game {
 
 		player2driver = new SpriteEventController(KeyCode.W, KeyCode.D, KeyCode.S, KeyCode.A,
 				KeyCode.T, KeyCode.G, KeyCode.R, KeyCode.F);
-		allyAI2 = new TankAI(rand, 2, cellPrecisionUnitSize);
+
+		machineLearning = new LearningAIClass(rand, cellPrecisionUnitSize);
+		boolean success = machineLearning.readFile();
+		if(!success)
+			machineLearning.setDefaultLearningPopulation();
+
+		allyAI2 = machineLearning.getCurrentProcessed();
 		player2driver.setAI(allyAI2);
 		player2driver.useAI();
 	}
@@ -123,6 +131,12 @@ public class Game {
 			pause = false;
 			view.getLoadingMapButton().setDisable(true);
 			view.keepDrawing();
+
+			player1.updateActionPoints();
+			player2.updateActionPoints();
+
+			machineLearning.updateAI();
+			machineLearning.weightedSelection();
 		}
 	}
 
@@ -178,6 +192,12 @@ public class Game {
 			if(mapNumber == maps.size() )
 				mapNumber = 0;
 			view.selectNextMap();
+
+			player1.updateActionPoints();
+			player2.updateActionPoints();
+
+			machineLearning.updateAI();
+			machineLearning.weightedSelection();
 		} else if(mapFinished){
 			pause = true;
 			view.typeText("Map finished");
@@ -192,7 +212,8 @@ public class Game {
 
 	public void stop(){
 		timeline.stop();
-		allyAI2.writeFile();
+		//allyAI2.writeFile();
+		machineLearning.writeFile();
 
 		runGame.shutdown();
 		try {

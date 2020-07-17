@@ -160,6 +160,10 @@ public class SpriteEventController {
 
 	public void upDateActionPoints(int newActionPoints){
 		actionPoints = newActionPoints;
+		if(!isPlayer) {
+			int oldActionPoints = AIDriver.getSetFitness(0);
+			AIDriver.getSetFitness(actionPoints - oldActionPoints);
+		}
 	}
 
 	public void usePlayer(){
