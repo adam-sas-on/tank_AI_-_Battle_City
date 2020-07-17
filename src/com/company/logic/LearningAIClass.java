@@ -1,13 +1,19 @@
 package com.company.logic;
 
+import java.io.*;
+
 public class LearningAIClass {
 	private BattleRandom rand;
 	private TankAI[] tanksAI;
 	private int[] allFitness;
 	private TankAI processedAI;
+	private double[] bufferedInputData;
+	private int[] countInputs;
 	private boolean bestWasChanged;
 	private boolean readyToLearn;
 	private int indexBest, indexWorst;
+	private int mapMaxCols, mapMaxRows;
+	private int maxEnemyTanks, maxBullets;
 	private final double globalMutationRate;
 	private final int cellPrecisionUnitSize;
 
@@ -17,7 +23,13 @@ public class LearningAIClass {
 		readyToLearn = false;
 		this.rand = rand;
 
+		mapMaxCols = mapMaxRows = 50;
+		maxEnemyTanks = 20;
+		maxBullets = maxEnemyTanks*2 + 8;// 8 for players;
+
 		processedAI = new TankAI(rand, 2, cellPrecision);
+		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
+		bufferedInputData = new double[inputSize];
 
 		cellPrecisionUnitSize = cellPrecision;
 	}
@@ -74,7 +86,7 @@ public class LearningAIClass {
 				continue;
 
 			stepSum += allFitness[i];
-			if(stepSum >= fitnessSum){
+			if(stepSum >= rnd){
 				selectionIndex = i;
 				break;
 			}
@@ -134,6 +146,8 @@ public class LearningAIClass {
 		allFitness = new int[count];
 		indexBest = 0;
 
+		countInputs = new int[]{30, 100, 40};
+
 		try {
 			for(i = 0; i < count; i++){
 				tanksAI[i] = new TankAI(rand, 2, cellPrecisionUnitSize);
@@ -166,20 +180,162 @@ public class LearningAIClass {
 
 
 	public boolean readFile(){
+		processedAI.readFile();
 		return readFile("tanks_ml_ai.bin");
 	}
-	public boolean readFile(String filename){
+	public boolean readFile(String fileName){
+		readyToLearn = false;
 
-		return false;
+		try {
+			InputStream is = LearningAIClass.class.getResourceAsStream("/resources/ai_resources/" + fileName);
+			DataInputStream dIs = new DataInputStream(is);
+
+			String fileHeader = "", correct = "BC_ML_tanks_ai";
+			StringBuilder sb = new StringBuilder(15);
+			int i;
+			for(i = correct.length(); i > 0; i--){
+				sb.append( dIs.readChar() );
+			}
+			fileHeader = sb.toString();
+			if(!fileHeader.equalsIgnoreCase(correct) ){
+				System.out.println("Wrong file format of  " + fileName);
+				return false;
+			}
+
+			dIs.skipBytes(16 - correct.length() );
+
+			int inputSize = dIs.readInt();
+			if (inputSize < 2){// minimum 2 inputs;
+				System.out.println("Data in file  " + fileName + "  is corrupted!");
+				return false;
+			}
+			bufferedInputData = new double[inputSize];
+
+			mapMaxCols = dIs.readInt();
+			mapMaxRows = dIs.readInt();
+			maxEnemyTanks = dIs.readInt();
+			maxBullets = dIs.readInt();
+			bufferedInputData[0] = dIs.readDouble();// to skip data;
+
+			i = mapMaxCols*mapMaxRows;
+			inputSize = dIs.readInt();
+			if(inputSize < 2 || i < 4){
+				System.out.println("Data in file  " + fileName + "  is corrupted!");
+				return false;
+			}
+
+			inputSize--;
+			countInputs = new int[inputSize];
+			for(i = 0; i < inputSize; i++){
+				countInputs[i] = dIs.readInt();
+			}
+			i = dIs.readInt();//to skip bec. = 2;
+
+			// todo: read rest data from Machine Learning file;
+		} catch(IOException | NullPointerException e){
+			System.out.println("Reading AI file  " + fileName + " failed!");
+			readyToLearn = false;
+		}
+
+		return readyToLearn;
 	}
 
 	public void writeFile(){
 		writeFile("tanks_ml_ai.bin");
 	}
 	public void writeFile(String fileName){
+		if(!readyToLearn){
+			System.out.println("Machine learning class not saved!");
+			return;
+		}
+
 		if(bestWasChanged)
 			tanksAI[indexBest].writeFile();
 
+		DataOutputStream dOs = null;
+		File file;
+		OutputStream os = null;
+
+		try {
+			String fPath = LearningAIClass.class.getResource("/resources/").getFile();
+			file = new File(fPath + "ai_resources/" + fileName);
+
+			os = new FileOutputStream(file);
+			dOs = new DataOutputStream(os);
+
+			if(!file.exists() )
+				file.createNewFile();
+
+			//oos = new ObjectOutputStream(os);
+			//oos.writeObject(layers[0]);
+			String fileHeader = "BC_ML_tanks_ai";
+			dOs.writeChars(fileHeader);
+			int inputSize = 16 - fileHeader.length();
+
+			dOs.write(new byte[inputSize]);
+
+			inputSize = bufferedInputData.length;
+			dOs.writeInt(inputSize);
+			dOs.writeInt(mapMaxCols);
+			dOs.writeInt(mapMaxRows);
+			dOs.writeInt(maxEnemyTanks);
+			dOs.writeInt(maxBullets);
+			dOs.writeDouble(globalMutationRate);
+
+			inputSize = countInputs.length;
+			dOs.writeInt(inputSize + 1);
+
+			int i = 0;
+			for(; i < inputSize; i++){
+				dOs.writeInt(countInputs[i]);
+			}
+			dOs.writeInt(2);// 2 outputs of neural network;
+
+			final int layersCount = countInputs.length + 1, nnCounts = tanksAI.length;
+			double[] layer;
+			int j, k, size;
+
+			dOs.writeInt(nnCounts);
+
+			for(i = 0; i < nnCounts; i++){
+				dOs.writeInt(allFitness[i]);
+
+				for(j = 0; j < layersCount; j++){// write neural network weights;
+					layer = tanksAI[i].getLayerByIndex(j);
+					if(layer == null){
+						dOs.writeDouble(0.0);
+						continue;
+					}
+
+					size = layer.length;
+					for(k = 0; k < size; k++){
+						dOs.writeDouble(layer[k]);
+					}
+				}
+			}
+
+			// dOs.flush();
+		} catch(FileNotFoundException e){
+			System.out.println("Creating/writing Machine Learning file  " + fileName  + "  failed!");
+		} catch(IOException e){
+			System.out.println("Writing to Machine Learning file  " + fileName  + "  failed!");
+		} finally {
+			if(os != null){
+				try {
+					os.flush();
+					os.close();
+				}catch(IOException e){
+					System.out.println("Error closing stream (ML)! " + e);
+				}
+			}
+			if(dOs != null){
+				try {
+					dOs.flush();
+					dOs.close();
+				} catch(IOException e){
+					System.out.println("Error closing data-stream! " + e);}
+			}
+		}
 	}
 
 }

@@ -146,11 +146,11 @@ public class TankAI {
 		return output;
 	}
 
-	/*public double[] getLayerByIndex(int index){
+	public double[] getLayerByIndex(int index){
 		if(index < 0 || index >= layers.length)
 			return null;
 		return layers[index];
-	}*/
+	}
 
 	public void resetFitness(){
 		netFitness = 0;
