@@ -10,7 +10,7 @@ public class LearningAIClass {
 	private double[] bufferedInputData;
 	private int[] countInputs;
 	private boolean bestWasChanged;
-	private boolean readyToLearn;
+	private boolean readyToLearn, wasUpdated;
 	private int indexBest, indexWorst;
 	private int mapMaxCols, mapMaxRows;
 	private int maxEnemyTanks, maxBullets;
@@ -21,6 +21,7 @@ public class LearningAIClass {
 		globalMutationRate = 0.1;
 		bestWasChanged = false;
 		readyToLearn = false;
+		wasUpdated = false;
 		this.rand = rand;
 
 		mapMaxCols = mapMaxRows = 50;
@@ -43,6 +44,10 @@ public class LearningAIClass {
 			return null;
 
 		return tanksAI[indexBest];
+	}
+
+	public boolean wasMLUpdated(){
+		return wasUpdated;
 	}
 
 	private void setIndexForWorst(){
@@ -134,6 +139,7 @@ public class LearningAIClass {
 			}
 
 			setIndexForWorst();
+			wasUpdated = true;
 		}
 	}
 
@@ -236,10 +242,8 @@ public class LearningAIClass {
 			if(!done)
 				processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
 
-			size = tanksAI[indexBest].getSetFitness(0);
-			System.out.println("\rAfter reading ML; best fitness = " + size);
-			size = tanksAI[indexWorst].getSetFitness(0);
-			System.out.println("\t\tworst fitness = " + size);
+			System.out.println("\rAfter reading ML; best fitness = " + allFitness[indexBest]);
+			System.out.println("\t\tworst fitness = " + allFitness[indexWorst]);
 
 			done = true;
 		} catch(OutOfMemoryError e){

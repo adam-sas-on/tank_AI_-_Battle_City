@@ -37,7 +37,7 @@ public class TankAI {
 
 		this.rand = rand;
 		cellPrecisionUnitSize = cellPrecision;
-		eagleCollectibleTankInputSize = 8;// 8 for eagle, collectible  and 4  for controlled tank;
+		eagleCollectibleTankInputSize = 9;// 8 for eagle, collectible  and 5  for controlled tank;
 	}
 
 
@@ -378,7 +378,7 @@ public class TankAI {
 
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	// - - - - - - - - - - - - Methods to get informations about battlefield - - - - - - - - - - - -
+	// - - - - - - - - - - - - Methods to get information about battlefield- - - - - - - - - - - - -
 
 	/**
 	 * Changes AI networks input data according to map situation;
@@ -417,7 +417,7 @@ public class TankAI {
 		updateOutput = true;
 	}
 
-	public void updateOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell, int lifes, double immortalSecs, double freezeSecs){
+	public void updateOwnerState(int ownerX_pos, int ownerY_pos, MapCell ownerMapCell, int lifes, double immortalSecs, double freezeSecs, double radAngle){
 		if(!ready)
 			return;
 
@@ -425,9 +425,10 @@ public class TankAI {
 		ownerXY_pos[0] = ownerX_pos;
 		ownerXY_pos[1] = ownerY_pos;
 		inputData[nNetIndex] = ownerMapCell.getCellCode();
-		inputData[nNetIndex + 1] = lifes/10.0;// simple normalize;
-		inputData[nNetIndex + 2] = immortalSecs;
-		inputData[nNetIndex + 3] = freezeSecs;
+		inputData[nNetIndex + 1] = radAngle;
+		inputData[nNetIndex + 2] = lifes/10.0;// simple normalize;
+		inputData[nNetIndex + 3] = immortalSecs;
+		inputData[nNetIndex + 4] = freezeSecs;
 
 		updateOutput = true;
 	}
