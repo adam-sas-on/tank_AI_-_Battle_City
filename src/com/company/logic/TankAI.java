@@ -393,11 +393,13 @@ public class TankAI {
 			return;
 
 		MapCell mapCell;
-		int i, limit = mapRows*mapCols, mapIndex, columnIndex;
+		double cellCode;
+		int i, mapIndex, columnIndex, mapCellSize, ind;
 		int nNetLimit, nNetIndex = 0;
+		final int limit = mapRows*mapCols;
 		nNetLimit = mapMaxCols*mapMaxRows;// every group of mapMaxCols inputs is for defined map row;
 
-		Arrays.fill(inputData, 0, nNetLimit - 1, 0.0);
+		Arrays.fill(inputData, 0, nNetLimit - 1, -1.0);
 
 		for(i = 0; i < limit && nNetIndex < nNetLimit; i++){
 			columnIndex = i/mapCols;// rowIndex;
@@ -411,8 +413,20 @@ public class TankAI {
 			mapIndex = i/mapCols*(maxCols - mapCols) + i;// index + remaining cols;
 
 			mapCell = cells[mapIndex].getMapCell();
-			if(mapCell != null)
-				inputData[nNetIndex] = mapCell.getCellCode();
+			if(mapCell != null) {
+				mapCellSize = mapCell.getSize()/MapCell.getUnitSize();
+				cellCode = mapCell.getCellCode();
+				inputData[nNetIndex] = cellCode;
+				if(mapCellSize > 1 && nNetIndex + mapMaxCols < nNetLimit){
+					ind = nNetIndex + 1;
+					if(ind < nNetLimit && ind < mapMaxCols)
+						inputData[ind] = cellCode;
+					ind = nNetIndex + mapMaxCols;
+					if(ind < nNetLimit)
+						inputData[ind] = cellCode;
+				}
+			} else if(inputData[nNetIndex] < 0.0)
+				inputData[nNetIndex] = 0.0;
 		}
 		updateOutput = true;
 	}
