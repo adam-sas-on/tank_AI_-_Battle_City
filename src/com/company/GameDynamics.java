@@ -354,7 +354,7 @@ public class GameDynamics implements Iterable<Cell> {
 		if(eagleIndex < 0 || cell == null)
 			return false;
 
-		return cell.collide(cells[eagleIndex], cellPrecisionUnitSize);
+		return cell.collide(cells[eagleIndex], cellPrecisionUnitSize) && cells[eagleIndex].getMapCell() == MapCell.EAGLE;
 	}
 
 	private void updateInformationForAI(PlayerAITank player, boolean isPlaying, PlayerAITank ally, boolean isAllyPlaying){
@@ -565,6 +565,8 @@ public class GameDynamics implements Iterable<Cell> {
 				explosionsCount = removeFromArray(explosions, i, explosionsCount);
 				if(i == bulletOnEagleIndex)
 					eagleExists = false;
+				else if(i < bulletOnEagleIndex)
+					bulletOnEagleIndex--;
 				continue;
 			}
 			i++;
@@ -936,7 +938,7 @@ public class GameDynamics implements Iterable<Cell> {
 		}
 
 		steps++;
-		return eagleExists && (player1.getLifes() > 0 || player2.getLifes() > 0);
+		return eagleExists && ( (player1.getLifes() > 0 && play1stPlayer) || (player2.getLifes() > 0 && play2ndPlayer));
 	}
 
 	public void resetTheGame(){
