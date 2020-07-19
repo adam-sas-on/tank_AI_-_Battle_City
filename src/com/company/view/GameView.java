@@ -36,7 +36,8 @@ public class GameView {
 	private int sizePixels;
 	private int rightMenuWidth;
 	private int framesPerSecond, timeFrameInMilliseconds;
-	private boolean pause;
+	private int countingForSecond, counting;
+	private boolean pause, trainingAI;
 	private boolean[] aiPlaying;
 	private boolean player1stopped, player2stopped;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
@@ -66,6 +67,8 @@ public class GameView {
 		pause = true;
 		aiPlaying = new boolean[2];
 		player1stopped = player2stopped = false;
+		trainingAI = false;
+		counting = -1;
 
 		powerUps = new Cell();
 		trees = new ArrayList<>();
@@ -188,6 +191,11 @@ public class GameView {
 			playersAISwitches[i].setText("Play Human");
 		else
 			playersAISwitches[i].setText("Play AI");
+
+		if(aiPlaying[0] || aiPlaying[1]){
+			trainAI.setDisable(false);
+		} else
+			trainAI.setDisable(true);
 	}
 
 	public void switchPlayers1stPlaying(){
@@ -208,6 +216,21 @@ public class GameView {
 		} else {
 			playersAISwitches[1].setDisable(false);
 			player2stop.setText("Stop playing");
+		}
+	}
+
+	public void startStopTrainingAI(){
+		trainingAI = !trainingAI;
+		if(trainingAI){
+			trainAI.setText("Stop training");
+			blockMenuForPlaying();
+			playersAISwitches[0].setDisable(true);
+			playersAISwitches[1].setDisable(true);
+		} else {
+			trainAI.setText("Train AI");
+			unblockMenuForPlaying();
+			playersAISwitches[0].setDisable(false);
+			playersAISwitches[1].setDisable(false);
 		}
 	}
 
@@ -267,6 +290,8 @@ public class GameView {
 	public void clearTrees(){
 		treesCount = 0;
 	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	private void setPlayersGrid(GridPane inner, Label playerLifes, Label playerPoints, Button playAI, Button stopPlaying){
 		inner.setPadding(new Insets(10));
@@ -332,6 +357,43 @@ public class GameView {
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
 		return scene;
+	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	public void startCountingForAI(){
+		if(!trainingAI || counting > 0)
+			return;
+
+		counting = 8*framesPerSecond;
+		countingForSecond = framesPerSecond;
+		trainAI.setDisable(false);
+	}
+
+	public boolean keepCountingForAI(GameDynamics dynamics){
+		if(!trainingAI || pause)
+			return true;
+
+		counting--;
+		countingForSecond--;
+		if(countingForSecond == 0 && counting > 0){
+			countingForSecond = framesPerSecond;
+			// draw number;
+			int seconds = counting/framesPerSecond;
+			drawMap(dynamics);
+
+			double width = canvas.getWidth(), charWidth = width/6.0;// 6 chars for full width;
+			Font font = new Font("", 120);
+
+			gContext.setFont(font);
+			gContext.setFill(Color.AZURE);
+			gContext.fillText(Integer.toString(seconds), charWidth, canvas.getHeight()/2, width/2 - charWidth);
+		} else if(counting < 0){
+			trainAI.setDisable(true);
+			return false;
+		}
+
+		return true;
 	}
 
 	public void typeText(String text){

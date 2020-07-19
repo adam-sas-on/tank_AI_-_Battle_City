@@ -28,7 +28,7 @@ public class Game {
 	private GameDynamics dynamics;
 	private final Timeline timeline;
 	private boolean pause, mapFinished;
-	private boolean aiNotUpdated;
+	private boolean aiNotUpdated, trainingAI, aiWaiting;
 
 	private MapLoader mapLoader;
 	private List<String> maps;
@@ -58,6 +58,7 @@ public class Game {
 		dynamics = new GameDynamics(mapLoader, view, rand);
 		pause = mapFinished = true;
 		aiNotUpdated = true;
+		trainingAI = false;
 
 		setControllers(cellPrecisionUnitSize);
 
@@ -73,13 +74,14 @@ public class Game {
 		mapNumber = 1;
 		dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
 		this.view.selectMap(maps.get(mapNumber));
+		this.view.drawMap(dynamics);
 
 		// Cannot assign a value to final variable 'timeline'
 		timeline = new Timeline(
 				new KeyFrame(Duration.ZERO, new EventHandler<>(){
 					@Override
 					public void handle(ActionEvent actionEvent){
-						view.drawMap(dynamics);
+						view.refresh(dynamics);
 					}
 				}),
 				new KeyFrame(Duration.millis(20))
@@ -125,6 +127,17 @@ public class Game {
 		}
 	}
 
+	private void startStopTrainingAI(MouseEvent mouseEvent){
+		if(!player1driver.isDriveByAI() && !player2driver.isDriveByAI() )
+			return;
+
+		trainingAI = !trainingAI;
+		view.startStopTrainingAI();
+
+		if(!trainingAI)
+			dynamics.resetTheGame();
+	}
+
 	private void switchPlayers1AI(MouseEvent mouseEvent){
 		player1driver.switchPlayerAI();
 		view.switchAI(true);
@@ -156,23 +169,29 @@ public class Game {
 		startPauseGame();
 	}
 
+	private void loadMap(int mapIndex){
+		mapNumber = mapIndex;
+		dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
+		pause = false;
+		view.blockMenuForPlaying();
+		view.keepDrawing();
+		aiNotUpdated = true;
+	}
+
 	private void loadMapFromList(MouseEvent mouseEvent){
 		String map = view.getSelectedMap();
 		int mapIndex = maps.indexOf(map);
 		if(mapIndex < 0)
 			System.out.println("Can not get map called  " + map);
 		else {
-			mapNumber = mapIndex;
-			dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
-			pause = false;
-			view.blockMenuForPlaying();
-			view.keepDrawing();
-			aiNotUpdated = true;
+			loadMap(mapIndex);
 		}
 	}
 
 	public void start(){
 		view.getStartPauseButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startPauseGameByMouse);
+
+		view.getTrainingAIButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startStopTrainingAI);
 
 		view.getPlayersAI_switch(true).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers1AI);
 		view.getPlayersAI_switch(false).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers2AI);
@@ -187,7 +206,7 @@ public class Game {
 
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
-		runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
+		runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);// this::run -> new Runnable(){}
 		timeline.play();
 	}
 
@@ -195,7 +214,7 @@ public class Game {
 		KeyCode keyCode = keyEvent.getCode();
 		if(keyCode == KeyCode.C){
 			startPauseGame();
-			if(mapFinished){
+			if(mapFinished && !trainingAI){
 				loadMapFromList(null);
 				mapFinished = false;
 				aiNotUpdated = true;
@@ -220,17 +239,38 @@ public class Game {
 
 		if(pause)
 			return;
+		else if(trainingAI){
+			if(aiWaiting){
+				aiWaiting = view.keepCountingForAI(dynamics);
+				if(!aiWaiting){
+					dynamics.resetTheGame();
+					if(!mapFinished)
+						dynamics.resetTheGame();
+					loadMap(mapNumber);
+				}
+				return;
+			}
+
+			keepRunning = dynamics.nextStep();
+			mapFinished = dynamics.isMapFinished();
+			if(!keepRunning || mapFinished){
+				aiWaiting = true;
+				view.startCountingForAI();
+			}
+			return;
+		}
 
 		keepRunning = dynamics.nextStep();
 		mapFinished = dynamics.isMapFinished();
 		if(!keepRunning){
 			pause = true;
 			view.typeText("Game Over!");
-			//view.pauseDrawing();
+			view.pauseDrawing();
 			mapNumber++;
 			if(mapNumber == maps.size() )
 				mapNumber = 0;
 			view.selectNextMap();
+			view.getResetButton().setDisable(false);
 
 			upDateAI();
 		} else if(mapFinished){
@@ -249,17 +289,19 @@ public class Game {
 
 	public void stop(){
 		timeline.stop();
-		if( machineLearning.wasMLUpdated() )
-			machineLearning.writeFile();
 
 		runGame.shutdown();
 		try {
 			runGame.awaitTermination(1, TimeUnit.SECONDS);
 		} catch(InterruptedException ignore){}
 		runGame.shutdownNow();
+
+		if( machineLearning.wasMLUpdated() )
+			machineLearning.writeFile();
 	}
 
 	private void resetGame(MouseEvent mouseEvent){
+		trainingAI = false;
 		dynamics.resetTheGame();
 		pause = true;
 		view.pauseDrawing();
