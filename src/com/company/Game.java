@@ -28,6 +28,7 @@ public class Game {
 	private GameDynamics dynamics;
 	private final Timeline timeline;
 	private boolean pause, mapFinished;
+	private boolean aiNotUpdated, aiUsed;
 
 	private MapLoader mapLoader;
 	private List<String> maps;
@@ -55,7 +56,9 @@ public class Game {
 
 		runGame = Executors.newSingleThreadScheduledExecutor();
 		dynamics = new GameDynamics(mapLoader, view, rand);
-		pause = mapFinished = false;
+		pause = mapFinished = true;
+		aiNotUpdated = true;
+		aiUsed = false;
 
 		setControllers(cellPrecisionUnitSize);
 
@@ -96,9 +99,12 @@ public class Game {
 		if(!success)
 			machineLearning.setDefaultLearningPopulation();
 
+		allyAI1 = new TankAI(rand, 2, cellPrecisionUnitSize);
 		allyAI2 = machineLearning.getCurrentProcessed();
+		allyAI1.resetByOtherNN(allyAI2);
+
+		player1driver.setAI(allyAI1);
 		player2driver.setAI(allyAI2);
-		player2driver.useAI();
 	}
 
 	private void setPlayerIcons(){
@@ -106,6 +112,26 @@ public class Game {
 
 		// - - - player 2nd;
 		player2.setIcons();
+	}
+
+	private void upDateAI(){
+		if(aiNotUpdated){
+			aiNotUpdated = false;
+			player1.updateActionPoints();
+			player2.updateActionPoints();
+
+			machineLearning.updateAI();
+			machineLearning.weightedSelection();
+		}
+	}
+
+	private void switchPlayers1AI(MouseEvent mouseEvent){
+		player1driver.switchPlayerAI();
+		view.switchAI(true);
+	}
+	private void switchPlayers2AI(MouseEvent mouseEvent){
+		player2driver.switchPlayerAI();
+		view.switchAI(false);
 	}
 
 	private void startPauseGame(){
@@ -129,19 +155,18 @@ public class Game {
 			mapNumber = mapIndex;
 			dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
 			pause = false;
-			view.getLoadingMapButton().setDisable(true);
+			view.blockMenuForPlaying();
 			view.keepDrawing();
-
-			player1.updateActionPoints();
-			player2.updateActionPoints();
-
-			machineLearning.updateAI();
-			machineLearning.weightedSelection();
+			aiNotUpdated = true;
 		}
 	}
 
 	public void start(){
 		view.getStartPauseButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startPauseGameByMouse);
+
+		view.getPlayersAI_switch(true).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers1AI);
+		view.getPlayersAI_switch(false).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers2AI);
+
 
 		view.getLoadingMapButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::loadMapFromList);
 
@@ -160,6 +185,7 @@ public class Game {
 			if(mapFinished){
 				loadMapFromList(null);
 				mapFinished = false;
+				aiNotUpdated = true;
 			}
 
 			return;
@@ -193,27 +219,25 @@ public class Game {
 				mapNumber = 0;
 			view.selectNextMap();
 
-			player1.updateActionPoints();
-			player2.updateActionPoints();
-
-			machineLearning.updateAI();
-			machineLearning.weightedSelection();
+			upDateAI();
 		} else if(mapFinished){
 			pause = true;
 			view.typeText("Map finished");
 			mapNumber++;
 			if(mapNumber == maps.size() )
 				mapNumber = 0;
-			view.getLoadingMapButton().setDisable(false);
+			view.unblockMenuForPlaying();
 			//dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
 			view.selectNextMap();
+
+			upDateAI();
 		}
 	}
 
 	public void stop(){
 		timeline.stop();
-		//allyAI2.writeFile();
-		machineLearning.writeFile();
+		if( machineLearning.wasMLUpdated() )
+			machineLearning.writeFile();
 
 		runGame.shutdown();
 		try {
@@ -224,10 +248,11 @@ public class Game {
 
 	private void resetGame(MouseEvent mouseEvent){
 		dynamics.resetTheGame();
-		pause = false;
+		pause = true;
+		view.pauseDrawing();
 		mapFinished = false;
 		mapNumber = 1;
 		// reload map;
-		view.getLoadingMapButton().setDisable(false);
+		view.unblockMenuForPlaying();
 	}
 }
