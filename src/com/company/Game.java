@@ -28,7 +28,7 @@ public class Game {
 	private GameDynamics dynamics;
 	private final Timeline timeline;
 	private boolean pause, mapFinished;
-	private boolean aiNotUpdated, aiUsed;
+	private boolean aiNotUpdated;
 
 	private MapLoader mapLoader;
 	private List<String> maps;
@@ -58,7 +58,6 @@ public class Game {
 		dynamics = new GameDynamics(mapLoader, view, rand);
 		pause = mapFinished = true;
 		aiNotUpdated = true;
-		aiUsed = false;
 
 		setControllers(cellPrecisionUnitSize);
 
@@ -115,7 +114,8 @@ public class Game {
 	}
 
 	private void upDateAI(){
-		if(aiNotUpdated){
+		boolean aiUsed = player1driver.isDriveByAI() || player2driver.isDriveByAI();
+		if(aiNotUpdated && aiUsed){
 			aiNotUpdated = false;
 			player1.updateActionPoints();
 			player2.updateActionPoints();
@@ -133,6 +133,16 @@ public class Game {
 		player2driver.switchPlayerAI();
 		view.switchAI(false);
 	}
+
+	private void switchPlayingFor1st(MouseEvent mouseEvent){
+		dynamics.setUnsetPlaying1stPlayer();
+		view.switchPlayers1stPlaying();
+	}
+	private void switchPlayingFor2nd(MouseEvent mouseEvent){
+		dynamics.setUnsetPlaying2ndPlayer();
+		view.switchPlayers2ndPlaying();
+	}
+
 
 	private void startPauseGame(){
 		pause = !pause;
@@ -166,6 +176,9 @@ public class Game {
 
 		view.getPlayersAI_switch(true).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers1AI);
 		view.getPlayersAI_switch(false).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers2AI);
+
+		view.get1stPlayerStopButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayingFor1st);
+		view.get2ndPlayerStopButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayingFor2nd);
 
 
 		view.getLoadingMapButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::loadMapFromList);

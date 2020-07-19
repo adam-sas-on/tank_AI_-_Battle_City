@@ -38,6 +38,7 @@ public class GameView {
 	private int framesPerSecond, timeFrameInMilliseconds;
 	private boolean pause;
 	private boolean[] aiPlaying;
+	private boolean player1stopped, player2stopped;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
 
@@ -64,7 +65,7 @@ public class GameView {
 
 		pause = true;
 		aiPlaying = new boolean[2];
-		aiPlaying[0] = aiPlaying[1] = false;
+		player1stopped = player2stopped = false;
 
 		powerUps = new Cell();
 		trees = new ArrayList<>();
@@ -89,8 +90,8 @@ public class GameView {
 		playersAISwitches = new Button[2];
 		playersAISwitches[0] = new Button("Play AI");
 		playersAISwitches[1] = new Button("Play AI");// play Player/Human;
-		player1stop = new Button("Stop Playing");
-		player2stop = new Button("Stop Playing");
+		player1stop = new Button("Stop playing");
+		player2stop = new Button("Stop playing");
 	}
 
 	public int getDefaultCellSize(){
@@ -123,6 +124,13 @@ public class GameView {
 
 	public Button getPlayersAI_switch(boolean firstPlayer){
 		return (firstPlayer)?playersAISwitches[0]:playersAISwitches[1];
+	}
+
+	public Button get1stPlayerStopButton(){
+		return player1stop;
+	}
+	public Button get2ndPlayerStopButton(){
+		return player2stop;
 	}
 
 	public Button getLoadingMapButton(){
@@ -180,6 +188,21 @@ public class GameView {
 			playersAISwitches[i].setText("Play Human");
 		else
 			playersAISwitches[i].setText("Play AI");
+	}
+
+	public void switchPlayers1stPlaying(){
+		player1stopped = !player1stopped;
+		if(player1stopped)
+			player1stop.setText("Start playing");
+		else
+			player1stop.setText("Stop playing");
+	}
+	public void switchPlayers2ndPlaying(){
+		player2stopped = !player2stopped;
+		if(player2stopped)
+			player2stop.setText("Start playing");
+		else
+			player2stop.setText("Stop playing");
 	}
 
 	public void blockMenuForPlaying(){

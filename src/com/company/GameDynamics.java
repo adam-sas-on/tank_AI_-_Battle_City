@@ -13,6 +13,7 @@ import java.util.*;
 public class GameDynamics implements Iterable<Cell> {
 	private PlayerAITank player1;
 	private PlayerAITank player2;
+	private boolean play1stPlayer, play2ndPlayer;
 
 	private Queue<Enemy> tanksList;
 	private Enemy[] activeTanks;
@@ -54,6 +55,7 @@ public class GameDynamics implements Iterable<Cell> {
 		steps = 0;
 
 		int sizeBegin = 10;// any beginning size;
+		play1stPlayer = play2ndPlayer = true;
 
 		tanksList = new LinkedList<>();
 		activeTanks = new Enemy[sizeBegin];
@@ -227,6 +229,13 @@ public class GameDynamics implements Iterable<Cell> {
 			player2.setMaxColsOfMaps(maxCols);
 	}
 
+	public void setUnsetPlaying1stPlayer(){
+		play1stPlayer = !play1stPlayer;
+	}
+	public void setUnsetPlaying2ndPlayer(){
+		play2ndPlayer = !play2ndPlayer;
+	}
+
 	private void addBullet(Bullet bullet){
 		if(bulletsCount + 1 > bullets.length){
 			int newLength = (int)(bullets.length*bulletsCountMultiplier);
@@ -286,8 +295,11 @@ public class GameDynamics implements Iterable<Cell> {
 			randomRow = rand.randomOdd(rowCells - 1)*cellPrecisionUnitSize;
 			collectibles.setPos(rand.randomOdd(colCells - 1)*cellPrecisionUnitSize, randomRow);
 
-			collide = player1Cell.collide(collectibles, cellPrecisionUnitSize);
-			if(!collide)
+			collide = false;
+			if(play1stPlayer)
+				collide = player1Cell.collide(collectibles, cellPrecisionUnitSize);
+
+			if(!collide && play2ndPlayer)
 				collide = player2Cell.collide(collectibles, cellPrecisionUnitSize);
 			if(!collide && eagleIndex >= 0)
 				collide = cellCollideEagle(collectibles);
@@ -345,6 +357,23 @@ public class GameDynamics implements Iterable<Cell> {
 		return cell.collide(cells[eagleIndex], cellPrecisionUnitSize);
 	}
 
+	private void updateInformationForAI(PlayerAITank player, boolean isPlaying, PlayerAITank ally, boolean isAllyPlaying){
+		if(!isPlaying)
+			return;
+
+		if(eagleIndex >= 0)
+			player.reportMapSituation(cells, cells[eagleIndex], collectibles);
+		else
+			player.reportMapSituation(cells, null, collectibles);
+
+		if(isAllyPlaying)
+			player.evaDetailsOnAllTanksAndBullets(activeTanks, tanksSpritesCount, ally, bullets, bulletsCount);
+		else
+			player.evaDetailsOnAllTanksAndBullets(activeTanks, tanksSpritesCount, null, bullets, bulletsCount);
+	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	// - - - - - - - - - - - - - - - Simulating bullets and explosions - - - - - - - - - - - - - - -
 
 	private int addEnemyExplodesToList(List<Cell> explodesCell, int startIndex){
 		Cell cell;
@@ -578,8 +607,10 @@ public class GameDynamics implements Iterable<Cell> {
 				cells[eagleIndex].setMapCell(MapCell.EAGLE_DESTROYED);
 				explodeBullet(i, cells[eagleIndex]);
 				bulletOnEagleIndex = explosionsCount - 1;
-				player1.eagleDestroyed();
-				player2.eagleDestroyed();
+				if(play1stPlayer)
+					player1.eagleDestroyed();
+				if(play2ndPlayer)
+					player2.eagleDestroyed();
 			}
 
 			isPlayers = bullets[i].belongsToPlayer();
@@ -617,9 +648,13 @@ public class GameDynamics implements Iterable<Cell> {
 					continue;
 				}
 			} else {
-				isHitExplosion = player1.getHit(bulletCell, tankCell);
-				isPlayerImmortal = player1.isImmortal();
-				if(!isHitExplosion){
+				isHitExplosion = isPlayerImmortal = false;
+				if(play1stPlayer){
+					isHitExplosion = player1.getHit(bulletCell, tankCell);
+					isPlayerImmortal = player1.isImmortal();
+				}
+
+				if(!isHitExplosion && play2ndPlayer){
 					isHitExplosion = player2.getHit(bulletCell, tankCell);
 					isPlayerImmortal = player2.isImmortal();
 				}
@@ -660,9 +695,9 @@ public class GameDynamics implements Iterable<Cell> {
 			explodingTanks[i].setUpCell(bufferCell);
 		}
 
-		if(player1.getLifes() <= 0)
+		if(player1.getLifes() <= 0 && play1stPlayer)
 			player1.requestedPosition(xyPos);
-		if(player2.getLifes() <= 0)
+		if(player2.getLifes() <= 0 && play2ndPlayer)
 			player2.requestedPosition(xyPos);
 	}
 
@@ -776,10 +811,10 @@ public class GameDynamics implements Iterable<Cell> {
 		int allTanksCount = 2;// players
 		boolean moved, player1playing = false, player2playing = false;
 
-		if(player1 != null){
+		if(player1 != null && play1stPlayer){
 			player1playing = player1.getLifes() > 0;
 		}
-		if(player2 != null){
+		if(player2 != null && play2ndPlayer){
 			player2playing = player2.getLifes() > 0;
 		}
 
@@ -873,14 +908,8 @@ public class GameDynamics implements Iterable<Cell> {
 
 		moveTanks();
 
-		if(eagleIndex >= 0){
-			player1.reportMapSituation(cells, cells[eagleIndex], collectibles);
-			player2.reportMapSituation(cells, cells[eagleIndex], collectibles);
-		} else {
-			player1.reportMapSituation(cells, null, collectibles);
-			player2.reportMapSituation(cells, null, collectibles);
-		}
-		player2.evaDetailsOnAllTanksAndBullets(activeTanks, tanksSpritesCount, player1, bullets, bulletsCount);
+		updateInformationForAI(player1, play1stPlayer, player2, play2ndPlayer);
+		updateInformationForAI(player2, play2ndPlayer, player1, play1stPlayer);
 
 		boolean eagleExists;
 		eagleExists = moveBullets();
@@ -941,9 +970,9 @@ public class GameDynamics implements Iterable<Cell> {
 			private boolean iterateTanks = tanksSpritesCount > 0;
 			private boolean iterateBullets = bulletsCount > 0;
 
-			private boolean iteratePlayer1 = player1 != null && player1.exists();
+			private boolean iteratePlayer1 = player1 != null && player1.exists() && play1stPlayer;
 			private boolean player1Immortality = iteratePlayer1 && player1.getImmortalityCell() != null;
-			private boolean iteratePlayer2 = player2 != null && player2.exists();
+			private boolean iteratePlayer2 = player2 != null && player2.exists() && play2ndPlayer;
 			private boolean player2Immortality = iteratePlayer2 && player2.getImmortalityCell() != null;
 
 			private boolean iteratePorts = ports.size() > 0;
