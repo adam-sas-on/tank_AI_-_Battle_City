@@ -12,6 +12,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -28,6 +30,9 @@ public class GameView {
 	private Button startPause;
 	private Button mapSelectButton;
 	private Button resetButton;
+	private Button trainAI;//, animateAI;
+	private Button player1switch, player2switch;
+	private Button player1stop, player2stop;
 	private Label[] playersLives, playersPoints;
 	private ListView<String> mapList;
 	private int rowCells = 26, colCells = 26;
@@ -51,8 +56,8 @@ public class GameView {
 
 		canvas = new Canvas(colCells *sizePixels, rowCells *sizePixels);
 		gContext = canvas.getGraphicsContext2D();
+		rightMenuWidth = 160;
 		setRightMenu();
-		rightMenuWidth = 150;
 
 		InputStream is = Cell.class.getResourceAsStream("/battle_city_tiles.png");
 		tiles = new Image(is);
@@ -80,6 +85,11 @@ public class GameView {
 		mapList = new ListView<>();
 		mapSelectButton = new Button("Load map");
 		resetButton = new Button("Reset the game");
+		trainAI = new Button("Train AI");
+		player1switch = new Button("Play AI");
+		player2switch = new Button("Play AI");// play Player;
+		player1stop = new Button("Stop Playing");
+		player2stop = new Button("Stop Playing");
 	}
 
 	public int getDefaultCellSize(){
@@ -177,25 +187,6 @@ public class GameView {
 		canvas.setHeight(rowCells*sizePixels);
 	}
 
-	/*private boolean addExplode(Cell explodeCell){
-		MapCell mapCell = explodeCell.getMapCell();
-		if(mapCell != MapCell.EXPLODE_1 && mapCell != MapCell.EXPLODE_2 && mapCell != MapCell.EXPLODE_3 &&
-				mapCell != MapCell.EXPLODE_4 && mapCell != MapCell.EXPLODE_5)
-			return false;
-
-		int count = explodes.size();
-
-		if(explodesCount >= count){
-			Cell cell = new Cell();
-			cell.setByOtherCell(explodeCell);
-			explodes.add(cell);
-		} else
-			explodes.get(explodesCount).setByOtherCell(explodeCell);
-
-		explodesCount++;
-		return true;
-	}*/
-
 	public void addTree(Cell treeCell){
 		int count = trees.size();
 
@@ -213,36 +204,58 @@ public class GameView {
 		treesCount = 0;
 	}
 
+	private void setPlayersGrid(GridPane inner, Label playerLifes, Label playerPoints, Button playAI, Button stopPlaying){
+		inner.setPadding(new Insets(10));
+		inner.setVgap(6);
+		inner.setHgap(6);
+		inner.add(playerLifes, 0, 0, 2, 1);
+		inner.add(playerPoints, 0, 1, 2, 1);
+		inner.add(playAI, 0, 2);
+		inner.add(stopPlaying, 1, 2);
+	}
+
 	private void setRightMenu(GridPane ui){
-		ui.setPadding(new Insets(10));
-
-		ui.add(startPause, 0, 1);
-		ui.setVgap(8);
-
-		//VBox box = new VBox(10);
-		//box.getChildren().addAll(playersLives[0], playersPoints[0], playersLives[1], playersPoints[1]);
-		ui.add(playersLives[0], 0, 3);
+		int inset = 10;
 		ui.setHgap(2);
-		ui.add(playersPoints[0], 0, 5);
-		ui.setHgap(8);
-		ui.add(playersLives[1], 0, 7);
-		ui.setHgap(2);
-		ui.add(playersPoints[1], 0, 9);
+		ui.setVgap(6);
 
-		ui.setHgap(8);
+		HBox buttons = new HBox();
+		buttons.setPadding(new Insets(inset));
+		buttons.setSpacing(10);
+		buttons.getChildren().addAll(startPause, trainAI);
+		ui.add(buttons, 0, 0);
+		//ui.add(animateAI, 1, 1);
+
+		GridPane innerGrid = new GridPane();
+		innerGrid.setPadding(new Insets(inset));
+		setPlayersGrid(innerGrid, playersLives[0], playersPoints[0], player1switch, player1stop);
+		ui.add(innerGrid, 0, 2);
+
+		innerGrid = new GridPane();
+		innerGrid.setPadding(new Insets(inset));
+		setPlayersGrid(innerGrid, playersLives[1], playersPoints[1], player2switch, player2stop);
+		ui.add(innerGrid, 0, 3);
+
+		innerGrid = new GridPane();
+		innerGrid.setPadding(new Insets(inset));
+		innerGrid.setVgap(6);
+		innerGrid.setHgap(6);
+		//GridPane.setColumnSpan(mapList, 2);
 		mapList.setPrefHeight( 8*MapCell.getUnitSize() );
-		ui.add(mapList, 0, 11);
-		ui.setHgap(2);
-		ui.add(mapSelectButton, 0, 13);
+		mapList.setPrefWidth(rightMenuWidth);
+		innerGrid.add(mapList, 0, 1);
+		innerGrid.add(mapSelectButton, 0, 2);
+		innerGrid.add(resetButton, 0, 4);
 
-		ui.add(resetButton, 0, 15);
+		ui.add(innerGrid, 0, 4);
 	}
 
 	public Scene drawStart(){
 		GridPane gridPane = new GridPane();
 		BorderPane borderP = new BorderPane();
 
-		gridPane.setPrefWidth(rightMenuWidth);
+		gridPane.setPrefWidth(1.2*rightMenuWidth);
+		gridPane.setMinWidth(1.1*rightMenuWidth);
 		setRightMenu(gridPane);
 
 		borderP.setLeft(canvas);
