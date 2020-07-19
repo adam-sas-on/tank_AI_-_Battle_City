@@ -174,6 +174,17 @@ public class SpriteEventController {
 		isPlayer = false;
 	}
 
+	public void switchPlayerAI(){
+		if(readyAI) {
+			isPlayer = !isPlayer;
+			if(!isPlayer){
+				currentAngle = -1;
+				currentShotPower = 0;
+				keepShooting = false;
+			}
+		}
+	}
+
 	/**
 	 * Set maximum number of cells in row of maps from resource files;
 	 * @param maxCols maximum number of columns;
@@ -193,7 +204,7 @@ public class SpriteEventController {
 
 	public void readTankControls(int x_pos, int y_pos, MapCell tankMapCell, int lifes, double immortalSecs, double freezeSecs){
 		if(!isPlayer && readyAI){
-			AIDriver.updateOwnerState(x_pos, y_pos, tankMapCell, lifes, immortalSecs, freezeSecs);
+			AIDriver.updateOwnerState(x_pos, y_pos, tankMapCell, lifes, immortalSecs, freezeSecs, Math.toRadians(turningAngle));
 		}
 	}
 
@@ -219,7 +230,6 @@ public class SpriteEventController {
 				return -1;
 
 			aiRequest();
-			// todo: make here computer to drive the tank;
 			return currentAngle;
 		}
 		return currentAngle;
