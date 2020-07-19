@@ -346,7 +346,7 @@ public class LearningAIClass {
 			file = new File(fPath + "ai_resources/" + fileName);
 
 			os = new FileOutputStream(file);
-			dOs = new DataOutputStream(os);
+			dOs = new DataOutputStream(new BufferedOutputStream(os));
 
 			if(!file.exists() )
 				file.createNewFile();
@@ -407,6 +407,13 @@ public class LearningAIClass {
 		} catch(IOException e){
 			System.out.println("Writing to Machine Learning file  " + fileName  + "  failed!");
 		} finally {
+			if(dOs != null){
+				try {
+					dOs.flush();
+					dOs.close();
+				} catch(IOException e){
+					System.out.println("Error closing data-stream! " + e);}
+			}
 			if(os != null){
 				try {
 					os.flush();
@@ -414,13 +421,6 @@ public class LearningAIClass {
 				}catch(IOException e){
 					System.out.println("Error closing stream (ML)! " + e);
 				}
-			}
-			if(dOs != null){
-				try {
-					dOs.flush();
-					dOs.close();
-				} catch(IOException e){
-					System.out.println("Error closing data-stream! " + e);}
 			}
 		}
 	}
