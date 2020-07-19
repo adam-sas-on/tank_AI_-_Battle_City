@@ -1,7 +1,6 @@
 package com.company.view;
 
 import com.company.GameDynamics;
-import com.company.model.Bullet;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -13,14 +12,12 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class GameView {
@@ -31,7 +28,7 @@ public class GameView {
 	private Button mapSelectButton;
 	private Button resetButton;
 	private Button trainAI;//, animateAI;
-	private Button player1switch, player2switch;
+	private Button[] playersAISwitches;
 	private Button player1stop, player2stop;
 	private Label[] playersLives, playersPoints;
 	private ListView<String> mapList;
@@ -40,6 +37,7 @@ public class GameView {
 	private int rightMenuWidth;
 	private int framesPerSecond, timeFrameInMilliseconds;
 	private boolean pause;
+	private boolean[] aiPlaying;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
 	private final int cellDefaultSize;
 
@@ -64,7 +62,9 @@ public class GameView {
 
 		cellDefaultSize = Math.max(MapCell.getUnitSize(), cellPrecisionUnitSize);
 
-		pause = false;
+		pause = true;
+		aiPlaying = new boolean[2];
+		aiPlaying[0] = aiPlaying[1] = false;
 
 		powerUps = new Cell();
 		trees = new ArrayList<>();
@@ -86,8 +86,9 @@ public class GameView {
 		mapSelectButton = new Button("Load map");
 		resetButton = new Button("Reset the game");
 		trainAI = new Button("Train AI");
-		player1switch = new Button("Play AI");
-		player2switch = new Button("Play AI");// play Player;
+		playersAISwitches = new Button[2];
+		playersAISwitches[0] = new Button("Play AI");
+		playersAISwitches[1] = new Button("Play AI");// play Player/Human;
 		player1stop = new Button("Stop Playing");
 		player2stop = new Button("Stop Playing");
 	}
@@ -116,6 +117,14 @@ public class GameView {
 		return startPause;
 	}
 
+	public Button getTrainingAIButton(){
+		return trainAI;
+	}
+
+	public Button getPlayersAI_switch(boolean firstPlayer){
+		return (firstPlayer)?playersAISwitches[0]:playersAISwitches[1];
+	}
+
 	public Button getLoadingMapButton(){
 		return mapSelectButton;
 	}
@@ -125,7 +134,7 @@ public class GameView {
 	}
 
 	public String getSelectedMap(){
-		String map;
+		String map;// = "map_01.txt";
 		map = mapList.getSelectionModel().getSelectedItem();
 		return map;
 	}
@@ -154,6 +163,41 @@ public class GameView {
 			mapList.getSelectionModel().selectNext();
 	}
 
+	public void pauseDrawing(){
+		pause = true;
+		startPause.setText("Play");
+	}
+	public void keepDrawing(){
+		pause = false;
+		startPause.setText("Pause");
+	}
+
+	public void switchAI(boolean firstPlayer){
+		int i = (firstPlayer)?0:1;
+		aiPlaying[i] = !aiPlaying[i];
+
+		if(aiPlaying[i])
+			playersAISwitches[i].setText("Play Human");
+		else
+			playersAISwitches[i].setText("Play AI");
+	}
+
+	public void blockMenuForPlaying(){
+		mapSelectButton.setDisable(true);
+		trainAI.setDisable(true);
+		player1stop.setDisable(true);
+		player2stop.setDisable(true);
+		resetButton.setDisable(true);
+	}
+	public void unblockMenuForPlaying(){
+		mapSelectButton.setDisable(false);
+		trainAI.setDisable(false);
+		player1stop.setDisable(false);
+		player2stop.setDisable(false);
+		resetButton.setDisable(false);
+	}
+
+
 	public void setFramesPerSeconds(int timeFrameInMilliseconds){
 		this.timeFrameInMilliseconds = timeFrameInMilliseconds;
 		framesPerSecond = 1000/timeFrameInMilliseconds;
@@ -166,15 +210,6 @@ public class GameView {
 			colCells = newCols;
 		if(newRows > 1)
 			rowCells = newRows;
-	}
-
-	public void pauseDrawing(){
-		pause = true;
-		startPause.setText("Play");
-	}
-	public void keepDrawing(){
-		pause = false;
-		startPause.setText("Pause");
 	}
 
 	public void modifyCellSize(int stageWidth, int stageHeight){
@@ -228,12 +263,12 @@ public class GameView {
 
 		GridPane innerGrid = new GridPane();
 		innerGrid.setPadding(new Insets(inset));
-		setPlayersGrid(innerGrid, playersLives[0], playersPoints[0], player1switch, player1stop);
+		setPlayersGrid(innerGrid, playersLives[0], playersPoints[0], playersAISwitches[0], player1stop);
 		ui.add(innerGrid, 0, 2);
 
 		innerGrid = new GridPane();
 		innerGrid.setPadding(new Insets(inset));
-		setPlayersGrid(innerGrid, playersLives[1], playersPoints[1], player2switch, player2stop);
+		setPlayersGrid(innerGrid, playersLives[1], playersPoints[1], playersAISwitches[1], player2stop);
 		ui.add(innerGrid, 0, 3);
 
 		innerGrid = new GridPane();
@@ -263,6 +298,9 @@ public class GameView {
 
 		//StackPane layout = new StackPane();
 		Scene scene = new Scene(borderP);
+
+		gContext.setFill(Color.BLACK);
+		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
 		return scene;
 	}
