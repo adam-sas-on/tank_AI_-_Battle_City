@@ -192,17 +192,23 @@ public class GameView {
 
 	public void switchPlayers1stPlaying(){
 		player1stopped = !player1stopped;
-		if(player1stopped)
+		if(player1stopped){
+			playersAISwitches[0].setDisable(true);
 			player1stop.setText("Start playing");
-		else
+		} else {
+			playersAISwitches[0].setDisable(false);
 			player1stop.setText("Stop playing");
+		}
 	}
 	public void switchPlayers2ndPlaying(){
 		player2stopped = !player2stopped;
-		if(player2stopped)
+		if(player2stopped){
+			playersAISwitches[1].setDisable(true);
 			player2stop.setText("Start playing");
-		else
+		} else {
+			playersAISwitches[1].setDisable(false);
 			player2stop.setText("Stop playing");
+		}
 	}
 
 	public void blockMenuForPlaying(){
@@ -358,13 +364,8 @@ public class GameView {
 	}
 
 	public void drawMap(GameDynamics dynamics){
-		if(pause)
-			return;
-
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
-		printPlayersProperties(dynamics);
 
 		dynamics.setCellSize(sizePixels);
 		dynamics.setFromCollectible(powerUps);
@@ -400,6 +401,15 @@ public class GameView {
 		}
 
 		powerUps.drawCell(gContext, tiles, multiplier);
+	}
+
+	public void refresh(GameDynamics dynamics){
+		if(pause)
+			return;
+
+		printPlayersProperties(dynamics);
+
+		drawMap(dynamics);
 	}
 
 	/*private boolean cellNotCollideWithOthers(Cell cell){
