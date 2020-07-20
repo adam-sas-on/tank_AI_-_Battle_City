@@ -166,12 +166,8 @@ public class SpriteEventController {
 		}
 	}
 
-	public void usePlayer(){
-		isPlayer = true;
-	}
-
-	public void useAI(){
-		isPlayer = false;
+	public boolean isDriveByAI(){
+		return !isPlayer;
 	}
 
 	public void switchPlayerAI(){
@@ -202,9 +198,10 @@ public class SpriteEventController {
 	}
 
 
-	public void readTankControls(int x_pos, int y_pos, MapCell tankMapCell, int lifes, double immortalSecs, double freezeSecs){
+	public void readTankControls(int x_pos, int y_pos, MapCell tankMapCell,
+								int lifes, double immortalSecs, double freezeSecs, int currentDirection){
 		if(!isPlayer && readyAI){
-			AIDriver.updateOwnerState(x_pos, y_pos, tankMapCell, lifes, immortalSecs, freezeSecs, Math.toRadians(turningAngle));
+			AIDriver.updateOwnerState(x_pos, y_pos, tankMapCell, lifes, immortalSecs, freezeSecs, Math.toRadians(currentDirection));
 		}
 	}
 

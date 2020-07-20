@@ -91,7 +91,7 @@ public class PlayerAITank implements Tank {
 	}
 
 	public Direction getDirectionCode(){
-		return tankDriver.getDirection();
+		return Direction.directionByAngle(currentDirection);
 	}
 
 	public int getBulletSpeed(){
@@ -122,6 +122,9 @@ public class PlayerAITank implements Tank {
 	}
 
 	public int addPoints(int pointsToAdd){
+		if(lifes < 1)
+			return 0;
+
 		points += pointsToAdd;
 		actionPoints += pointsToAdd;
 		return points;
@@ -195,7 +198,7 @@ public class PlayerAITank implements Tank {
 					level = 1;
 				}
 				isExploding = true;
-				actionPoints -= 4000;// arbitrary values for now;
+				actionPoints -= 5000;// arbitrary values for now;
 			}
 			actionPoints -= 1000;
 		}
@@ -269,7 +272,7 @@ public class PlayerAITank implements Tank {
 	}
 
 	public boolean getHit(Cell bulletCell, Cell tankBufferCell){
-		if(bulletCell == null || tankBufferCell == null || isExploding)
+		if(bulletCell == null || tankBufferCell == null || isExploding || lifes < 1)
 			return false;
 
 		tankBufferCell.setMapCell(currentIcons[currentIconInd]);
@@ -440,7 +443,7 @@ public class PlayerAITank implements Tank {
 		actionPoints -= 1000;// arbitrary values for now;
 	}
 	public void eagleDestroyed(){
-		actionPoints -= 20000;
+		actionPoints -= 25000;
 	}
 
 	public void setMaxColsOfMaps(int maxCols){
@@ -455,7 +458,7 @@ public class PlayerAITank implements Tank {
 		if(!isExploding){
 			double immortalSecs = (5.0*immortalStepper)/stepsFor5Sec,
 				freezeSecs = (5.0*freezeStepper)/stepsFor5Sec;
-			tankDriver.readTankControls(x_pos, y_pos, currentIcons[currentIconInd], lifes, immortalSecs, freezeSecs);
+			tankDriver.readTankControls(x_pos, y_pos, currentIcons[currentIconInd], lifes, immortalSecs, freezeSecs, currentDirection);
 			tankDriver.readMapReport(map, eagleCell, collectible);
 		}
 	}
