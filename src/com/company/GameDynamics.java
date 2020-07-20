@@ -32,7 +32,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private int rowCells;
 	private int colCells;
 	private final int maxCols;
-	private int eagleIndex, bulletOnEagleIndex;
+	private int eagleIndex, bulletOnEagleStepper;
 	private Cell collectibles;
 	private int collectibleTimer;// timer how long tank can be suspended or how long player can be indestructible;
 	private int cellUnitSize;
@@ -66,7 +66,7 @@ public class GameDynamics implements Iterable<Cell> {
 		bulletsCount = explosionsCount = 0;
 		bullets = new Bullet[sizeBegin];
 		explosions = new Bullet[sizeBegin];
-		eagleIndex = bulletOnEagleIndex = -1;
+		eagleIndex = bulletOnEagleStepper = -1;
 
 		setCellsStructure(maxCols, mapLoader.getMaxRows() );
 		collectibles = new Cell();
@@ -206,7 +206,7 @@ public class GameDynamics implements Iterable<Cell> {
 	}
 
 	private void setEagleIndex(){
-		bulletOnEagleIndex = -1;
+		bulletOnEagleStepper = -1;
 
 		int i = 0, indexLimit = rowCells*colCells, mapIndex;
 		for(eagleIndex = -1; i < indexLimit; i++){
@@ -446,15 +446,17 @@ public class GameDynamics implements Iterable<Cell> {
 		return newSize;
 	}
 
-	private void explodeBullet(int bulletIndex, Cell destroyedCell){
+	private int explodeBullet(int bulletIndex, Cell destroyedCell){
 		explosions[explosionsCount] = bullets[bulletIndex];
 		bulletsCount = removeFromArray(bullets, bulletIndex, bulletsCount);
+		int explodeSteps = 0;
 
 		if (destroyedCell == null) {
 			explosions[explosionsCount].setSmallExplode();
 		} else
-			explosions[explosionsCount].setExplode(destroyedCell);
+			explodeSteps = explosions[explosionsCount].setExplode(destroyedCell);
 		explosionsCount++;
+		return explodeSteps;
 	}
 
 	private boolean performEnvironmentExplosion(int bulletIndex){
@@ -559,14 +561,19 @@ public class GameDynamics implements Iterable<Cell> {
 		boolean eagleExists = true, keepSimulate;
 		int i = 0;
 
+		if(eagleIndex >= 0){
+			eagleExists = cells[eagleIndex].getMapCell() == MapCell.EAGLE;
+
+			if(!eagleExists && bulletOnEagleStepper > 0){
+				bulletOnEagleStepper--;
+				eagleExists = bulletOnEagleStepper > 0;
+			}
+		}
+
 		while(i < explosionsCount){
 			keepSimulate = explosions[i].move();
 			if(!keepSimulate){
 				explosionsCount = removeFromArray(explosions, i, explosionsCount);
-				if(i == bulletOnEagleIndex)
-					eagleExists = false;
-				else if(i < bulletOnEagleIndex)
-					bulletOnEagleIndex--;
 				continue;
 			}
 			i++;
@@ -607,8 +614,8 @@ public class GameDynamics implements Iterable<Cell> {
 			bullets[i].setUpCell(bulletCell);
 			if(cellCollideEagle(bulletCell) ){
 				cells[eagleIndex].setMapCell(MapCell.EAGLE_DESTROYED);
-				explodeBullet(i, cells[eagleIndex]);
-				bulletOnEagleIndex = explosionsCount - 1;
+				bulletOnEagleStepper = explodeBullet(i, cells[eagleIndex]);
+
 				if(play1stPlayer)
 					player1.eagleDestroyed();
 				if(play2ndPlayer)

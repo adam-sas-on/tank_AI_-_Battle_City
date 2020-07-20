@@ -221,10 +221,12 @@ public class Bullet {
 		y_pos -= posDiff * (1 - yDirection);
 	}
 
-	public void setExplode(Cell cellOfExplodingObject){
-		if(explodeIndex < 0) {
+	public int setExplode(Cell cellOfExplodingObject){
+		int steps = 0;
+		if(explodeIndex < 0){
 			explodeIndex = 0;
 			explodes = MapCell.bigExplosionMapCells();
+			steps = explodes.length;
 
 			if(cellOfExplodingObject != null){
 				x_pos = cellOfExplodingObject.getCol();
@@ -235,6 +237,7 @@ public class Bullet {
 
 			resetBulletShooting();
 		}
+		return steps;
 	}
 
 	public void setSmallExplode(){
