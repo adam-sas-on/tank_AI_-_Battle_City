@@ -379,15 +379,18 @@ public class GameView {
 		if(countingForSecond == 0 && counting > 0){
 			countingForSecond = framesPerSecond;
 			// draw number;
-			int seconds = counting/framesPerSecond;
+			int seconds = counting;
+			counting = 0;// to enable printing map;
 			drawMap(dynamics);
+			counting = seconds;
+			seconds = counting/framesPerSecond;
 
 			double width = canvas.getWidth(), charWidth = width/6.0;// 6 chars for full width;
 			Font font = new Font("", 120);
 
 			gContext.setFont(font);
 			gContext.setFill(Color.AZURE);
-			gContext.fillText(Integer.toString(seconds), charWidth, canvas.getHeight()/2, width/2 - charWidth);
+			gContext.fillText(Integer.toString(seconds), charWidth, canvas.getHeight()/2, width/2 - charWidth/2);
 		} else if(counting < 0){
 			trainAI.setDisable(true);
 			return false;
@@ -426,6 +429,9 @@ public class GameView {
 	}
 
 	public void drawMap(GameDynamics dynamics){
+		if(counting > 0)
+			return;
+
 		gContext.setFill(Color.BLACK);
 		gContext.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
