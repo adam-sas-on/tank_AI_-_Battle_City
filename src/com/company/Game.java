@@ -134,8 +134,11 @@ public class Game {
 		trainingAI = !trainingAI;
 		view.startStopTrainingAI();
 
-		if(!trainingAI)
+		if(!trainingAI) {
+			pause = true;
+			view.pauseDrawing();
 			dynamics.resetTheGame();
+		}
 	}
 
 	private void switchPlayers1AI(MouseEvent mouseEvent){
@@ -256,6 +259,7 @@ public class Game {
 			if(!keepRunning || mapFinished){
 				aiWaiting = true;
 				view.startCountingForAI();
+				upDateAI();
 			}
 			return;
 		}

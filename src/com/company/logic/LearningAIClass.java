@@ -14,11 +14,12 @@ public class LearningAIClass {
 	private int indexBest, indexWorst;
 	private int mapMaxCols, mapMaxRows;
 	private int maxEnemyTanks, maxBullets;
+	private static int countUpdates;
 	private final double globalMutationRate;
 	private final int cellPrecisionUnitSize;
 
 	public LearningAIClass(BattleRandom rand, int cellPrecision){
-		globalMutationRate = 0.1;
+		globalMutationRate = 0.1;// 10%;
 		bestWasChanged = false;
 		readyToLearn = false;
 		wasUpdated = false;
@@ -126,7 +127,8 @@ public class LearningAIClass {
 
 		int newFitness = processedAI.getSetFitness(0);
 
-		System.out.println("\tUpdating series of AIs, fitness = " + newFitness);
+		countUpdates++;
+		System.out.println("\t" + countUpdates + ")  Updating series of AIs, fitness = " + newFitness);
 
 		if(newFitness > allFitness[indexWorst]){
 			tanksAI[indexWorst].setByOther(processedAI);
