@@ -600,6 +600,12 @@ public class GameDynamics implements Iterable<Cell> {
 
 		// simulate explodes;
 		eagleExists = stepOfExplodes();
+		if(!eagleExists){
+			if(play1stPlayer)
+				player1.eagleDestroyed();
+			if(play2ndPlayer)
+				player2.eagleDestroyed();
+		}
 
 		while(i < bulletsCount){
 			bullets[i].move();
@@ -615,11 +621,6 @@ public class GameDynamics implements Iterable<Cell> {
 			if(cellCollideEagle(bulletCell) ){
 				cells[eagleIndex].setMapCell(MapCell.EAGLE_DESTROYED);
 				bulletOnEagleStepper = explodeBullet(i, cells[eagleIndex]);
-
-				if(play1stPlayer)
-					player1.eagleDestroyed();
-				if(play2ndPlayer)
-					player2.eagleDestroyed();
 			}
 
 			isPlayers = bullets[i].belongsToPlayer();
