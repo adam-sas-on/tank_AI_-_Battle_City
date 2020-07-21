@@ -27,7 +27,7 @@ public class GameView {
 	private Button startPause;
 	private Button mapSelectButton;
 	private Button resetButton;
-	private Button trainAI;//, animateAI;
+	private Button trainAI, animateAI;
 	private Button[] playersAISwitches;
 	private Button player1stop, player2stop;
 	private Label[] playersLives, playersPoints;
@@ -37,7 +37,7 @@ public class GameView {
 	private int rightMenuWidth;
 	private int framesPerSecond, timeFrameInMilliseconds;
 	private int countingForSecond, counting;
-	private boolean pause, trainingAI;
+	private boolean pause, trainingAI, animatingAI;
 	private boolean[] aiPlaying;
 	private boolean player1stopped, player2stopped;
 	private final int unitSize = MapCell.getUnitSize();// any icon because unit size is the same for all;
@@ -68,6 +68,7 @@ public class GameView {
 		aiPlaying = new boolean[2];
 		player1stopped = player2stopped = false;
 		trainingAI = false;
+		animatingAI = true;
 		counting = -1;
 
 		powerUps = new Cell();
@@ -90,6 +91,8 @@ public class GameView {
 		mapSelectButton = new Button("Load map");
 		resetButton = new Button("Reset the game");
 		trainAI = new Button("Train AI");
+		animateAI = new Button("Quiet training");
+		animateAI.setDisable(true);
 		playersAISwitches = new Button[2];
 		playersAISwitches[0] = new Button("Play AI");
 		playersAISwitches[1] = new Button("Play AI");// play Player/Human;
@@ -123,6 +126,10 @@ public class GameView {
 
 	public Button getTrainingAIButton(){
 		return trainAI;
+	}
+
+	public Button getAnimatingAI(){
+		return animateAI;
 	}
 
 	public Button getPlayersAI_switch(boolean firstPlayer){
@@ -226,11 +233,23 @@ public class GameView {
 			blockMenuForPlaying();
 			playersAISwitches[0].setDisable(true);
 			playersAISwitches[1].setDisable(true);
+			animateAI.setDisable(false);
 		} else {
 			trainAI.setText("Train AI");
 			unblockMenuForPlaying();
 			playersAISwitches[0].setDisable(false);
 			playersAISwitches[1].setDisable(false);
+			animateAI.setDisable(true);
+			animatingAI = true;
+		}
+	}
+
+	public void startStopAIAnimation(){
+		animatingAI = !animatingAI;
+		if(animatingAI){
+			animateAI.setText("Quiet training");
+		} else {
+			animateAI.setText("Show training");
 		}
 	}
 
@@ -313,6 +332,12 @@ public class GameView {
 		buttons.setSpacing(10);
 		buttons.getChildren().addAll(startPause, trainAI);
 		ui.add(buttons, 0, 0);
+
+		buttons = new HBox();
+		buttons.setPadding(new Insets(2));
+		buttons.setSpacing(10);
+		buttons.getChildren().addAll(animateAI);
+		ui.add(buttons, 0, 1);
 		//ui.add(animateAI, 1, 1);
 
 		GridPane innerGrid = new GridPane();
@@ -365,7 +390,7 @@ public class GameView {
 		if(!trainingAI || counting > 0)
 			return;
 
-		counting = 8*framesPerSecond;
+		counting = 7*framesPerSecond;
 		countingForSecond = framesPerSecond;
 		trainAI.setDisable(false);
 	}
@@ -380,10 +405,13 @@ public class GameView {
 			countingForSecond = framesPerSecond;
 			// draw number;
 			int seconds = counting;
+			boolean oldAnimating = animatingAI;
 			counting = 0;// to enable printing map;
+			animatingAI = true;
 			drawMap(dynamics);
 			counting = seconds;
 			seconds = counting/framesPerSecond;
+			animatingAI = oldAnimating;
 
 			double width = canvas.getWidth(), charWidth = width/6.0;// 6 chars for full width;
 			Font font = new Font("", 120);
@@ -429,7 +457,7 @@ public class GameView {
 	}
 
 	public void drawMap(GameDynamics dynamics){
-		if(counting > 0)
+		if(counting > 0 || !animatingAI)
 			return;
 
 		gContext.setFill(Color.BLACK);

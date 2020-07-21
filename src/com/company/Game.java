@@ -140,6 +140,13 @@ public class Game {
 			dynamics.resetTheGame();
 		}
 	}
+	private void animateAI(MouseEvent mouseEvent){
+		view.startStopAIAnimation();
+		//runGame.scheduleWithFixedDelay(this::run, 0, msInterval/2, TimeUnit.MILLISECONDS);
+		// <->
+		//runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
+	}
+
 
 	private void switchPlayers1AI(MouseEvent mouseEvent){
 		player1driver.switchPlayerAI();
@@ -195,6 +202,7 @@ public class Game {
 		view.getStartPauseButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startPauseGameByMouse);
 
 		view.getTrainingAIButton().addEventHandler(MouseEvent.MOUSE_CLICKED, this::startStopTrainingAI);
+		view.getAnimatingAI().addEventHandler(MouseEvent.MOUSE_CLICKED, this::animateAI);
 
 		view.getPlayersAI_switch(true).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers1AI);
 		view.getPlayersAI_switch(false).addEventHandler(MouseEvent.MOUSE_CLICKED, this::switchPlayers2AI);
