@@ -80,18 +80,22 @@ public class LearningAIClass {
 	}
 
 	private int randomSelection(int fitnessSum){
-		int i, selectionIndex = -1, size = allFitness.length, stepSum = 0, rnd = 0;
+		int size = allFitness.length, stepSum = 0, rnd = 0;
 
 		if(fitnessSum > 0)
 			rnd = rand.randRange(0, fitnessSum);
 		else if(fitnessSum < 0)
-			rnd = rand.randRange(fitnessSum, 0);
+			rnd = rand.randRange(0, -fitnessSum);
+
+		int i, mini, selectionIndex = -1;
+		mini = allFitness[indexWorst];
+		rnd -= mini;
 
 		for(i = 0; i < size; i++){
 			if(allFitness[i] <= Integer.MIN_VALUE + 1)
 				continue;
 
-			stepSum += allFitness[i];
+			stepSum += allFitness[i] - mini;
 			if(stepSum >= rnd){
 				selectionIndex = i;
 				break;
@@ -156,7 +160,7 @@ public class LearningAIClass {
 		allFitness = new int[count];
 		indexBest = 0;
 
-		countInputs = new int[]{30, 100, 40};
+		countInputs = new int[]{30, 90, 40};
 
 		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
 		bufferedInputData = new double[inputSize];

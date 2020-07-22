@@ -178,9 +178,9 @@ public class TankAI {
 
 		int[] nnCounts;
 		if(neuronsCounts == null)
-			nnCounts = new int[]{30, 100, 40};
+			nnCounts = new int[]{30, 90, 40};
 		else if(neuronsCounts.length < 1)
-			nnCounts = new int[]{30, 100, 40};
+			nnCounts = new int[]{30, 90, 40};
 		else
 			nnCounts = neuronsCounts;
 
