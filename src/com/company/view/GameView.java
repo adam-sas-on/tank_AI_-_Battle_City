@@ -334,7 +334,7 @@ public class GameView {
 		ui.add(buttons, 0, 0);
 
 		buttons = new HBox();
-		buttons.setPadding(new Insets(2));
+		buttons.setPadding(new Insets(2, inset, 2, inset));
 		buttons.setSpacing(10);
 		buttons.getChildren().addAll(animateAI);
 		ui.add(buttons, 0, 1);

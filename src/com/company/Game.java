@@ -28,7 +28,7 @@ public class Game {
 	private GameDynamics dynamics;
 	private final Timeline timeline;
 	private boolean pause, mapFinished;
-	private boolean aiNotUpdated, trainingAI, aiWaiting;
+	private boolean aiNotUpdated, trainingAI, aiWaiting, quietTraining;
 
 	private MapLoader mapLoader;
 	private List<String> maps;
@@ -58,7 +58,7 @@ public class Game {
 		dynamics = new GameDynamics(mapLoader, view, rand);
 		pause = mapFinished = true;
 		aiNotUpdated = true;
-		trainingAI = false;
+		trainingAI = quietTraining = false;
 
 		setControllers(cellPrecisionUnitSize);
 
@@ -142,6 +142,13 @@ public class Game {
 	}
 	private void animateAI(MouseEvent mouseEvent){
 		view.startStopAIAnimation();
+		quietTraining = !quietTraining;
+
+		if(quietTraining){
+			timeline.stop();
+		} else {
+			timeline.play();
+		}
 		//runGame.scheduleWithFixedDelay(this::run, 0, msInterval/2, TimeUnit.MILLISECONDS);
 		// <->
 		//runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
@@ -251,24 +258,7 @@ public class Game {
 		if(pause)
 			return;
 		else if(trainingAI){
-			if(aiWaiting){
-				aiWaiting = view.keepCountingForAI(dynamics);
-				if(!aiWaiting){
-					dynamics.resetTheGame();
-					if(!mapFinished)
-						dynamics.resetTheGame();
-					loadMap(mapNumber);
-				}
-				return;
-			}
-
-			keepRunning = dynamics.nextStep();
-			mapFinished = dynamics.isMapFinished();
-			if(!keepRunning || mapFinished){
-				aiWaiting = true;
-				view.startCountingForAI();
-				upDateAI();
-			}
+			runTrainingAI();
 			return;
 		}
 
@@ -295,6 +285,27 @@ public class Game {
 			//dynamics.loadMap(maps.get(mapNumber), mapLoader, view);
 			view.selectNextMap();
 
+			upDateAI();
+		}
+	}
+
+	public void runTrainingAI(){
+		if(aiWaiting){
+			aiWaiting = view.keepCountingForAI(dynamics);
+			if(!aiWaiting){
+				dynamics.resetTheGame();
+				if(!mapFinished)
+					dynamics.resetTheGame();
+				loadMap(mapNumber);
+			}
+			return;
+		}
+
+		boolean keepRunning = dynamics.nextStep();
+		mapFinished = dynamics.isMapFinished();
+		if(!keepRunning || mapFinished){
+			aiWaiting = true;
+			view.startCountingForAI();
 			upDateAI();
 		}
 	}
