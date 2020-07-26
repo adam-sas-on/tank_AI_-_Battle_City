@@ -207,9 +207,9 @@ public class TankAI {
 					numberOfWeights++;
 
 				layers[k] = new double[numberOfWeights];
-				shift = (k == 1)?-0.2:0.0;
+				shift = (k == 1)?-0.4:0.0;
 				for(i = 0; i < numberOfWeights; i++)
-					layers[k][i] = rand.symmetricRandRange(range) + shift;
+					layers[k][i] = rand.symmetricGaussianRand(range) + shift;
 
 				inputSize = layerSize;
 			}
@@ -333,7 +333,7 @@ public class TankAI {
 			for(j = 0; j < size; j++){
 				randVal = rand.randRange(1.0);
 				if(randVal < mutationRate){
-					layers[i][j] = rand.symmetricRandRange(5.0);
+					layers[i][j] = rand.symmetricGaussianRand(5.0);
 				}
 
 			}

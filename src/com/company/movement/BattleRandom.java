@@ -114,6 +114,10 @@ public class BattleRandom {
 		return range*( 2.0*rand.nextDouble() - 1.0 );
 	}
 
+	public double symmetricGaussianRand(double stdDev){
+		return stdDev*rand.nextGaussian();
+	}
+
 	/**
 	 * Binomial trial with probability dependent on the value of steps relative to rangeLimit.
 	 * @param steps
