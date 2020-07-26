@@ -323,54 +323,54 @@ public class GameView {
 	}
 
 	private void setRightMenu(GridPane ui){
-		int inset = 10;
+		int inset = 7;
+		Insets borderSpace = new Insets(inset, 10, inset, 10);
 		ui.setHgap(2);
-		ui.setVgap(6);
-
-		HBox buttons = new HBox();
-		buttons.setPadding(new Insets(inset));
-		buttons.setSpacing(10);
-		buttons.getChildren().addAll(startPause, trainAI);
-		ui.add(buttons, 0, 0);
-
-		buttons = new HBox();
-		buttons.setPadding(new Insets(2, inset, 2, inset));
-		buttons.setSpacing(10);
-		buttons.getChildren().addAll(animateAI);
-		ui.add(buttons, 0, 1);
-		//ui.add(animateAI, 1, 1);
+		ui.setVgap(5);
 
 		GridPane innerGrid = new GridPane();
-		innerGrid.setPadding(new Insets(inset));
+		innerGrid.setPadding(borderSpace);
 		setPlayersGrid(innerGrid, playersLives[0], playersPoints[0], playersAISwitches[0], player1stop);
-		ui.add(innerGrid, 0, 2);
+		ui.add(innerGrid, 0, 0);
 
 		innerGrid = new GridPane();
-		innerGrid.setPadding(new Insets(inset));
+		innerGrid.setPadding(borderSpace);
 		setPlayersGrid(innerGrid, playersLives[1], playersPoints[1], playersAISwitches[1], player2stop);
-		ui.add(innerGrid, 0, 3);
+		ui.add(innerGrid, 0, 1);
+
+		HBox buttons = new HBox();
+		buttons.setPadding(borderSpace);
+		buttons.setSpacing(10);// between buttons;
+		buttons.getChildren().addAll(startPause, resetButton);
+		ui.add(buttons, 0, 2);
 
 		innerGrid = new GridPane();
-		innerGrid.setPadding(new Insets(inset));
-		innerGrid.setVgap(6);
-		innerGrid.setHgap(6);
+		innerGrid.setPadding(borderSpace);
+		innerGrid.setVgap(5);
+		innerGrid.setHgap(5);
 		//GridPane.setColumnSpan(mapList, 2);
 		mapList.setPrefHeight( 8*MapCell.getUnitSize() );
 		mapList.setPrefWidth(rightMenuWidth);
-		innerGrid.add(mapList, 0, 1);
-		innerGrid.add(mapSelectButton, 0, 2);
-		innerGrid.add(resetButton, 0, 4);
+		innerGrid.add(mapList, 0, 0);
+		innerGrid.add(mapSelectButton, 0, 1);
 
-		ui.add(innerGrid, 0, 4);
+		ui.add(innerGrid, 0, 3);
+
+		buttons = new HBox();
+		buttons.setPadding(new Insets(inset/2.0, 10, 15, 10));
+		buttons.setSpacing(10);
+		buttons.getChildren().addAll(trainAI, animateAI);
+		ui.add(buttons, 0, 4);
 	}
 
 	public Scene drawStart(){
 		GridPane gridPane = new GridPane();
 		BorderPane borderP = new BorderPane();
 
-		gridPane.setPrefWidth(1.2*rightMenuWidth);
-		gridPane.setMinWidth(1.1*rightMenuWidth);
 		setRightMenu(gridPane);
+		gridPane.setMinWidth(1.1*rightMenuWidth);
+		rightMenuWidth = (rightMenuWidth*13)/10;
+		gridPane.setPrefWidth(rightMenuWidth);
 
 		borderP.setLeft(canvas);
 		borderP.setRight(gridPane);

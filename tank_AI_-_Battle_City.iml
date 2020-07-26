@@ -52,5 +52,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="javafx-controls-12.0.2-linux" level="project" />
   </component>
 </module>
