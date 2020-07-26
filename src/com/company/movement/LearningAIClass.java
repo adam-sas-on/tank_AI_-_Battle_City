@@ -151,10 +151,14 @@ public class LearningAIClass {
 
 
 	public void setDefaultLearningPopulation(){
-		int count = 100, i;
+		int count = 105, i;
 
 		// processedAI = new TankAI(rand, 2, cellPrecisionUnitSize);
 		boolean success = processedAI.readFile();
+		if(!success){
+			System.out.println("Reading processed AI file failed -> creating new one...");
+			processedAI.setDefaultNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
+		}
 
 		tanksAI = new TankAI[count];
 		allFitness = new int[count];
@@ -199,6 +203,8 @@ public class LearningAIClass {
 		}
 
 		readyToLearn = true;
+		writeFile();
+		processedAI.writeFile();
 	}
 
 

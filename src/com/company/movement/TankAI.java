@@ -232,7 +232,7 @@ public class TankAI {
 			ready = false;
 		}
 
-		netFitness = 0;
+		netFitness = Integer.MIN_VALUE + 1;
 	}
 
 	public void setDefaultNeuralNetwork(int mapMaxCols, int mapMaxRows, int maxEnemyTanks, int maxBullets){
@@ -653,7 +653,7 @@ public class TankAI {
 			dIs.close();
 			is.close();
 		} catch(IOException | NullPointerException e){
-			System.out.println("Reading AI file  " + fileName + " failed!");
+			System.out.println("Reading AI file  " + fileName + "  failed!");
 			ready = false;
 		}
 		return ready;

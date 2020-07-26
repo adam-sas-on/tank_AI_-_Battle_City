@@ -148,10 +148,12 @@ public class SpriteEventController {
 		AIDriver = tankAI;
 		readyAI = false;
 		if(AIDriver != null){
-			readyAI = AIDriver.readFile();
-			if( !readyAI )
-				AIDriver.setDefaultNeuralNetwork();
-
+			readyAI = AIDriver.isAIReady();
+			if( !readyAI ){
+				readyAI = AIDriver.readFile();
+				if( !readyAI )
+					AIDriver.setDefaultNeuralNetwork();
+			}
 			readyAI = AIDriver.isAIReady();
 		}
 	}
