@@ -1,6 +1,6 @@
 package com.company;
 
-import com.company.logic.TankAI;
+import com.company.movement.TankAI;
 import com.company.model.Bullet;
 import com.company.model.Direction;
 import com.company.model.Enemy;
@@ -8,8 +8,6 @@ import com.company.model.PlayerAITank;
 import com.company.view.Cell;
 import com.company.view.MapCell;
 import javafx.scene.input.KeyCode;
-
-import java.util.Arrays;
 
 public class SpriteEventController {
 	private TankAI AIDriver;

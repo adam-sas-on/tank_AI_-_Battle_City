@@ -1,6 +1,6 @@
 package com.company.model;
 
-import com.company.logic.BattleRandom;
+import com.company.movement.BattleRandom;
 import com.company.view.Cell;
 import com.company.view.GameView;
 import com.company.view.MapCell;

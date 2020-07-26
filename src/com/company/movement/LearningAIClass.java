@@ -160,7 +160,7 @@ public class LearningAIClass {
 		allFitness = new int[count];
 		indexBest = 0;
 
-		countInputs = new int[]{30, 90, 40};
+		countInputs = new int[]{40, 60, 30};
 
 		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
 		bufferedInputData = new double[inputSize];

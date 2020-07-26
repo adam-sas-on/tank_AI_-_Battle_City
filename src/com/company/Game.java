@@ -1,8 +1,8 @@
 package com.company;
 
-import com.company.logic.BattleRandom;
-import com.company.logic.LearningAIClass;
-import com.company.logic.TankAI;
+import com.company.movement.BattleRandom;
+import com.company.movement.LearningAIClass;
+import com.company.movement.TankAI;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
 import com.company.view.MapLoader;

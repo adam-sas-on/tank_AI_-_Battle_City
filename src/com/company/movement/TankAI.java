@@ -106,12 +106,11 @@ public class TankAI {
 		final int layersCount = layers.length;
 		int i, rowIndexBegin, rowsCount;
 
-		rowsCount = layers[0].length/(inputData.length + 1);// number of neurons in first layer;
+		rowsCount = layers[0].length/inputData.length;// number of neurons in first layer;
 		rowIndexBegin = 0;
 		for(i = 0; i < rowsCount; i++){// i * inputData.length
 			product = productVector(layers[0], inputData, rowIndexBegin, 0, inputData.length);
 			rowIndexBegin += inputData.length;
-			product += layers[0][rowIndexBegin];// bias;
 			rowIndexBegin++;
 
 			bufferedOutput[i] = activationFunction(product);
@@ -178,9 +177,9 @@ public class TankAI {
 
 		int[] nnCounts;
 		if(neuronsCounts == null)
-			nnCounts = new int[]{30, 90, 40};
+			nnCounts = new int[]{40, 60, 30};
 		else if(neuronsCounts.length < 1)
-			nnCounts = new int[]{30, 90, 40};
+			nnCounts = new int[]{40, 60, 30};
 		else
 			nnCounts = neuronsCounts;
 
@@ -197,13 +196,16 @@ public class TankAI {
 			final double range = 1.0;
 
 			layers = new double[k][];
-			maxNeurons = nnCounts[0];
+			maxNeurons = nnCounts[0];// = max( nnCounts[] );
 			for(k = 0; k < nnCounts.length; k++){
 				if(nnCounts[k] > maxNeurons)
 					maxNeurons = nnCounts[k];
 
 				layerSize = nnCounts[k];
-				numberOfWeights = layerSize * (inputSize + 1);// +1: bias;
+				numberOfWeights = layerSize*inputSize;// +1: bias;
+				if(k > 0)
+					numberOfWeights++;
+
 				layers[k] = new double[numberOfWeights];
 				shift = (k == 1)?-0.2:0.0;
 				for(i = 0; i < numberOfWeights; i++)

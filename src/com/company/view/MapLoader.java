@@ -1,6 +1,6 @@
 package com.company.view;
 
-import com.company.logic.BattleRandom;
+import com.company.movement.BattleRandom;
 import com.company.model.*;
 
 import java.io.BufferedReader;
