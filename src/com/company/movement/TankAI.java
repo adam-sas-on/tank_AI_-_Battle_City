@@ -1,4 +1,4 @@
-package com.company.logic;
+package com.company.movement;
 
 import com.company.model.Bullet;
 import com.company.model.Enemy;

@@ -1,4 +1,4 @@
-package com.company.logic;
+package com.company.movement;
 
 import java.io.*;
 
