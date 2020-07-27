@@ -86,6 +86,12 @@ public class TankAI {
 		return f;
 	}
 
+	private double activationDerivative(double x){
+		double f = 1.0/(1.0 + Math.exp(-x));
+		f = f*(1.0 - f);
+		return Math.PI*3*f;
+	}
+
 	public int getSetFitness(int fitnessStep){
 		netFitness += fitnessStep;
 		return netFitness;
@@ -111,7 +117,6 @@ public class TankAI {
 		for(i = 0; i < rowsCount; i++){// i * inputData.length
 			product = productVector(layers[0], inputData, rowIndexBegin, 0, inputData.length);
 			rowIndexBegin += inputData.length;
-			rowIndexBegin++;
 
 			bufferedOutput[i] = activationFunction(product);
 		}
@@ -177,9 +182,9 @@ public class TankAI {
 
 		int[] nnCounts;
 		if(neuronsCounts == null)
-			nnCounts = new int[]{40, 60, 30};
+			nnCounts = new int[]{35, 60, 30};
 		else if(neuronsCounts.length < 1)
-			nnCounts = new int[]{40, 60, 30};
+			nnCounts = new int[]{35, 60, 30};
 		else
 			nnCounts = neuronsCounts;
 

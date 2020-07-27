@@ -146,12 +146,12 @@ public class Game {
 
 		if(quietTraining){
 			timeline.stop();
+			//runGame.scheduleWithFixedDelay(this::runTrainingAI, 0, msInterval/2, TimeUnit.MILLISECONDS);
 		} else {
 			timeline.play();
+			//runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
 		}
-		//runGame.scheduleWithFixedDelay(this::run, 0, msInterval/2, TimeUnit.MILLISECONDS);
-		// <->
-		//runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
+
 	}
 
 
@@ -290,6 +290,9 @@ public class Game {
 	}
 
 	public void runTrainingAI(){
+		/*if(pause)
+			return;*/
+
 		if(aiWaiting){
 			aiWaiting = view.keepCountingForAI(dynamics);
 			if(!aiWaiting){
