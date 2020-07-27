@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+//import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Game {
 	private GameView view;
 	private final ScheduledExecutorService runGame;
+	//private ScheduledFuture<?> runSchedule;
 	private final int msInterval = 20;
 	private GameDynamics dynamics;
 	private final Timeline timeline;
@@ -145,11 +147,15 @@ public class Game {
 		quietTraining = !quietTraining;
 
 		if(quietTraining){
+			//runSchedule.cancel(false);
 			timeline.stop();
-			//runGame.scheduleWithFixedDelay(this::runTrainingAI, 0, msInterval/2, TimeUnit.MILLISECONDS);
+
+			//runSchedule = runGame.scheduleWithFixedDelay(this::runTrainingAI, 0, msInterval/2, TimeUnit.MILLISECONDS);
 		} else {
+			//runSchedule.cancel(false);
 			timeline.play();
-			//runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
+
+			//runSchedule = runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
 		}
 
 	}
@@ -224,6 +230,7 @@ public class Game {
 
 		timeline.setCycleCount(Timeline.INDEFINITE);
 
+		//runSchedule = runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);// this::run -> new Runnable(){}
 		runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);// this::run -> new Runnable(){}
 		timeline.play();
 	}
