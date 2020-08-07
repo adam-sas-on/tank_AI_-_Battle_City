@@ -26,7 +26,7 @@ public class GameDynamics implements Iterable<Cell> {
 	private Bullet[] explosions;
 	private int explosionsCount;
 	private final double bulletsCountMultiplier = 1.4;
-	private DamageClass damages;
+	private DamageRules damages;
 
 	private Cell[] cells;
 	private int rowCells;
@@ -71,7 +71,7 @@ public class GameDynamics implements Iterable<Cell> {
 		setCellsStructure(maxCols, mapLoader.getMaxRows() );
 		collectibles = new Cell();
 
-		damages = DamageClass.getInstance();
+		damages = DamageRules.getInstance();
 
 		rand = random;
 	}

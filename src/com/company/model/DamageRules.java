@@ -1,21 +1,19 @@
 package com.company.model;
 
 import com.company.view.MapCell;
-import javafx.scene.input.KeyCode;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class DamageClass {
-	private static DamageClass instance = null;
+public class DamageRules {
+	private static DamageRules instance = null;
 
-	private DamageClass(){
+	private DamageRules(){
 
 	}
 
-	public static DamageClass getInstance(){
+	public static DamageRules getInstance(){
 		if(instance == null)
-			instance = new DamageClass();
+			instance = new DamageRules();
 		return instance;
 	}
 

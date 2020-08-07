@@ -28,7 +28,7 @@ public class Bullet {
 	private Map<MapCell,MapCell> rightSideDestruction;
 	private Map<MapCell,MapCell> leftSideDestruction;
 
-	public Bullet(PlayerAITank player, DamageClass damages){
+	public Bullet(PlayerAITank player, DamageRules damages){
 		int[] xyPos = new int[2];
 		Direction direction;
 		int tankSize;
@@ -50,7 +50,7 @@ public class Bullet {
 		setExplodeAttributes(direction, damages);
 	}
 
-	public Bullet(Enemy tank, DamageClass damages){
+	public Bullet(Enemy tank, DamageRules damages){
 		int[] xyPos = new int[2];
 		Direction direction;
 		int tankSize;
@@ -101,7 +101,7 @@ public class Bullet {
 		}
 	}
 
-	private void setExplodeAttributes(Direction direction, DamageClass damages){
+	private void setExplodeAttributes(Direction direction, DamageRules damages){
 		flightSteps = 0;
 		xDirection = direction.unitStepX();
 		yDirection = direction.unitStepY();
