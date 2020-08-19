@@ -61,8 +61,8 @@ restore () {
 
 if [ $can_be_restored -eq 1 ] && [ $can_be_backed_up -eq 1 ] ; then
 	# selection=`zenity --list "Option 1" "Option 2" "Option 3" --column="commands: " --text="Select command" --title="Backup / restore ML-AI")`
-	echo "1) Back up ML and/or AI files"
-	echo "2) Back up ML and/or AI files"
+	echo "1) Back-up AI/machine learning files (copy to current dir)"
+	echo "2) Update AI/machine learning files on production (move to production resources)"
 	echo "*) Quit"
 	read -p "Please select an option (type number)  " -r opt # -n 1
 
