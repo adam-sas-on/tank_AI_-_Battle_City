@@ -1,4 +1,4 @@
-package view;
+package com.company.view;
 
 import com.company.model.Direction;
 import com.company.view.Cell;

@@ -1,4 +1,4 @@
-package view;
+package com.company.view;
 
 import org.junit.jupiter.params.provider.Arguments;
 

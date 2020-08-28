@@ -1,4 +1,4 @@
-package movement;
+package com.company.movement;
 
 import com.company.movement.BattleRandom;
 import com.company.movement.TankAI;
