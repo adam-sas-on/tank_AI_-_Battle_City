@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.wojtechm.snake</groupId>
-    <artifactId>snake</artifactId>
+    <groupId>com.github.adam-sas-on.tank_AI_-_Battle_City</groupId>
+    <artifactId>Tank_AI_-_Battle_City</artifactId>
     <version>0.1</version>
-    <name>snake</name>
-    <description>snake</description>
+    <name>Tank AI - Battle City</name>
+    <description>An app to play the game from Nintendo called Battle City and to experiment with Artificial Intelligence (AI) and Machine Learning (ML)</description>
 
 
     <properties>
