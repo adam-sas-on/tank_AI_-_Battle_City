@@ -69,7 +69,7 @@ if [ $can_be_restored -eq 1 ] && [ $can_be_backed_up -eq 1 ] ; then
 	if [ $opt -eq 1 ] ; then
 		back_up
 
-	elif [ $opt -eq 1 ] ; then
+	elif [ $opt -eq 2 ] ; then
 		restore
 
 	else
