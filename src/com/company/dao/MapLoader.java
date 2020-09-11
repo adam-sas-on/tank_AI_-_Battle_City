@@ -1,7 +1,10 @@
-package com.company.view;
+package com.company.dao;
 
 import com.company.movement.BattleRandom;
 import com.company.model.*;
+import com.company.view.Cell;
+import com.company.view.GameView;
+import com.company.view.MapCell;
 
 import java.io.BufferedReader;
 import java.io.IOException;

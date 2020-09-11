@@ -5,7 +5,7 @@ import com.company.movement.LearningAIClass;
 import com.company.movement.TankAI;
 import com.company.model.PlayerAITank;
 import com.company.view.GameView;
-import com.company.view.MapLoader;
+import com.company.dao.MapLoader;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
@@ -146,13 +146,15 @@ public class Game {
 		view.startStopAIAnimation();
 		quietTraining = !quietTraining;
 
+		/*if(runSchedule != null){
+			runSchedule.cancel(false);// true/false - may interrupt if running;
+		}*/
+
 		if(quietTraining){
-			//runSchedule.cancel(false);
 			timeline.stop();
 
 			//runSchedule = runGame.scheduleWithFixedDelay(this::runTrainingAI, 0, msInterval/2, TimeUnit.MILLISECONDS);
 		} else {
-			//runSchedule.cancel(false);
 			timeline.play();
 
 			//runSchedule = runGame.scheduleAtFixedRate(this::run, 0, msInterval, TimeUnit.MILLISECONDS);
@@ -273,7 +275,7 @@ public class Game {
 		mapFinished = dynamics.isMapFinished();
 		if(!keepRunning){
 			pause = true;
-			view.typeText("Game Over!");
+			view.typeText("Game Over!");// runLater
 			view.pauseDrawing();
 			mapNumber++;
 			if(mapNumber == maps.size() )

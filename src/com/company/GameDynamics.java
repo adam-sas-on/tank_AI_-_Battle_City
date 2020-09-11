@@ -5,7 +5,7 @@ import com.company.model.*;
 import com.company.view.Cell;
 import com.company.view.GameView;
 import com.company.view.MapCell;
-import com.company.view.MapLoader;
+import com.company.dao.MapLoader;
 
 import java.io.IOException;
 import java.util.*;
