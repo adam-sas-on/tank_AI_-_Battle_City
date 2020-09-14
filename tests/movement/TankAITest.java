@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TankAITest {
 	private static final int cellPrecisionUnitSize = 10000;
 	private static BattleRandom rand = new BattleRandom(cellPrecisionUnitSize);
-	private static TankAI testedAI = new TankAI(rand, 2, cellPrecisionUnitSize);
+	private static TankAI testedAI = new TankAI(rand, cellPrecisionUnitSize);
 
 	@Test
 	void resetByOtherNNTest(){
@@ -24,7 +24,7 @@ class TankAITest {
 
 		testedAI.setNeuralNetwork(30, 30, enemyTanksCount, enemyTanksCount*3, null, inputVector);
 
-		otherAI = new TankAI(rand, 2, cellPrecisionUnitSize);
+		otherAI = new TankAI(rand, cellPrecisionUnitSize);
 		otherAI.resetByOtherNN(testedAI);
 
 		double[] originalAI_output, copiedAI_output;

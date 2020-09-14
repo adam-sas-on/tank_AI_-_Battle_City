@@ -29,7 +29,7 @@ public class LearningAIClass {
 		maxEnemyTanks = 20;
 		maxBullets = maxEnemyTanks*2 + 8;// 8 for players;
 
-		processedAI = new TankAI(rand, 2, cellPrecision);
+		processedAI = new TankAI(rand, cellPrecision);
 		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
 		bufferedInputData = new double[inputSize];
 
@@ -173,7 +173,7 @@ public class LearningAIClass {
 
 		try {
 			for(i = 0; i < count; i++){
-				tanksAI[i] = new TankAI(rand, 2, cellPrecisionUnitSize);
+				tanksAI[i] = new TankAI(rand, cellPrecisionUnitSize);
 			}
 
 			if(success) {
@@ -235,7 +235,7 @@ public class LearningAIClass {
 					indexWorst = i;
 
 
-				tanksAI[i] = new TankAI(rand, 2, cellPrecisionUnitSize);
+				tanksAI[i] = new TankAI(rand, cellPrecisionUnitSize);
 				tanksAI[i].setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);
 
 				for(j = 0; j < layersCount; j++){
@@ -252,7 +252,7 @@ public class LearningAIClass {
 				}
 			}
 
-			processedAI = new TankAI(rand, 2, cellPrecisionUnitSize);
+			processedAI = new TankAI(rand, cellPrecisionUnitSize);
 			done = processedAI.readFile();
 			if(!done)
 				processedAI.setNeuralNetwork(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets, countInputs, bufferedInputData);

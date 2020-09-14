@@ -24,9 +24,11 @@ public class TankAI {
 	private boolean updateOutput;
 	private final int cellPrecisionUnitSize;
 	private final int eagleCollectibleTankInputSize;
+	private final int tankAIOutputSize;
 
-	public TankAI(BattleRandom rand, int outputSize, int cellPrecision){
-		output = new double[outputSize];
+	public TankAI(BattleRandom rand, int cellPrecision){
+		tankAIOutputSize = 2;
+		output = new double[tankAIOutputSize];
 		ready = false;
 		updateOutput = true;
 		ownerXY_pos = new int[2];
@@ -219,11 +221,11 @@ public class TankAI {
 				inputSize = layerSize;
 			}
 
-			layerSize = 2;
+			layerSize = tankAIOutputSize;
 			if(maxNeurons < layerSize)
 				maxNeurons = layerSize;
 
-			output = new double[layerSize];// 2 outputs: current angle of tank and shoot power;
+			output = new double[layerSize];// 2 outputs as default: current angle of tank and shoot power;
 			numberOfWeights = layerSize*(inputSize + 1);
 			k = nnCounts.length;
 			layers[k] = new double[numberOfWeights];
@@ -630,6 +632,7 @@ public class TankAI {
 			maxNeurons = count;
 
 			bufferedOutput = new double[count*2];
+			output = new double[inputSize];
 
 			int j;
 			i = 0;

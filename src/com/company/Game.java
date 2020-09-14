@@ -102,7 +102,7 @@ public class Game {
 		if(!success)
 			machineLearning.setDefaultLearningPopulation();
 
-		allyAI1 = new TankAI(rand, 2, cellPrecisionUnitSize);
+		allyAI1 = new TankAI(rand, cellPrecisionUnitSize);
 		allyAI2 = machineLearning.getCurrentProcessed();
 		allyAI1.resetByOtherNN(allyAI2);
 
