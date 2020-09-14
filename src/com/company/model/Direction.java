@@ -174,4 +174,17 @@ public enum Direction {
 			else return LEFT.degAngleOrm1;
 		}
 	}
+
+	/*public static int directionsWeightsToDegrees(final double up, final double right, final double down, final double left){
+		if(up < 0.5 && right < 0.5 && down < 0.5 && left < 0.5)
+			return IN_PLACE.degAngleOrm1;
+
+		if(up > right && up > down && up > left)
+			return UP.degAngleOrm1;
+		if(right > down && right > left)
+			return RIGHT.degAngleOrm1;
+		if(down > left)
+			return DOWN.degAngleOrm1;
+		return LEFT.degAngleOrm1;
+	}*/
 }
