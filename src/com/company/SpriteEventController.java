@@ -60,7 +60,7 @@ public class SpriteEventController {
 		if(order == null)
 			return;
 
-		currentShotPower = (int) order[1];
+		currentShotPower = (int) order[1];// any value >= 0; if > 1 -> destroy steel;
 		currentAngle = -1;
 		if(order[0] > 0.0){
 			currentAngle = Direction.stepVectorToDegrees(Math.cos(order[0]), Math.sin(order[0]));

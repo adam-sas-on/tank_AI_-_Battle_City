@@ -211,7 +211,7 @@ public class TankAI {
 				layerSize = nnCounts[k];
 				numberOfWeights = layerSize*inputSize;// +1: bias;
 				if(k > 0)
-					numberOfWeights++;
+					numberOfWeights += layerSize;// +1 as bias for all neurons in current layer;
 
 				layers[k] = new double[numberOfWeights];
 				shift = (k == 1)?-0.4:0.0;
@@ -620,7 +620,10 @@ public class TankAI {
 				if(neuronsCounts[i] > count)
 					count = neuronsCounts[i];
 
-				numberOfWeights = neuronsCounts[i] * (inputSize + 1);
+				numberOfWeights = neuronsCounts[i]*inputSize;
+				if(i > 0)// when bias for input data (all layers without the input one);
+					numberOfWeights += neuronsCounts[i];
+
 				if(numberOfWeights < 2){
 					System.out.println("Data in file  " + fileName + "  is corrupted (#weights has to be > 2)!");
 					return false;
@@ -711,7 +714,9 @@ public class TankAI {
 
 			int i = 0, neuronsCount;
 			for(; i < size; i++){
-				neuronsCount = layers[i].length / (inputSize + 1);
+				neuronsCount = (i > 0)?inputSize + 1: inputSize;
+				neuronsCount = layers[i].length / neuronsCount;
+
 				inputSize = neuronsCount;
 				dOs.writeInt(neuronsCount);
 			}
