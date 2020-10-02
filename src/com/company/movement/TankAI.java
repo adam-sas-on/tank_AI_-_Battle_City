@@ -27,7 +27,7 @@ public class TankAI {
 	private final int tankAIOutputSize;
 
 	public TankAI(BattleRandom rand, int cellPrecision){
-		tankAIOutputSize = 2;
+		tankAIOutputSize = 5;
 		output = new double[tankAIOutputSize];
 		ready = false;
 		updateOutput = true;
@@ -159,7 +159,7 @@ public class TankAI {
 	}
 
 	public void resetFitness(){
-		netFitness = 0;
+		netFitness = Integer.MIN_VALUE + 1;
 	}
 
 
@@ -184,11 +184,14 @@ public class TankAI {
 
 		int[] nnCounts;
 		if(neuronsCounts == null)
-			nnCounts = new int[]{35, 60, 30};
+			nnCounts = new int[]{35, 50, 30};
 		else if(neuronsCounts.length < 1)
-			nnCounts = new int[]{35, 60, 30};
+			nnCounts = new int[]{35, 50, 30};
 		else
 			nnCounts = neuronsCounts;
+
+		this.mapMaxCols = mapMaxCols;
+		this.mapMaxRows = mapMaxRows;
 
 		try {
 			if(inputDataBuffer == null)
@@ -225,7 +228,7 @@ public class TankAI {
 			if(maxNeurons < layerSize)
 				maxNeurons = layerSize;
 
-			output = new double[layerSize];// 2 outputs as default: current angle of tank and shoot power;
+			output = new double[layerSize];// 5 outputs as default: current angle of tank and shoot power;
 			numberOfWeights = layerSize*(inputSize + 1);
 			k = nnCounts.length;
 			layers[k] = new double[numberOfWeights];

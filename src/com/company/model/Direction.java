@@ -162,7 +162,7 @@ public enum Direction {
 			else return LEFT.radAngleOrm1;
 		}
 	}
-	public static int stepVectorToDegrees(final double dx, final double dy){
+	/*public static int stepVectorToDegrees(final double dx, final double dy){
 		if(Math.abs(dy) > Math.abs(dx) ){
 			if(dy >= 0.0)
 				return DOWN.degAngleOrm1;
@@ -173,9 +173,9 @@ public enum Direction {
 				return RIGHT.degAngleOrm1;
 			else return LEFT.degAngleOrm1;
 		}
-	}
+	}*/
 
-	/*public static int directionsWeightsToDegrees(final double up, final double right, final double down, final double left){
+	public static int directionsWeightsToDegrees(final double up, final double right, final double down, final double left){
 		if(up < 0.5 && right < 0.5 && down < 0.5 && left < 0.5)
 			return IN_PLACE.degAngleOrm1;
 
@@ -186,5 +186,5 @@ public enum Direction {
 		if(down > left)
 			return DOWN.degAngleOrm1;
 		return LEFT.degAngleOrm1;
-	}*/
+	}
 }

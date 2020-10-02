@@ -23,6 +23,7 @@ public class LearningAIClass {
 		bestWasChanged = false;
 		readyToLearn = false;
 		wasUpdated = false;
+		countUpdates = 0;
 		this.rand = rand;
 
 		mapMaxCols = mapMaxRows = 50;
@@ -164,7 +165,7 @@ public class LearningAIClass {
 		allFitness = new int[count];
 		indexBest = 0;
 
-		countInputs = new int[]{35, 60, 30};
+		countInputs = new int[]{35, 50, 30};
 
 		int inputSize = processedAI.necessaryInputSize(mapMaxCols, mapMaxRows, maxEnemyTanks, maxBullets);
 		bufferedInputData = new double[inputSize];
@@ -226,7 +227,7 @@ public class LearningAIClass {
 			int i = 0, j, k, size;
 			for(; i < countAIs; i++){
 				allFitness[i] = dIs.readInt();
-				if(countUpdates < 2)// make lowest possible fitness at the beginning of learning;
+				if(countUpdates < 2 || (allFitness[i] > -5000 && countUpdates <= countAIs) )// make lowest possible fitness at the beginning of learning;
 					allFitness[i] = Integer.MIN_VALUE + 1;
 
 				if(allFitness[i] > allFitness[indexBest])
@@ -266,6 +267,7 @@ public class LearningAIClass {
 			done = false;
 		} catch(IOException | NullPointerException e){
 			System.out.println("Reading Machine learning file  " + fileName + " failed!");
+			//System.err.println("Reading Machine learning file  " + fileName + " failed!");
 			done = false;
 		}
 
